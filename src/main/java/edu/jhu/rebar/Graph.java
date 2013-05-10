@@ -14,9 +14,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
-import edu.jhu.rebar.accumulo.AccumuloBackedGraph;
-
 import edu.jhu.concrete.Concrete;
+import edu.jhu.rebar.accumulo.AccumuloBackedGraph;
 
 /** Interface for reading and writing from a "REBAR Knowledge Graph".
  * Each "REBAR Knowledge Graph" consists of a set of Vertices

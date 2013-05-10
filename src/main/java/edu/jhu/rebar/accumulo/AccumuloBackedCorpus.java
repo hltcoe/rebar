@@ -24,15 +24,15 @@ import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
 import edu.jhu.concrete.Concrete;
-import edu.jhu.rebar.ByteUtil;
 import edu.jhu.rebar.Corpus;
-import edu.jhu.rebar.FileUtil;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.IndexedKnowledgeGraph;
 import edu.jhu.rebar.ProtoIndex;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.StageOwnership;
+import edu.jhu.rebar.util.ByteUtil;
+import edu.jhu.rebar.util.FileUtil;
 
 
 /**

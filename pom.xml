@@ -4,7 +4,7 @@
 
   <groupId>edu.jhu.rebar</groupId>
   <artifactId>rebar</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>Rebar</name>
@@ -99,7 +99,17 @@
     <dependency>
       <groupId>edu.jhu.concrete</groupId>
       <artifactId>concrete</artifactId>
-      <version>1.0.0</version>
+      <version>1.0.1-microscale</version>
+    </dependency>
+    <dependency>
+      <groupId>com.basho.riak</groupId>
+      <artifactId>riak-client</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode</groupId>
+      <artifactId>kryo</artifactId>
+      <version>1.04</version>
     </dependency>
   </dependencies>
 </project>

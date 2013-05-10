@@ -14,6 +14,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 
 import edu.jhu.concrete.Concrete;
+import edu.jhu.rebar.util.IdUtil;
 
 public abstract class IndexedProto<ProtoObj extends Message> {
 	//======================================================================

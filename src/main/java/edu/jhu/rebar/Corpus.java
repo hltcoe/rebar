@@ -14,11 +14,10 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
-import edu.jhu.rebar.accumulo.AccumuloBackedCorpus;
-
 import edu.jhu.concrete.Concrete;
 
-/** Interface for reading and writing from a "REBAR Corpus".  Each
+/**
+ * Interface for reading and writing from a "REBAR Corpus".  Each
  * "REBAR Corpus" consists of a set of Communications.
  *
  * Each corpus is backed by some external shared resource (such as an
@@ -31,23 +30,6 @@ import edu.jhu.concrete.Concrete;
  * connection to an existing corpus.
  */
 public interface Corpus extends StagedDataCollection {
-    public static final class Factory {
-	public static Corpus makeCorpus(String corpusName) throws RebarException {
-	    return new AccumuloBackedCorpus(corpusName, true);
-	}
-	public static Corpus getCorpus(String corpusName) throws RebarException {
-	    return new AccumuloBackedCorpus(corpusName, false);
-	}
-	public static boolean corpusExists(String corpusName) throws RebarException {
-	    return AccumuloBackedCorpus.corpusExists(corpusName);
-	}
-	public static Collection<String> list() throws RebarException {
-	    return AccumuloBackedCorpus.listCorpora();
-	}
-	public static void deleteCorpus(String corpusName) throws RebarException {
-	    AccumuloBackedCorpus.deleteCorpus(corpusName);
-	}
-    }
 
     // ======================================================================
     // Identifier Sets

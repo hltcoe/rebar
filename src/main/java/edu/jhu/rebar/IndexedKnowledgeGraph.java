@@ -17,7 +17,11 @@ import java.util.Set;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.concrete.Concrete;
-import edu.jhu.concrete.Concrete.*;
+import edu.jhu.concrete.Concrete.CommunicationGUID;
+import edu.jhu.concrete.Concrete.CommunicationGUIDAttribute;
+import edu.jhu.concrete.Concrete.UUID;
+import edu.jhu.concrete.Concrete.Vertex;
+import edu.jhu.rebar.util.IdUtil;
 
 public class IndexedKnowledgeGraph extends IndexedProto<Concrete.KnowledgeGraph> {
 	private final FieldDescriptor VERTEX_FIELD = 

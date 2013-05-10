@@ -1,1 +1,7 @@
+# Maven files
 target/*
+
+# Eclipse files
+.classpath
+.project
+.settings/*
