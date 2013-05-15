@@ -12,7 +12,6 @@
 package edu.jhu.rebar.tokenization;
 
 import java.io.IOException;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,11 +26,10 @@ import java.util.regex.Pattern;
  */ 
 
 public class Tokenizer {
-  public static final Set<SimpleImmutableEntry<Pattern,String>> PTB_PATTERNS = getPTBPatterns();
-  public static final Set<SimpleImmutableEntry<Pattern,String>> BASIC_PATTERNS = getBasicPatterns();
-  public static final Set<SimpleImmutableEntry<Pattern,String>> COMMON_UNICODE_PATTERNS = getCommonUnicodePatterns();
+  public static final Set<PatternStringTuple> PTB_PATTERNS = getPTBPatterns();
+  public static final Set<PatternStringTuple> BASIC_PATTERNS = getBasicPatterns();
+  public static final Set<PatternStringTuple> COMMON_UNICODE_PATTERNS = getCommonUnicodePatterns();
   public static final Pattern singleSpacePattern = Pattern.compile("\\s+");
-  static String[] stringArr = new String[0];
 
   /**
     * Rewrites a number of common unicode patterns to an ASCII equiv.
@@ -40,7 +38,7 @@ public class Tokenizer {
     return rewrite(text, COMMON_UNICODE_PATTERNS);
   }
 
-  private static Set<SimpleImmutableEntry<Pattern, String>> getCommonUnicodePatterns () {
+  private static Set<PatternStringTuple> getCommonUnicodePatterns () {
     // vandurme: I went through the top 100 unicode characters in a large
     // collection of Spanish tweets, looking for the most common things we would
     // want to rewrite. For the most useful that resulted, below are the
@@ -126,16 +124,7 @@ public class Tokenizer {
       "\u2550", "=",
       "\u0305", "-" };
 
-    Set<SimpleImmutableEntry<Pattern,String>> patterns = 
-    		new HashSet<SimpleImmutableEntry<Pattern, String>>(p.length + 1);
-    
-    for (int i = 0; i < p.length -1; i+= 2) {
-      patterns.add(new SimpleImmutableEntry<Pattern, String>(Pattern.compile(p[i],
-                                                            Pattern.MULTILINE),
-                                            p[i+1]));
-    }
-    
-    return Collections.unmodifiableSet(patterns);
+    return convertStringArrayPatternsToTupleSet(p);
   }
 
 
@@ -143,7 +132,7 @@ public class Tokenizer {
     * A conservative version of the PTB patterns, meant to (hopefully) be
     * portable across formal/informal Western (?) languages.
     */
-  public static Set<SimpleImmutableEntry<Pattern,String>> getBasicPatterns() {
+  public static Set<PatternStringTuple> getBasicPatterns() {
     // cut-n-paste, then modified from getPTBPatterns
     String[] v = {
       // double quotes
@@ -178,16 +167,7 @@ public class Tokenizer {
       "--", " -- "
     };
 
-    Set<SimpleImmutableEntry<Pattern,String>> patterns = 
-    		new HashSet<SimpleImmutableEntry<Pattern, String>>(v.length);
-    
-
-    for (int i = 0; i < v.length -1; i+= 2) {
-      patterns.add(new SimpleImmutableEntry<Pattern, String>(Pattern.compile(v[i],
-                                                            Pattern.MULTILINE),
-                                            v[i+1]));
-    }
-    return Collections.unmodifiableSet(patterns);
+    return convertStringArrayPatternsToTupleSet(v);
   }
 
   /**
@@ -198,7 +178,7 @@ public class Tokenizer {
    * The header of which identifies the author as:
    * "Robert MacIntyre, University of Pennsylvania, late 1995".
    */
-  public static Set<SimpleImmutableEntry<Pattern,String>> getPTBPatterns() {
+  public static Set<PatternStringTuple> getPTBPatterns() {
     // The following is a port of patterns and comments from tokenizer.sed
     String[] v = {
       // attempt to get correct forward directional quotes, close quotes
@@ -269,25 +249,16 @@ public class Tokenizer {
       "^ +", ""
     };
     
-    Set<SimpleImmutableEntry<Pattern,String>> patterns = 
-    		new HashSet<SimpleImmutableEntry<Pattern, String>>(v.length);
-    for (int i = 0; i < v.length -1; i+= 2) {
-      patterns.add(new SimpleImmutableEntry<Pattern, String>(Pattern.compile(v[i],
-                                                            Pattern.MULTILINE),
-                                            v[i+1]));
+        return convertStringArrayPatternsToTupleSet(v);
+  }
+
+    public static String rewrite(String text, Set<PatternStringTuple> patterns) {
+        String x = text;
+        for (PatternStringTuple pair : patterns)
+            x = pair.getPattern().matcher(x).replaceAll(pair.getEntry());
+
+        return x.trim();
     }
-
-    return Collections.unmodifiableSet(patterns);
-  }
-
-  private static String rewrite (String text,
-                                 Set<SimpleImmutableEntry<Pattern,String>> patterns) {
-    String x = text;
-    for (SimpleImmutableEntry<Pattern,String> pair : patterns)
-      x = pair.getKey().matcher(x).replaceAll(pair.getValue());
-
-    return x.trim();
-  }
 
   public static String[] tokenizeTweetPetrovic (String text) {
     int length = text.length();
@@ -403,9 +374,16 @@ public class Tokenizer {
         update = false;
       }
     }
-    return (String[]) content.toArray(stringArr);
+    return (String[]) content.toArray(new String[0]);
   }
 
+  private static Set<PatternStringTuple> convertStringArrayPatternsToTupleSet(String[] patternArray) {
+      Set<PatternStringTuple> patterns = new HashSet<PatternStringTuple>(patternArray.length);
+      for (int i = 0; i < patternArray.length - 1; i += 2) 
+          patterns.add(new PatternStringTuple(Pattern.compile(patternArray[i], Pattern.MULTILINE), patternArray[i + 1]));
+      
+      return Collections.unmodifiableSet(patterns);
+  }
 
   public static String[] tokenize (String text, TokenizationType type) throws IOException {
     switch (type) {

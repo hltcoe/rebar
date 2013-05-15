@@ -41,7 +41,6 @@ public class TokenizationTypeTest {
         int expectedTokenCount = 5;
         List<String> tokenList = TokenizationType.WHITESPACE.tokenize(text);
         assertEquals(expectedTokenCount, tokenList.size());
-        //fail("Not yet implemented");
     }
 
 }

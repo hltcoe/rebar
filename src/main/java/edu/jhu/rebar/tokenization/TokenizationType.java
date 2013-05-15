@@ -98,11 +98,12 @@ public enum TokenizationType {
     public abstract List<String> tokenize(String text);
 
     //
-    // Patterns to compile.
+    // Patterns & sets of patterns.
     //
 
     // Compile a group of whitespaces into a single whitespace.
     public static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
+    
     
     //
     // Static methods. 
