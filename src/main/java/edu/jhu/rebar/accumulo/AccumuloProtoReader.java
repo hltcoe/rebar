@@ -32,14 +32,14 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
+import edu.jhu.concrete.Concrete;
+import edu.jhu.concrete.util.ByteUtil;
+import edu.jhu.concrete.util.IdUtil;
 import edu.jhu.rebar.IndexedProto;
 import edu.jhu.rebar.ProtoIndex;
-import edu.jhu.concrete.Concrete;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.StageOwnership;
-import edu.jhu.rebar.util.ByteUtil;
-import edu.jhu.rebar.util.RebarIdUtil;
 
 /** An iterator that reads protobuf objects from the Accumulo table.
  * In particular, for each row, it reads a "root" protobuf object from
@@ -381,7 +381,7 @@ abstract class AccumuloProtoReader
 			} else if (target.hasField(fd)) {
 				if (fd.getType() == FieldDescriptor.Type.MESSAGE) {
 					Message newChild = (Message)(field.getValue());
-					if (RebarIdUtil.getUUIDOrNull(newChild) != null)
+					if (IdUtil.getUUIDOrNull(newChild) != null)
 						throw new RebarException("Stage "+outputStage+" set a non-repeated "+
 												 "field with a UUID that already has a value: "+
 												 fd.getFullName());
@@ -414,7 +414,7 @@ abstract class AccumuloProtoReader
 
 		// Get the modification target for this message.
 		final ProtoIndex.ModificationTarget target;
-		Concrete.UUID uuid = RebarIdUtil.getUUIDOrNull(msg); // uuid may be null.
+		Concrete.UUID uuid = IdUtil.getUUIDOrNull(msg); // uuid may be null.
 		if (uuid != null)
 			target = new ProtoIndex.ModificationTarget(uuid);
 		else if (msg instanceof Concrete.Edge) {

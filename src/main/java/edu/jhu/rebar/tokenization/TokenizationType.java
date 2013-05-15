@@ -11,7 +11,7 @@ import java.util.List;
 
 import edu.jhu.concrete.Concrete;
 import edu.jhu.concrete.Concrete.Tokenization;
-import edu.jhu.rebar.util.IdUtil;
+import edu.jhu.concrete.util.TokenizationUtil;
 
 /**
  * Enumeration of supported tokenizations.
@@ -136,25 +136,6 @@ public enum TokenizationType {
             String text, int startPosition) {
         List<String> tokenList = tokenizationType.tokenize(text);
         int[] offsets = getOffsets(text, tokenList);
-        return generateConcreteTokenization(tokenList, offsets, startPosition);
-    }
-    
-    public static Concrete.Tokenization generateConcreteTokenization(String[] tokens, int[] offsets, int startPos) {
-        return generateConcreteTokenization(Arrays.asList(tokens), offsets, startPos);
-    }
-    
-    public static Concrete.Tokenization generateConcreteTokenization(List<String> tokens, int[] offsets, int startPos) {
-        Concrete.Tokenization.Builder tokenizationBuilder = Concrete.Tokenization.newBuilder().setUuid(IdUtil.generateUUID())
-                .setKind(Concrete.Tokenization.Kind.TOKEN_LIST);
-        // Note: we use token index as token id.
-        for (int tokenId = 0; tokenId < tokens.size(); ++tokenId) {
-            String token = tokens.get(tokenId);
-            int start = startPos + offsets[tokenId];
-            int end = start + token.length();
-            tokenizationBuilder.addTokenBuilder().setTokenId(tokenId).setText(token)
-                    .setTextSpan(Concrete.TextSpan.newBuilder().setStart(start).setEnd(end));
-        }
-
-        return tokenizationBuilder.build();
+        return TokenizationUtil.generateConcreteTokenization(tokenList, offsets, startPosition);
     }
 }

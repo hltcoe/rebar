@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.jhu.rebar.util.FileUtil;
 import edu.jhu.rebar.config.RebarConfiguration;
+import edu.jhu.rebar.util.FileUtil;
 
 /**
  * Recognizes various Twitter related tokens, runs PTB tokenization on the rest.

@@ -17,9 +17,11 @@ import java.util.Set;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.concrete.Concrete;
-import edu.jhu.concrete.Concrete.*;
-
-import edu.jhu.rebar.util.RebarIdUtil;
+import edu.jhu.concrete.Concrete.CommunicationGUID;
+import edu.jhu.concrete.Concrete.CommunicationGUIDAttribute;
+import edu.jhu.concrete.Concrete.UUID;
+import edu.jhu.concrete.Concrete.Vertex;
+import edu.jhu.concrete.util.IdUtil;
 
 public class IndexedKnowledgeGraph extends IndexedProto<Concrete.KnowledgeGraph> {
 	private final FieldDescriptor VERTEX_FIELD = 
@@ -69,7 +71,7 @@ public class IndexedKnowledgeGraph extends IndexedProto<Concrete.KnowledgeGraph>
 	 * equal to v2.  If not, then raise a RebarExceeption. */
 	public void checkEdgeIds() throws RebarException {
 		for (Concrete.Edge edge: getProto().getEdgeList()) {
-			if (!RebarIdUtil.edgeIdIsValid(edge.getEdgeId()))
+			if (!IdUtil.edgeIdIsValid(edge.getEdgeId()))
 				throw new RebarException("Attempt to save an edge with v2<v1");
 		}
 	}
@@ -116,10 +118,10 @@ public class IndexedKnowledgeGraph extends IndexedProto<Concrete.KnowledgeGraph>
 
 	public IndexedVertex addVertex() throws RebarException {
 		Concrete.Vertex vertex = Concrete.Vertex.newBuilder()
-			.setUuid(RebarIdUtil.generateUUID())
+			.setUuid(IdUtil.generateUUID())
 			.build();
 		addField(protoObj, VERTEX_FIELD, vertex);
-		return getVertex(RebarIdUtil.getUUID(vertex));
+		return getVertex(IdUtil.getUUID(vertex));
 	}
 
 	//======================================================================
@@ -158,7 +160,7 @@ public class IndexedKnowledgeGraph extends IndexedProto<Concrete.KnowledgeGraph>
 		IndexedEdge cached = getIndex().getIndexedProto(directedEdgeId);
 		if (cached != null) return cached;
 		// Otherwise, check our index of Concrete.Edges by EdgeId.
-		Concrete.EdgeId edgeId = RebarIdUtil.buildEdgeId(directedEdgeId);
+		Concrete.EdgeId edgeId = IdUtil.buildEdgeId(directedEdgeId);
 		updateEdgeByIdMap();
 		final Concrete.Edge edge;
 		if (edgeById.containsKey(edgeId)) {
@@ -168,7 +170,7 @@ public class IndexedKnowledgeGraph extends IndexedProto<Concrete.KnowledgeGraph>
 		}
 		// Wrap the rebar Edge in an IndexedEdge.
 		Concrete.DirectedEdgeId.Direction direction = 
-			RebarIdUtil.getEdgeDirection(directedEdgeId);
+			IdUtil.getEdgeDirection(directedEdgeId);
 		return IndexedEdge.build(edge, getIndex(), direction);
 	}
 
@@ -181,12 +183,12 @@ public class IndexedKnowledgeGraph extends IndexedProto<Concrete.KnowledgeGraph>
 
 	/** @see IndexedKnowledgeGraph#getEdge(Concrete.DirectedEdgeId) */
 	public IndexedEdge getEdge(Concrete.UUID src, Concrete.UUID dst) throws RebarException {
-		return getEdge(RebarIdUtil.buildDirectedEdgeId(src, dst));
+		return getEdge(IdUtil.buildDirectedEdgeId(src, dst));
 	}
 
 	/** @see IndexedKnowledgeGraph#getEdge(Concrete.DirectedEdgeId) */
 	public IndexedEdge getEdge(IndexedVertex src, IndexedVertex dst) throws RebarException {
-		return getEdge(RebarIdUtil.buildDirectedEdgeId(src.getUuid(), dst.getUuid()));
+		return getEdge(IdUtil.buildDirectedEdgeId(src.getUuid(), dst.getUuid()));
 	}
 
 	//======================================================================
@@ -203,20 +205,20 @@ public class IndexedKnowledgeGraph extends IndexedProto<Concrete.KnowledgeGraph>
 	/** @see IndexedKnowledgeGraph#hasEdge(Concrete.EdgeId) */
 	public boolean hasEdge(Concrete.DirectedEdgeId edgeId) throws RebarException {
 		updateEdgeByIdMap();
-		return hasEdge(RebarIdUtil.buildEdgeId(edgeId));
+		return hasEdge(IdUtil.buildEdgeId(edgeId));
 	}
 
 	/** @see IndexedKnowledgeGraph#hasEdge(Concrete.EdgeId) */
 	public boolean hasEdge(Concrete.UUID v1, Concrete.UUID v2) throws RebarException {
 		updateEdgeByIdMap();
-		return hasEdge(RebarIdUtil.buildEdgeId(v1, v2));
+		return hasEdge(IdUtil.buildEdgeId(v1, v2));
 	}
 
 	/** @see IndexedKnowledgeGraph#hasEdge(Concrete.EdgeId) */
-	public boolean hasEdge(IndexedVertex v1, IndexedVertex v2) throws RebarException {
-		updateEdgeByIdMap();
-		return hasEdge(RebarIdUtil.buildEdgeId(v1, v2));
-	}
+//	public boolean hasEdge(IndexedVertex v1, IndexedVertex v2) throws RebarException {
+//		updateEdgeByIdMap();
+//		return hasEdge(IdUtil.buildEdgeId(v1, v2));
+//	}
 
 	/** Return the unique vertex in this knowledge graph that has the
 	 * given communication id.  If there is no such vertex, or if
@@ -255,7 +257,7 @@ public class IndexedKnowledgeGraph extends IndexedProto<Concrete.KnowledgeGraph>
 			return; // All edges are already indexed.
 		for (Concrete.Edge edge: edgeList) {
 			Concrete.EdgeId edgeId = edge.getEdgeId();
-			assert(RebarIdUtil.edgeIdIsValid(edgeId));
+			assert(IdUtil.edgeIdIsValid(edgeId));
 			edgeById.put(edgeId, edge);
 		}
 	}

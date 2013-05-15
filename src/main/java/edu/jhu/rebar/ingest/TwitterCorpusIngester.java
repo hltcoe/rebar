@@ -31,10 +31,9 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.concrete.Concrete;
+import edu.jhu.concrete.util.IdUtil;
 import edu.jhu.rebar.Corpus;
-
 import edu.jhu.rebar.CorpusFactory;
-
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.IndexedEdge;
 import edu.jhu.rebar.IndexedKnowledgeGraph;
@@ -44,7 +43,6 @@ import edu.jhu.rebar.RebarBackends;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.accumulo.AccumuloBackedCorpus;
-import edu.jhu.rebar.util.RebarIdUtil;
 
 
 /**
@@ -185,9 +183,9 @@ public class TwitterCorpusIngester {
         Concrete.CommunicationGUID guid = Concrete.CommunicationGUID.newBuilder().setCommunicationId(docid).setCorpusName(corpus.getName())
                 .build();
         // Create an empty knowledge graph and assign it a uuid.
-        Concrete.KnowledgeGraph graph = Concrete.KnowledgeGraph.newBuilder().setUuid(RebarIdUtil.generateUUID()).build();
+        Concrete.KnowledgeGraph graph = Concrete.KnowledgeGraph.newBuilder().setUuid(IdUtil.generateUUID()).build();
         // Create the basic communication with the tweet text
-        Concrete.Communication.Builder comBuilder = Concrete.Communication.newBuilder().setUuid(RebarIdUtil.generateUUID()).setGuid(guid)
+        Concrete.Communication.Builder comBuilder = Concrete.Communication.newBuilder().setUuid(IdUtil.generateUUID()).setGuid(guid)
                 .setText(tweet.getText()).setKind(Concrete.Communication.Kind.TWEET).setKnowledgeGraph(graph);
         // Add the start time/date, if we have it.
         if (tweet.hasCreatedAt()) {
@@ -212,10 +210,10 @@ public class TwitterCorpusIngester {
         // Wrap it in a simple segmentation.
         Concrete.TextSpan textSpan = Concrete.TextSpan.newBuilder().setStart(0).setEnd(text.length()).build();
         Concrete.SectionSegmentation.Builder segmentation = Concrete.SectionSegmentation.newBuilder();
-        segmentation.setUuid(RebarIdUtil.generateUUID()).setMetadata(annotationMetadata).addSectionBuilder() // start
+        segmentation.setUuid(IdUtil.generateUUID()).setMetadata(annotationMetadata).addSectionBuilder() // start
                                                                                                         // new
                                                                                                         // sub-builder
-                .setUuid(RebarIdUtil.generateUUID()).setTextSpan(textSpan);
+                .setUuid(IdUtil.generateUUID()).setTextSpan(textSpan);
         com.addSectionSegmentation(segmentation.build());
         secSegWriter.saveCommunication(com);
     }
@@ -223,10 +221,10 @@ public class TwitterCorpusIngester {
     private void addSentenceSegmentation(IndexedCommunication com) throws RebarException {
         for (IndexedSection sec : com.getSections()) {
             Concrete.SentenceSegmentation.Builder segmentation = Concrete.SentenceSegmentation.newBuilder();
-            segmentation.setUuid(RebarIdUtil.generateUUID()).setMetadata(annotationMetadata).addSentenceBuilder() // start
+            segmentation.setUuid(IdUtil.generateUUID()).setMetadata(annotationMetadata).addSentenceBuilder() // start
                                                                                                              // new
                                                                                                              // sub-builder
-                    .setTextSpan(sec.getTextSpan()).setUuid(RebarIdUtil.generateUUID());
+                    .setTextSpan(sec.getTextSpan()).setUuid(IdUtil.generateUUID());
             sec.addSentenceSegmentation(segmentation.build());
         }
         sentSegWriter.saveCommunication(com);

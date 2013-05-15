@@ -18,8 +18,8 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 
 import edu.jhu.concrete.Concrete;
-import edu.jhu.rebar.util.ByteUtil;
-import edu.jhu.rebar.util.RebarIdUtil;
+import edu.jhu.concrete.util.ByteUtil;
+import edu.jhu.concrete.util.IdUtil;
 
 // We might consider adding other callbacks -- e.g., all that
 // IndexedCommunication really cares about is when a new edge is
@@ -279,7 +279,7 @@ public final class ProtoIndex {
 		throws RebarException
 	{
 		// Replace the old message with the new message in the uuid map.
-		Concrete.UUID uuid = RebarIdUtil.getUUIDOrNull(oldMsg);
+		Concrete.UUID uuid = IdUtil.getUUIDOrNull(oldMsg);
 		if (uuid != null)
 			uuidIndex.put(uuid, newMsg);
 
@@ -368,7 +368,7 @@ public final class ProtoIndex {
 		//System.err.println("Recording modification to "+protoDebugString(target));
 		//System.err.println("  "+field.getFullName()+"="+protoDebugString(fieldValue));
 
-		Concrete.UUID uuid = RebarIdUtil.getUUIDOrNull(target);
+		Concrete.UUID uuid = IdUtil.getUUIDOrNull(target);
 		if (uuid != null) {
 			ModificationTarget mTarget = new ModificationTarget(uuid);
 			recordModification(mTarget, field, fieldValue);
@@ -448,10 +448,10 @@ public final class ProtoIndex {
 		@Override
 		public String toString() {
 			if (uuid != null)
-				return RebarIdUtil.uuidToString(uuid);
+				return IdUtil.uuidToString(uuid);
 			else
-				return (RebarIdUtil.uuidToString(edgeId.getV1())+":"+
-						RebarIdUtil.uuidToString(edgeId.getV2()));
+				return (IdUtil.uuidToString(edgeId.getV1())+":"+
+						IdUtil.uuidToString(edgeId.getV2()));
 		}
 	}
 
@@ -490,10 +490,10 @@ public final class ProtoIndex {
 	private String protoDebugString(Message m) {
 		if (m == null) return "null";
 		String protoMessageType = m.getDescriptorForType().getFullName();
-		Concrete.UUID uuid = RebarIdUtil.getUUIDOrNull(m);
+		Concrete.UUID uuid = IdUtil.getUUIDOrNull(m);
 		int identityHash = System.identityHashCode(m);
 		if (uuid != null)
-			return protoMessageType+"(uuid="+RebarIdUtil.uuidToString(uuid)+")@"+identityHash;
+			return protoMessageType+"(uuid="+IdUtil.uuidToString(uuid)+")@"+identityHash;
 		else
 			return protoMessageType+"@"+identityHash;
 	}
@@ -501,7 +501,7 @@ public final class ProtoIndex {
 	private RebarException reportBadFieldTarget(Message m, String methodName) 
 		throws RebarException 
 	{
-		Concrete.UUID uuid = RebarIdUtil.getUUIDOrNull(m);
+		Concrete.UUID uuid = IdUtil.getUUIDOrNull(m);
 		if (uuid == null)
 			return new RebarException(protoDebugString(m)+" is not a valid target "+
 								  "for "+methodName+" because it does not "+

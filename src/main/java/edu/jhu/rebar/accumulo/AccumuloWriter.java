@@ -23,12 +23,12 @@ import org.apache.hadoop.io.Text;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 
-import edu.jhu.rebar.ProtoIndex;
 import edu.jhu.concrete.Concrete;
+import edu.jhu.concrete.util.ByteUtil;
+import edu.jhu.concrete.util.IdUtil;
+import edu.jhu.rebar.ProtoIndex;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
-import edu.jhu.rebar.util.ByteUtil;
-import edu.jhu.rebar.util.RebarIdUtil;
 
 /** Implementation base class for accumulo "writers". */
 /*package-private*/ class AccumuloWriter {  
@@ -141,7 +141,7 @@ import edu.jhu.rebar.util.RebarIdUtil;
 	{
 		// Check if we have anything to add to this value.  If so,
 		// then add it and return.
-		Concrete.UUID uuid = RebarIdUtil.getUUIDOrNull(msg);
+		Concrete.UUID uuid = IdUtil.getUUIDOrNull(msg);
 		if ((uuid != null) && target.equals(uuid)) {
 			try {
 				if (field.isRepeated()) {

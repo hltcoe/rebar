@@ -7,7 +7,7 @@ import com.basho.riak.client.convert.RiakKey;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import edu.jhu.concrete.Concrete.Communication;
-import edu.jhu.rebar.util.RebarIdUtil;
+import edu.jhu.concrete.util.IdUtil;
 
 /**
  * Wrapper around {@link Communication} object that provides Riak functionality.
@@ -26,7 +26,7 @@ public class RiakCommunication {
      */
     public RiakCommunication(Communication comm) {
         this.comm = comm;
-        this.id = RebarIdUtil.uuidToString(comm.getUuid());
+        this.id = IdUtil.uuidToString(comm.getUuid());
     }
     
     public RiakCommunication(byte[] commBytes) throws InvalidProtocolBufferException {

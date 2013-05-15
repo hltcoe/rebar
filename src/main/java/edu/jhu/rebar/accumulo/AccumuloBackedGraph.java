@@ -19,16 +19,16 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
 
+import edu.jhu.concrete.Concrete;
+import edu.jhu.concrete.util.ByteUtil;
+import edu.jhu.concrete.util.IdUtil;
 import edu.jhu.rebar.Graph;
 import edu.jhu.rebar.IndexedEdge;
 import edu.jhu.rebar.IndexedVertex;
 import edu.jhu.rebar.ProtoIndex;
-import edu.jhu.concrete.Concrete;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.StageOwnership;
-import edu.jhu.rebar.util.ByteUtil;
-import edu.jhu.rebar.util.RebarIdUtil;
 
 
 /*
@@ -256,7 +256,7 @@ public class AccumuloBackedGraph extends AccumuloBackedStagedDataCollection impl
 		}
 		@Override
 		public IndexedEdge loadEdge(Concrete.DirectedEdgeId directedEdgeId) throws RebarException {
-			Concrete.EdgeId edgeId = RebarIdUtil.buildEdgeId(directedEdgeId);
+			Concrete.EdgeId edgeId = IdUtil.buildEdgeId(directedEdgeId);
 			IndexedEdge edge = loadEdge(edgeId);
 			if (directedEdgeId.getDst().equals(edgeId.getV1()))
 				edge = edge.reversed();
@@ -264,7 +264,7 @@ public class AccumuloBackedGraph extends AccumuloBackedStagedDataCollection impl
 		}
 		@Override
 		public IndexedEdge loadEdge(Concrete.UUID src, Concrete.UUID dst) throws RebarException {
-			return loadEdge(RebarIdUtil.buildDirectedEdgeId(src, dst)); }
+			return loadEdge(IdUtil.buildDirectedEdgeId(src, dst)); }
 		@Override
 		public IndexedEdge loadEdge(IndexedVertex src, IndexedVertex dst) throws RebarException {
 			return loadEdge(src.getUuid(), dst.getUuid()); }
@@ -520,7 +520,7 @@ public class AccumuloBackedGraph extends AccumuloBackedStagedDataCollection impl
 	private static Text edgeIdToRowId(Concrete.EdgeId id) {
 		if ((id.getV1() == ZERO_UUID) || (id.getV2() == ZERO_UUID))
 			throw new IllegalArgumentException("Attempt to write a edge with an empty uuid");
-		if (!RebarIdUtil.edgeIdIsValid(id))
+		if (!IdUtil.edgeIdIsValid(id))
 			throw new IllegalArgumentException("Attempt to write edge where v2<v1: "+id);
 		byte[] rowid = new byte[32];
 		ByteUtil.fromLong(id.getV1().getHigh(),   0, rowid);
@@ -546,7 +546,7 @@ public class AccumuloBackedGraph extends AccumuloBackedStagedDataCollection impl
 	}
 
 	private static Text rowIdFor(Concrete.Vertex vertex) throws RebarException {
-		Concrete.UUID uuid = RebarIdUtil.getUUID(vertex);
+		Concrete.UUID uuid = IdUtil.getUUID(vertex);
 		if (uuid == ZERO_UUID)
 			throw new RebarException("Attempt to write a vertex with an empty uuid");
 		return vertexIdToRowId(uuid);

@@ -14,7 +14,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 
 import edu.jhu.concrete.Concrete;
-import edu.jhu.rebar.util.RebarIdUtil;
+import edu.jhu.concrete.util.IdUtil;
 
 public abstract class IndexedProto<ProtoObj extends Message> {
 	//======================================================================
@@ -108,7 +108,7 @@ public abstract class IndexedProto<ProtoObj extends Message> {
 	}
 
 	public Concrete.UUID getUUID() throws RebarException {
-		return RebarIdUtil.getUUID(protoObj);
+		return IdUtil.getUUID(protoObj);
 	}
 
 	public String toString() {

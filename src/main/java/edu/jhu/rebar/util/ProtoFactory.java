@@ -9,6 +9,7 @@ import edu.jhu.concrete.Concrete;
 import edu.jhu.concrete.Concrete.Communication;
 import edu.jhu.concrete.Concrete.CommunicationGUID;
 import edu.jhu.concrete.Concrete.KnowledgeGraph;
+import edu.jhu.concrete.util.IdUtil;
 
 /**
  * Utility class for easily generating various protocol buffer objects in the
@@ -89,7 +90,7 @@ public class ProtoFactory {
      */
     public static KnowledgeGraph generateKnowledgeGraph() {
         return KnowledgeGraph.newBuilder()
-                .setUuid(RebarIdUtil.generateUUID())
+                .setUuid(IdUtil.generateUUID())
                 .build();
     }
     
@@ -104,7 +105,7 @@ public class ProtoFactory {
         return Communication.newBuilder()
                 .setGuid(guid)
                 .setKnowledgeGraph(graph)
-                .setUuid(RebarIdUtil.generateUUID())
+                .setUuid(IdUtil.generateUUID())
                 .build();
     }
 }

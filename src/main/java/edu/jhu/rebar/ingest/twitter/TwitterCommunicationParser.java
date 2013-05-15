@@ -20,12 +20,12 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 import edu.jhu.concrete.Concrete;
+import edu.jhu.concrete.util.IdUtil;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.ingest.TweetInfoJsonReader;
 import edu.jhu.rebar.riak.RiakCommunication;
 import edu.jhu.rebar.util.FileUtil;
-import edu.jhu.rebar.util.RebarIdUtil;
 
 /**
  * @author max
@@ -64,11 +64,11 @@ public class TwitterCommunicationParser {
                     .build();
             // Create an empty knowledge graph and assign it a uuid.
             Concrete.KnowledgeGraph graph = Concrete.KnowledgeGraph.newBuilder()
-                    .setUuid(RebarIdUtil.generateUUID())
+                    .setUuid(IdUtil.generateUUID())
                     .build();
             // Create the basic communication with the tweet text
             Concrete.Communication.Builder comBuilder = Concrete.Communication.newBuilder()
-                    .setUuid(RebarIdUtil.generateUUID())
+                    .setUuid(IdUtil.generateUUID())
                     .setGuid(guid)
                     .setText(tweetInfo.getText())
                     .setKind(Concrete.Communication.Kind.TWEET)
