@@ -25,7 +25,7 @@ import edu.jhu.rebar.Stage;
 
 import edu.jhu.rebar.tokenization.TwitterTokenizer;
 
-import edu.jhu.rebar.util.IdUtil;
+import edu.jhu.rebar.util.RebarIdUtil;
 
 public class JerboaTokenizer {
     // ======================================================================
@@ -123,7 +123,7 @@ public class JerboaTokenizer {
         for (String s : jerboaResult[2])
             offsets.add(Integer.parseInt(s));
         // Add the tokens.
-        Concrete.Tokenization.Builder tokenizationBuilder = Concrete.Tokenization.newBuilder().setUuid(IdUtil.generateUUID())
+        Concrete.Tokenization.Builder tokenizationBuilder = Concrete.Tokenization.newBuilder().setUuid(RebarIdUtil.generateUUID())
                 .setMetadata(jerboaMetadata).setKind(Concrete.Tokenization.Kind.TOKEN_LIST);
         // Note: we use token index as token id.
         for (int tokenId = 0; tokenId < tokens.size(); ++tokenId) {
@@ -135,7 +135,7 @@ public class JerboaTokenizer {
         }
         // Add the part of speech tagging.
         Concrete.TokenTagging.Builder tagsBuilder = tokenizationBuilder.addTaggingBuilder();
-        tagsBuilder.setUuid(IdUtil.generateUUID());
+        tagsBuilder.setUuid(RebarIdUtil.generateUUID());
         tagsBuilder.setMetadata(jerboaMetadata);
         for (int tokenId = 0; tokenId < tokens.size(); ++tokenId) {
             String tag = tagging.get(tokenId);

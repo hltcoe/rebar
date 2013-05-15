@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.jhu.concrete.Concrete;
-import edu.jhu.rebar.util.IdUtil;
+import edu.jhu.rebar.util.RebarIdUtil;
 
 /** A wrapper for a Tokenization objects that makes them easier to
  * use.  In particular, this wrapper provides:
@@ -247,7 +247,7 @@ abstract public class IndexedTokenization extends IndexedProto<Concrete.Tokeniza
 			return tagIndex;
 		} else {
 			for (Concrete.TokenTagging tagging: protoObj.getTaggingList()) {
-				if (IdUtil.getUUID(tagging) == uuid) 
+				if (RebarIdUtil.getUUID(tagging) == uuid) 
 					return buildTokenTagIndex(tagging);
 			}
 		}
@@ -262,7 +262,7 @@ abstract public class IndexedTokenization extends IndexedProto<Concrete.Tokeniza
 		HashMap<Integer,String> tagIndex = new HashMap<Integer,String>();
 		for (Concrete.TokenTagging.TaggedToken ttok: tagging.getTaggedTokenList())
 			tagIndex.put(ttok.getTokenId(), ttok.getTag());
-		tokenTagIndex.put(IdUtil.getUUID(tagging), tagIndex);
+		tokenTagIndex.put(RebarIdUtil.getUUID(tagging), tagIndex);
 		return tagIndex;
 	}
 

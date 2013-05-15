@@ -8,7 +8,6 @@ package edu.jhu.rebar.tokenization;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import edu.jhu.concrete.Concrete;
 import edu.jhu.concrete.Concrete.Tokenization;
@@ -24,22 +23,18 @@ public enum TokenizationType {
     PTB {
         @Override
         public Tokenization tokenizeToConcrete(String text, int textStartPosition) {
-            // TODO Auto-generated method stub
-            return null;
+            return generateConcreteTokenization(this, text, textStartPosition);
         }
 
         @Override
         public List<String> tokenize(String text) {
-            // TODO Auto-generated method stub
-            return null;
+            return Arrays.asList(Rewriter.PTB.rewrite(text).split("\\s+"));
         }
     },
     WHITESPACE {
         @Override
         public Tokenization tokenizeToConcrete(String text, int textStartPosition) {
-            List<String> tokenList = Arrays.asList(text.split("\\s+"));
-            int[] offsets = getOffsets(text, tokenList);
-            return generateConcreteTokenization(tokenList, offsets, textStartPosition);
+            return generateConcreteTokenization(this, text, textStartPosition);
         }
         
         @Override
@@ -76,42 +71,33 @@ public enum TokenizationType {
     BASIC {
         @Override
         public Tokenization tokenizeToConcrete(String text, int textStartPosition) {
-            // TODO Auto-generated method stub
-            return null;
+            return generateConcreteTokenization(this, text, textStartPosition);
         }
 
         @Override
         public List<String> tokenize(String text) {
-            // TODO Auto-generated method stub
-            return null;
+            return Arrays.asList(Rewriter.BASIC.rewrite(text).split("\\s+"));
         }
     };
 
-    
-
-    
     //
     // Contract methods.
     //
-    
     public abstract Tokenization tokenizeToConcrete(String text, int textStartPosition);
     public abstract List<String> tokenize(String text);
 
     //
     // Patterns & sets of patterns.
     //
-
-    // Compile a group of whitespaces into a single whitespace.
-    public static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
-    
     
     //
-    // Static methods. 
+    // Static methods.
     //
     /**
-     * Return the offsets of tokens in text. 
+     * Return the offsets of tokens in text.
      * 
-     * @param text - text to be used
+     * @param text
+     *            - text to be used
      * @param tokens
      * @return an integer array of offsets
      */
@@ -146,6 +132,13 @@ public enum TokenizationType {
         return getOffsets(text, tokenList.toArray(new String[0]));
     }
 
+    public static Concrete.Tokenization generateConcreteTokenization(TokenizationType tokenizationType, 
+            String text, int startPosition) {
+        List<String> tokenList = tokenizationType.tokenize(text);
+        int[] offsets = getOffsets(text, tokenList);
+        return generateConcreteTokenization(tokenList, offsets, startPosition);
+    }
+    
     public static Concrete.Tokenization generateConcreteTokenization(String[] tokens, int[] offsets, int startPos) {
         return generateConcreteTokenization(Arrays.asList(tokens), offsets, startPos);
     }

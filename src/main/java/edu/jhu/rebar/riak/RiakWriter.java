@@ -13,7 +13,7 @@ import com.basho.riak.client.convert.ConversionException;
 
 import edu.jhu.concrete.Concrete.Communication;
 import edu.jhu.rebar.RebarException;
-import edu.jhu.rebar.util.IdUtil;
+import edu.jhu.rebar.util.RebarIdUtil;
 
 /**
  * @author max
@@ -38,7 +38,7 @@ public class RiakWriter {
     }
     
     public void write(Communication c) throws RebarException {
-        String idString = IdUtil.uuidToString(c.getUuid());
+        String idString = RebarIdUtil.uuidToString(c.getUuid());
         try {
             this.bucket.store(idString, c.toByteArray()).execute();
         } catch (RiakRetryFailedException | UnresolvedConflictException | ConversionException e) {

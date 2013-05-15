@@ -25,7 +25,7 @@ import edu.jhu.concrete.Concrete.CommunicationGUID;
 import edu.jhu.concrete.Concrete.KnowledgeGraph;
 import edu.jhu.concrete.Concrete.UUID;
 import edu.jhu.rebar.RebarException;
-import edu.jhu.rebar.util.IdUtil;
+import edu.jhu.rebar.util.RebarIdUtil;
 
 /**
  * @author max
@@ -69,14 +69,14 @@ public class RiakWriterTest {
      */
     @Test
     public void testWrite() throws RebarException, InvalidProtocolBufferException, RiakException {
-        UUID id = IdUtil.generateUUID();
-        String idString = IdUtil.uuidToString(id);
+        UUID id = RebarIdUtil.generateUUID();
+        String idString = RebarIdUtil.uuidToString(id);
         CommunicationGUID guid = CommunicationGUID.newBuilder()
                 .setCorpusName("test")
                 .setCommunicationId("1")
                 .build();
         KnowledgeGraph graph = KnowledgeGraph.newBuilder()
-                .setUuid(IdUtil.generateUUID())
+                .setUuid(RebarIdUtil.generateUUID())
                 .build();
         Communication comm = Communication.newBuilder()
                 .setUuid(id)
@@ -92,7 +92,7 @@ public class RiakWriterTest {
 
         assertNotNull(iro);
         Communication parsedComm = Communication.parseFrom(iro.getValue());
-        String parsedId = IdUtil.uuidToString(parsedComm.getUuid());
+        String parsedId = RebarIdUtil.uuidToString(parsedComm.getUuid());
         this.fetchedIdsToDelete.add(parsedId);
         logger.info("Got inserted object: " + parsedId);
         

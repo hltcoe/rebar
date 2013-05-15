@@ -24,7 +24,7 @@ import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.RebarBackends;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
-import edu.jhu.rebar.util.IdUtil;
+import edu.jhu.rebar.util.RebarIdUtil;
 
 public class RebarTest {
 
@@ -85,7 +85,7 @@ public class RebarTest {
             lp.setProbability(1.0f);
             lp.setLanguage("eng");
             lidBuilder.addLanguage(lp);
-            lidBuilder.setUuid(IdUtil.generateUUID());
+            lidBuilder.setUuid(RebarIdUtil.generateUUID());
             lidBuilder.getMetadataBuilder().setTool("my-lid");
             com.addField(com.getProto(), lidField, lidBuilder.build());
             lidWriter.saveCommunication(com);
@@ -119,8 +119,8 @@ public class RebarTest {
             String text = "this is document " + i + ".";
             Concrete.CommunicationGUID guid = Concrete.CommunicationGUID.newBuilder().setCommunicationId(docid)
                     .setCorpusName(corpus.getName()).build();
-            Concrete.Communication com = Concrete.Communication.newBuilder().setText(text).setUuid(IdUtil.generateUUID()).setGuid(guid)
-                    .setKnowledgeGraph(Concrete.KnowledgeGraph.newBuilder().setUuid(IdUtil.generateUUID()).build()).build();
+            Concrete.Communication com = Concrete.Communication.newBuilder().setText(text).setUuid(RebarIdUtil.generateUUID()).setGuid(guid)
+                    .setKnowledgeGraph(Concrete.KnowledgeGraph.newBuilder().setUuid(RebarIdUtil.generateUUID()).build()).build();
             initializer.addCommunication(com);
         }
         initializer.close();

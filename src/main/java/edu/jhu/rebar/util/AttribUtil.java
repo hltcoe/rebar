@@ -53,47 +53,47 @@ public class AttribUtil {
 		if (attribDescriptor == MENTION_ATTRIBUTE) {
 			return Concrete.MentionAttribute.newBuilder()
 				.setMetadata(metadata).setValue((Concrete.EntityMentionRef)value)
-				.setUuid(IdUtil.generateUUID())
+				.setUuid(RebarIdUtil.generateUUID())
 				.build();
 		} else if (attribDescriptor == BOOLEAN_ATTRIBUTE) {
 			return Concrete.BooleanAttribute.newBuilder()
 				.setMetadata(metadata).setValue((Boolean)value)
-				.setUuid(IdUtil.generateUUID())
+				.setUuid(RebarIdUtil.generateUUID())
 				.build();
 		} else if (attribDescriptor == STRING_ATTRIBUTE) {
 			return Concrete.StringAttribute.newBuilder()
 				.setMetadata(metadata).setValue((String)value)
-				.setUuid(IdUtil.generateUUID())
+				.setUuid(RebarIdUtil.generateUUID())
 				.build();
 		} else if (attribDescriptor == FLOAT_ATTRIBUTE) {
 			return Concrete.FloatAttribute.newBuilder()
 				.setMetadata(metadata).setValue((Float)value)
-				.setUuid(IdUtil.generateUUID())
+				.setUuid(RebarIdUtil.generateUUID())
 				.build();
 		} else if (attribDescriptor == INT32_ATTRIBUTE) {
 			return Concrete.Int32Attribute.newBuilder()
 				.setMetadata(metadata).setValue((Integer)value)
-				.setUuid(IdUtil.generateUUID())
+				.setUuid(RebarIdUtil.generateUUID())
 				.build();
 		} else if (attribDescriptor == INT64_ATTRIBUTE) {
 			return Concrete.Int64Attribute.newBuilder()
 				.setMetadata(metadata).setValue((Long)value)
-				.setUuid(IdUtil.generateUUID())
+				.setUuid(RebarIdUtil.generateUUID())
 				.build();
 		} else if (attribDescriptor == COMMUNICATION_GUID_ATTRIBUTE) {
 			return Concrete.CommunicationGUIDAttribute.newBuilder()
 				.setMetadata(metadata).setValue((Concrete.CommunicationGUID)value)
-				.setUuid(IdUtil.generateUUID())
+				.setUuid(RebarIdUtil.generateUUID())
 				.build();
 		} else if (attribDescriptor == STRING_FLOAT_MAP_ATTRIBUTE) {
 			return Concrete.StringFloatMapAttribute.newBuilder()
 				.setMetadata(metadata).addAllValue(buildStringFloatMap(value))
-				.setUuid(IdUtil.generateUUID())
+				.setUuid(RebarIdUtil.generateUUID())
 				.build();
 		} else if (attribDescriptor == VERTEX_KIND_ATTRIBUTE) {
 			return Concrete.VertexKindAttribute.newBuilder()
 				.setMetadata(metadata).setValue((Concrete.Vertex.Kind)value)
-				.setUuid(IdUtil.generateUUID())
+				.setUuid(RebarIdUtil.generateUUID())
 				.build();
 		} else {
 			throw new RebarException("Unknown attribute type");

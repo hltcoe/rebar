@@ -89,7 +89,7 @@ public class ProtoFactory {
      */
     public static KnowledgeGraph generateKnowledgeGraph() {
         return KnowledgeGraph.newBuilder()
-                .setUuid(IdUtil.generateUUID())
+                .setUuid(RebarIdUtil.generateUUID())
                 .build();
     }
     
@@ -104,7 +104,7 @@ public class ProtoFactory {
         return Communication.newBuilder()
                 .setGuid(guid)
                 .setKnowledgeGraph(graph)
-                .setUuid(IdUtil.generateUUID())
+                .setUuid(RebarIdUtil.generateUUID())
                 .build();
     }
 }

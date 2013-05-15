@@ -11,7 +11,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.concrete.Concrete;
 import edu.jhu.rebar.util.AttribUtil;
-import edu.jhu.rebar.util.IdUtil;
+import edu.jhu.rebar.util.RebarIdUtil;
 
 public class IndexedEdge extends IndexedProto<Concrete.Edge> {
 	//======================================================================
@@ -42,7 +42,7 @@ public class IndexedEdge extends IndexedProto<Concrete.Edge> {
 	}
 
 	public static IndexedEdge build(Concrete.Edge edge, ProtoIndex index, Concrete.DirectedEdgeId.Direction direction) throws RebarException {
-		IndexedEdge cached = index.getIndexedProto(IdUtil.buildDirectedEdgeId(edge.getEdgeId(), direction));
+		IndexedEdge cached = index.getIndexedProto(RebarIdUtil.buildDirectedEdgeId(edge.getEdgeId(), direction));
 		if (cached != null) return cached;
 		else return new IndexedEdge(edge, index, direction);
 	}
