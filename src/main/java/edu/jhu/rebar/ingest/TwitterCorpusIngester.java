@@ -32,7 +32,9 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.concrete.Concrete;
 import edu.jhu.rebar.Corpus;
+
 import edu.jhu.rebar.CorpusFactory;
+
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.IndexedEdge;
 import edu.jhu.rebar.IndexedKnowledgeGraph;
@@ -44,7 +46,6 @@ import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.accumulo.AccumuloBackedCorpus;
 import edu.jhu.rebar.util.IdUtil;
 
-//import edu.jhu.hltcoe.rebar2.Rebar;
 
 /**
  * Processing class for reading a twitter corpus from a set of files, and

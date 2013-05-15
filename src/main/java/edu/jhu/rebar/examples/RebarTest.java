@@ -19,6 +19,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import edu.jhu.concrete.Concrete;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.CorpusFactory;
+
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.RebarBackends;
 import edu.jhu.rebar.RebarException;
