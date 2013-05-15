@@ -18,6 +18,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.concrete.Concrete;
 import edu.jhu.concrete.Concrete.*;
+import edu.jhu.rebar.util.IdUtil;
 
 public class IndexedKnowledgeGraph extends IndexedProto<Concrete.KnowledgeGraph> {
 	private final FieldDescriptor VERTEX_FIELD = 

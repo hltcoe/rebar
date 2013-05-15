@@ -10,6 +10,8 @@ package edu.jhu.rebar;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.concrete.Concrete;
+import edu.jhu.rebar.util.AttribUtil;
+import edu.jhu.rebar.util.IdUtil;
 
 public class IndexedEdge extends IndexedProto<Concrete.Edge> {
 	//======================================================================

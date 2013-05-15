@@ -12,6 +12,7 @@ import java.util.List;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.concrete.Concrete;
+import edu.jhu.rebar.util.AttribUtil;
 
 /** Use different subclasses for different vertex types?? */
 public class IndexedVertex extends IndexedProto<Concrete.Vertex> {

@@ -14,13 +14,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.jhu.rebar.Corpus;
-import edu.jhu.rebar.IdUtil;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.IndexedSentence;
 import edu.jhu.concrete.Concrete;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.tokenization.TwitterTokenizer;
+import edu.jhu.rebar.util.IdUtil;
 
 public class JerboaTokenizer {
 	//======================================================================

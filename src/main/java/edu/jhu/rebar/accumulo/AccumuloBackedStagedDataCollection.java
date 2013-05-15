@@ -12,10 +12,10 @@ import java.util.SortedSet;
 
 import org.apache.hadoop.io.Text;
 
-import edu.jhu.rebar.ByteUtil;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.StagedDataCollection;
+import edu.jhu.rebar.util.ByteUtil;
 
 /**
  * Base class for the Accumulo backed Corpus and Graph classes.
