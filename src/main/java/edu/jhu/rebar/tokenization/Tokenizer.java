@@ -407,7 +407,7 @@ public class Tokenizer {
   }
 
 
-  public static String[] tokenize (String text, TokenizationKind type) throws IOException {
+  public static String[] tokenize (String text, TokenizationType type) throws IOException {
     switch (type) {
     case PTB:
       return rewrite(text,PTB_PATTERNS).split("\\s+");

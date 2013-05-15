@@ -331,7 +331,7 @@ public class TwitterTokenizer {
      * Returns 3 arrays: tokenization tokenzation tags code point offsets
      */
     public static String[][] tokenize(String text) throws IOException {
-        List<SimpleImmutableEntry<String, String>> x = recursiveTokenize(text.trim(), 0, TokenizationKind.BASIC);
+        List<SimpleImmutableEntry<String, String>> x = recursiveTokenize(text.trim(), 0, TokenizationType.BASIC);
 
         String[][] y = new String[3][];
         y[0] = new String[x.size()];
@@ -350,10 +350,10 @@ public class TwitterTokenizer {
     }
 
     public static String[] tokenizeTweet(String text) throws IOException {
-        return tokenizeTweet(text, TokenizationKind.BASIC);
+        return tokenizeTweet(text, TokenizationType.BASIC);
     }
 
-    public static String[] tokenizeTweet(String text, TokenizationKind tokenization) throws IOException {
+    public static String[] tokenizeTweet(String text, TokenizationType tokenization) throws IOException {
         List<SimpleImmutableEntry<String, String>> x = recursiveTokenize(text.trim(), 0, tokenization);
 
         String[] y = new String[x.size()];
@@ -386,7 +386,7 @@ public class TwitterTokenizer {
         return r;
     }
 
-    private static List<SimpleImmutableEntry<String, String>> recursiveTokenize(String text, int index, TokenizationKind tokenization)
+    private static List<SimpleImmutableEntry<String, String>> recursiveTokenize(String text, int index, TokenizationType tokenization)
             throws IOException {
         if (index < tupleList.size()) {
             PatternStringTuple pst = tupleList.get(index);
