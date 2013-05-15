@@ -42,7 +42,7 @@ public class PatternStringTuple {
     /**
      * Given two string arrays of equal length, create a {@link java.util.List} of 
      * {@link PatternStringTuple} objects that correspond to the indices of each array
-     * (e.g., tupleList.get(0) contains patterns[0] and entries[0].
+     * (e.g., tupleList.get(0) contains patterns[0] and entries[0]).
      * 
      * @param patterns 
      * @param entries
