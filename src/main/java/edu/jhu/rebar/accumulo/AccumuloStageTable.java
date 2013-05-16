@@ -31,9 +31,9 @@ import org.apache.accumulo.core.iterators.LongCombiner.VarLenEncoder;
 import org.apache.accumulo.core.iterators.user.SummingCombiner;
 import org.apache.hadoop.io.Text;
 
+import edu.jhu.concrete.util.ByteUtil;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
-import edu.jhu.rebar.util.ByteUtil;
 
 /** An interface to a "stage table", which records the set of stages
  * that have been generated for a given corpus or knowledge graph. 

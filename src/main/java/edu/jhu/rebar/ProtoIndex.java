@@ -18,8 +18,8 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 
 import edu.jhu.concrete.Concrete;
-import edu.jhu.rebar.util.ByteUtil;
-import edu.jhu.rebar.util.IdUtil;
+import edu.jhu.concrete.util.ByteUtil;
+import edu.jhu.concrete.util.IdUtil;
 
 // We might consider adding other callbacks -- e.g., all that
 // IndexedCommunication really cares about is when a new edge is

@@ -19,16 +19,16 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
 
+import edu.jhu.concrete.Concrete;
+import edu.jhu.concrete.util.ByteUtil;
+import edu.jhu.concrete.util.IdUtil;
 import edu.jhu.rebar.Graph;
 import edu.jhu.rebar.IndexedEdge;
 import edu.jhu.rebar.IndexedVertex;
 import edu.jhu.rebar.ProtoIndex;
-import edu.jhu.concrete.Concrete;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.StageOwnership;
-import edu.jhu.rebar.util.ByteUtil;
-import edu.jhu.rebar.util.IdUtil;
 
 
 /*

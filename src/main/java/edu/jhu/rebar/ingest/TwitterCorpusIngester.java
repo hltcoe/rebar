@@ -31,9 +31,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
-//import edu.jhu.hltcoe.rebar2.Rebar;
-
 import edu.jhu.concrete.Concrete;
+import edu.jhu.concrete.util.IdUtil;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.IndexedEdge;
@@ -43,7 +42,6 @@ import edu.jhu.rebar.IndexedVertex;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.accumulo.AccumuloBackedCorpus;
-import edu.jhu.rebar.util.IdUtil;
 
 /** Processing class for reading a twitter corpus from a set of files,
  * and writing the result to a Corpus.

@@ -17,12 +17,12 @@ import org.apache.log4j.Logger;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
+import edu.jhu.concrete.Concrete;
+import edu.jhu.concrete.util.IdUtil;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.IndexedCommunication;
-import edu.jhu.concrete.Concrete;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
-import edu.jhu.rebar.util.IdUtil;
 
 public class RebarTest {
 

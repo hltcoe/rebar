@@ -13,14 +13,13 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.jhu.concrete.Concrete;
+import edu.jhu.concrete.util.IdUtil;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.IndexedSentence;
-import edu.jhu.concrete.Concrete;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
-import edu.jhu.rebar.tokenization.TwitterTokenizer;
-import edu.jhu.rebar.util.IdUtil;
 
 public class JerboaTokenizer {
 	//======================================================================
@@ -139,17 +138,17 @@ public class JerboaTokenizer {
 							 .setEnd(end));
 		}
 		// Add the part of speech tagging.
-		Concrete.TokenTagging.Builder tagsBuilder = tokenizationBuilder.addTaggingBuilder();
-		tagsBuilder.setUuid(IdUtil.generateUUID());
-		tagsBuilder.setMetadata(jerboaMetadata);
-		for (int tokenId=0; tokenId<tokens.size(); ++tokenId) {
-			String tag = tagging.get(tokenId);
-			if (tag != null) {
-				tagsBuilder.addTaggedTokenBuilder()
-					.setTag(tag)
-					.setTokenId(tokenId);
-			}
-		}
+//		Concrete.TokenTagging.Builder tagsBuilder = tokenizationBuilder.addTaggingBuilder();
+//		tagsBuilder.setUuid(IdUtil.generateUUID());
+//		tagsBuilder.setMetadata(jerboaMetadata);
+//		for (int tokenId=0; tokenId<tokens.size(); ++tokenId) {
+//			String tag = tagging.get(tokenId);
+//			if (tag != null) {
+//				tagsBuilder.addTaggedTokenBuilder()
+//					.setTag(tag)
+//					.setTokenId(tokenId);
+//			}
+//		}
 		return tokenizationBuilder.build();
 	}
 	

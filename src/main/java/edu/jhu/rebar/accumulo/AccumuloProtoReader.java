@@ -32,14 +32,14 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
+import edu.jhu.concrete.Concrete;
+import edu.jhu.concrete.util.ByteUtil;
+import edu.jhu.concrete.util.IdUtil;
 import edu.jhu.rebar.IndexedProto;
 import edu.jhu.rebar.ProtoIndex;
-import edu.jhu.concrete.Concrete;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.StageOwnership;
-import edu.jhu.rebar.util.ByteUtil;
-import edu.jhu.rebar.util.IdUtil;
 
 /** An iterator that reads protobuf objects from the Accumulo table.
  * In particular, for each row, it reads a "root" protobuf object from

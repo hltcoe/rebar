@@ -17,8 +17,11 @@ import java.util.Set;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.concrete.Concrete;
-import edu.jhu.concrete.Concrete.*;
-import edu.jhu.rebar.util.IdUtil;
+import edu.jhu.concrete.Concrete.CommunicationGUID;
+import edu.jhu.concrete.Concrete.CommunicationGUIDAttribute;
+import edu.jhu.concrete.Concrete.UUID;
+import edu.jhu.concrete.Concrete.Vertex;
+import edu.jhu.concrete.util.IdUtil;
 
 public class IndexedKnowledgeGraph extends IndexedProto<Concrete.KnowledgeGraph> {
 	private final FieldDescriptor VERTEX_FIELD = 
@@ -212,10 +215,10 @@ public class IndexedKnowledgeGraph extends IndexedProto<Concrete.KnowledgeGraph>
 	}
 
 	/** @see IndexedKnowledgeGraph#hasEdge(Concrete.EdgeId) */
-	public boolean hasEdge(IndexedVertex v1, IndexedVertex v2) throws RebarException {
-		updateEdgeByIdMap();
-		return hasEdge(IdUtil.buildEdgeId(v1, v2));
-	}
+//	public boolean hasEdge(IndexedVertex v1, IndexedVertex v2) throws RebarException {
+//		updateEdgeByIdMap();
+//		return hasEdge(IdUtil.buildEdgeId(v1, v2));
+//	}
 
 	/** Return the unique vertex in this knowledge graph that has the
 	 * given communication id.  If there is no such vertex, or if

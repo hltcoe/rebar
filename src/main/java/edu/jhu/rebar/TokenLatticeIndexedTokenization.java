@@ -18,7 +18,7 @@ import java.util.Set;
 
 import edu.jhu.concrete.Concrete;
 import edu.jhu.concrete.Concrete.Tokenization.TokenLattice.Arc;
-import edu.jhu.rebar.util.MathUtil;
+import edu.jhu.concrete.util.MathUtil;
 
 public class TokenLatticeIndexedTokenization 
 	extends IndexedTokenization
