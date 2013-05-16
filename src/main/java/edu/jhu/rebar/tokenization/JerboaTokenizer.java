@@ -15,6 +15,7 @@ import java.util.List;
 
 import edu.jhu.concrete.Concrete;
 import edu.jhu.concrete.util.IdUtil;
+import edu.jhu.hlt.tift.Tokenizer;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.IndexedSentence;
@@ -99,44 +100,46 @@ public class JerboaTokenizer {
 	 * @param startPos The character offset of the first character in
 	 *     the text string.  This is used to assign appropriate
 	 *     character offsets to the generated Tokens.
+	 *     
+	 *  TODO :: implement me
 	 */
 	public Concrete.Tokenization tokenize(String text, int startPos) throws RebarException { 
 		// Run jerboa.
-		final String[][] jerboaResult;
-		try {
-			jerboaResult = TwitterTokenizer.tokenize(text);
-		} catch (java.io.IOException e) {
-			throw new RebarException(e);
-		}
-		// Do a sanity check on the results.
-		if ((jerboaResult.length != 3) || 
-			(jerboaResult[0].length != jerboaResult[1].length) ||
-			(jerboaResult[0].length != jerboaResult[2].length))
-			throw new RebarException("Jerboa's TwitterTokenizer returned an array "+
-									 "with an unexpected shape.");
-		// Wrap/parse the results to make them easier to read.
-		List<String> tokens = Arrays.asList(jerboaResult[0]);
-		List<String> tagging = Arrays.asList(jerboaResult[1]);
-		List<Integer> offsets = new ArrayList<Integer>(jerboaResult[2].length);
-		for(String s: jerboaResult[2])
-			offsets.add(Integer.parseInt(s));
+//		final String[][] jerboaResult;
+//		try {
+//			jerboaResult = Tokenizer.TWITTER.tokenize(text);
+//		} catch (java.io.IOException e) {
+//			throw new RebarException(e);
+//		}
+//		// Do a sanity check on the results.
+//		if ((jerboaResult.length != 3) || 
+//			(jerboaResult[0].length != jerboaResult[1].length) ||
+//			(jerboaResult[0].length != jerboaResult[2].length))
+//			throw new RebarException("Jerboa's TwitterTokenizer returned an array "+
+//									 "with an unexpected shape.");
+//		// Wrap/parse the results to make them easier to read.
+//		List<String> tokens = Arrays.asList(jerboaResult[0]);
+//		List<String> tagging = Arrays.asList(jerboaResult[1]);
+//		List<Integer> offsets = new ArrayList<Integer>(jerboaResult[2].length);
+//		for(String s: jerboaResult[2])
+//			offsets.add(Integer.parseInt(s));
 		// Add the tokens.
 		Concrete.Tokenization.Builder tokenizationBuilder = Concrete.Tokenization.newBuilder()
 			.setUuid(IdUtil.generateUUID())
 			.setMetadata(jerboaMetadata)
 			.setKind(Concrete.Tokenization.Kind.TOKEN_LIST);
 		// Note: we use token index as token id.
-		for (int tokenId=0; tokenId<tokens.size(); ++tokenId) {
-			String token = tokens.get(tokenId);
-			int start = startPos + offsets.get(tokenId);
-			int end = start + token.length();
-			tokenizationBuilder.addTokenBuilder()
-				.setTokenId(tokenId)
-				.setText(token)
-				.setTextSpan(Concrete.TextSpan.newBuilder()
-							 .setStart(start)
-							 .setEnd(end));
-		}
+//		for (int tokenId=0; tokenId<tokens.size(); ++tokenId) {
+//			String token = tokens.get(tokenId);
+//			int start = startPos + offsets.get(tokenId);
+//			int end = start + token.length();
+//			tokenizationBuilder.addTokenBuilder()
+//				.setTokenId(tokenId)
+//				.setText(token)
+//				.setTextSpan(Concrete.TextSpan.newBuilder()
+//							 .setStart(start)
+//							 .setEnd(end));
+//		}
 		// Add the part of speech tagging.
 //		Concrete.TokenTagging.Builder tagsBuilder = tokenizationBuilder.addTaggingBuilder();
 //		tagsBuilder.setUuid(IdUtil.generateUUID());
