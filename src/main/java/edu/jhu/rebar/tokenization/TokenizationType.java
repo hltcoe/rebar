@@ -8,6 +8,7 @@ package edu.jhu.rebar.tokenization;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Vector;
 
 import edu.jhu.concrete.Concrete;
 import edu.jhu.concrete.Concrete.Tokenization;
@@ -36,7 +37,7 @@ public enum TokenizationType {
         public Tokenization tokenizeToConcrete(String text, int textStartPosition) {
             return generateConcreteTokenization(this, text, textStartPosition);
         }
-        
+
         @Override
         public List<String> tokenize(String text) {
             return Arrays.asList(text.split("\\s+"));
@@ -89,7 +90,7 @@ public enum TokenizationType {
     //
     // Patterns & sets of patterns.
     //
-    
+
     //
     // Static methods.
     //
@@ -114,6 +115,119 @@ public enum TokenizationType {
             }
         }
         return r;
+    }
+
+    /**
+     * Sasa Petrovic's tokenization scheme.
+     * 
+     * @param text - text to tokenize
+     * @return
+     */
+    public static String[] tokenizeTweetPetrovic (String text) {
+        int length = text.length();
+        int state = 0;
+        String token = "";
+        char c;
+        int cType;
+        boolean update = false;
+        Vector<String> content = new Vector<String>();
+
+        // My (vandurme) one change was to add UPPERCASE_LETTER as another
+        // option alongside LOWER_CASE_LETTER
+        for (int i = 0; i < length; i++) {
+            c = text.charAt(i);
+            cType = Character.getType(c);
+
+            switch (state) {
+            case 0 : // Start state
+                token = "";
+                if (cType == Character.SPACE_SEPARATOR) break;
+                // link
+                // Characters matched out of order to fail
+                // early when not a link.
+                else if ((c == 'h') &&
+                        (i + 6 < length) &&
+                        (text.charAt(i+4) == ':') &&
+                        (text.charAt(i+5) == '/')) {
+                    token += c;
+                    state = 4; break;
+                }
+                // normal
+                else if ((cType == Character.LOWERCASE_LETTER) ||
+                        (cType == Character.UPPERCASE_LETTER) ||
+                        (cType == Character.DECIMAL_DIGIT_NUMBER)) {
+                    token += c;
+                    state = 1; break;
+                }
+                // @reply
+                else if (c == '@') {
+                    token += c;
+                    state = 2; break;
+                }
+                // #topic
+                else if (c == '#') {
+                    token += c;
+                    state = 3; break;
+                }
+                else break;
+            case 1 : // Normal
+                if ((cType == Character.LOWERCASE_LETTER) ||
+                        (cType == Character.UPPERCASE_LETTER) ||
+                        (cType == Character.DECIMAL_DIGIT_NUMBER)) {
+                    token += c;
+                    break;
+                }
+                else {
+                    update = true;
+                    state = 0; break;
+                }
+            case 2 : // @reply
+                // Author names may have underscores,
+                // which we don't want to split on here
+                if ((cType == Character.LOWERCASE_LETTER) ||
+                        (cType == Character.UPPERCASE_LETTER) ||
+                        (cType == Character.DECIMAL_DIGIT_NUMBER) ||
+                        (c == '_')) {
+                    token += c;
+                    break;
+                }
+                else {
+                    update = true;
+                    state = 0; break;
+                }
+            case 3 : // #topic
+                // This could just be state 1, with special care
+                // taken in state 0 when the topic is first
+                // recognized, but I'm staying aligned to Sasa's
+                // code
+                if ((cType == Character.LOWERCASE_LETTER) ||
+                        (cType == Character.UPPERCASE_LETTER) ||
+                        (cType == Character.DECIMAL_DIGIT_NUMBER)) {
+                    token += c;
+                    break;
+                }
+                else {
+                    update = true;
+                    state = 0; break;
+                }
+            case 4 : // link
+                if ((cType == Character.SPACE_SEPARATOR) ||
+                        (c == '[')) {
+                    //if ((c == ' ') || (c == '[')) {
+                    update = true;
+                    state = 0; break;
+                } else {
+                    token += c;
+                    break;
+                }
+            }
+
+            if (update || ((i == (length-1)) && (!token.equals("")))) {
+                content.add(token);
+                update = false;
+            }
+        }
+        return content.toArray(new String[0]);
     }
 
     /**

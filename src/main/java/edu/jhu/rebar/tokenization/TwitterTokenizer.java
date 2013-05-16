@@ -342,7 +342,7 @@ public class TwitterTokenizer {
             y[0][i] = x.get(i).getKey();
             y[1][i] = x.get(i).getValue();
         }
-        int[] z = getOffsets(text, y[0]);
+        int[] z = TokenizationType.getOffsets(text, y[0]);
         for (int i = 0; i < z.length; i++)
             y[2][i] = "" + z[i];
 
@@ -369,21 +369,6 @@ public class TwitterTokenizer {
             }
         }
         return y;
-    }
-
-    public static int[] getOffsets(String text, String[] tokens) {
-        int[] r = new int[tokens.length];
-        int x = 0;
-        for (int i = 0; i < tokens.length; i++) {
-            for (int j = x; j < text.length(); j++) {
-                if (text.startsWith(tokens[i], j)) {
-                    r[i] = j;
-                    x = j + tokens[i].length();
-                    j = text.length();
-                }
-            }
-        }
-        return r;
     }
 
     private static List<SimpleImmutableEntry<String, String>> recursiveTokenize(String text, int index, TokenizationType tokenization)
