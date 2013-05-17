@@ -5,6 +5,8 @@ package edu.jhu.rebar;
 
 import com.basho.riak.client.RiakException;
 
+import edu.jhu.rebar.accumulo.AccumuloCorpusFactory;
+import edu.jhu.rebar.file.FileCorpusFactory;
 import edu.jhu.rebar.riak.RiakCorpusFactory;
 
 /**
@@ -30,9 +32,8 @@ public enum RebarBackends {
         }
     }, FILE {
         @Override
-        public CorpusFactory getCorpusFactory(String... params) {
-            // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("This backend is not yet implemented.");
+        public CorpusFactory getCorpusFactory(String... params) throws RebarException {
+            return new FileCorpusFactory(params);
         }
     };
     

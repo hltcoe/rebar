@@ -427,7 +427,7 @@ public class AccumuloBackedCorpus extends AccumuloBackedStagedDataCollection imp
 	return result;
     }
 
-    public static Collection<String> listCorpora() throws RebarException {
+    public static Set<String> listCorpora() throws RebarException {
 	AccumuloConnector accumuloConnector = new AccumuloConnector();
 	Map<String, Integer> corpusTableCounts = new HashMap<String, Integer>();
 	for (String tableName: accumuloConnector.listTables()) {
@@ -444,7 +444,7 @@ public class AccumuloBackedCorpus extends AccumuloBackedStagedDataCollection imp
 		}
 	    }
 	}
-	Collection<String> result = new TreeSet<String>();
+	Set<String> result = new TreeSet<String>();
 	for (Map.Entry<String,Integer> entry: corpusTableCounts.entrySet()) {
 	    if (entry.getValue() == TABLE_SUFFIXES.length) {
 		result.add(entry.getKey());

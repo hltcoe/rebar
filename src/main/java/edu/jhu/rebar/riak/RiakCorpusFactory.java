@@ -113,7 +113,7 @@ public class RiakCorpusFactory implements CorpusFactory {
      * @see edu.jhu.rebar.CorpusFactory#listCorpora()
      */
     @Override
-    public Collection<String> listCorpora() throws RebarException {
+    public Set<String> listCorpora() throws RebarException {
         try {
             Set<String> bucketList = new TreeSet<>();
             for (String k : this.bucket.keys())

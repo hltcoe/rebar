@@ -1,11 +1,13 @@
 /**
  * 
  */
-package edu.jhu.rebar;
+package edu.jhu.rebar.accumulo;
 
-import java.util.Collection;
+import java.util.Set;
 
-import edu.jhu.rebar.accumulo.AccumuloBackedCorpus;
+import edu.jhu.rebar.Corpus;
+import edu.jhu.rebar.CorpusFactory;
+import edu.jhu.rebar.RebarException;
 
 /**
  * An accumulo-backed implementation of the {@link CorpusFactory} class.
@@ -50,7 +52,7 @@ public class AccumuloCorpusFactory implements CorpusFactory {
      * @see edu.jhu.rebar.CorpusFactory#listCorpora()
      */
     @Override
-    public Collection<String> listCorpora() throws RebarException {
+    public Set<String> listCorpora() throws RebarException {
         return AccumuloBackedCorpus.listCorpora();
     }
 

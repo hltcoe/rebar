@@ -3,7 +3,7 @@
  */
 package edu.jhu.rebar;
 
-import java.util.Collection;
+import java.util.Set;
 
 /**
  * An interface for creating a "corpus factory", a top level corpus object that
@@ -19,7 +19,7 @@ public interface CorpusFactory {
 
     public boolean corpusExists(String corpusName) throws RebarException;
 
-    public Collection<String> listCorpora() throws RebarException;
+    public Set<String> listCorpora() throws RebarException;
 
     public void deleteCorpus(String corpusName) throws RebarException;
 }
