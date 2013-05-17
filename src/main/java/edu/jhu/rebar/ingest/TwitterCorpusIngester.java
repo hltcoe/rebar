@@ -44,17 +44,17 @@ import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.accumulo.AccumuloBackedCorpus;
 
-
-/**
- * Processing class for reading a twitter corpus from a set of files, and
- * writing the result to a Corpus.
- * 
- * Adds the following Stages: root -- contains guid, text, date tweet_info --
- * contains all tweet info default_section_segmentation -- contains a single
- * section spanning the entire tweet default_sentence_segmentation -- contains a
- * single sentence spanning the entire tweet com_graph -- initial communication
- * graph, containing vertices for the communication, the twitter account, and
- * the sender.
+/** 
+ * Processing class for reading a twitter corpus from a set of files,
+ * and writing the result to a Corpus.
+ *
+ * Adds the following Stages:
+ *   root -- contains guid, text, date
+ *   tweet_info -- contains all tweet info
+ *   default_section_segmentation -- contains a single section spanning the entire tweet
+ *   default_sentence_segmentation -- contains a single sentence spanning the entire tweet
+ *   com_graph -- initial communication graph, containing vertices for the
+ *      communication, the twitter account, and the sender.
  */
 public class TwitterCorpusIngester {
     private static final Logger LOGGER = Logger.getLogger(TwitterCorpusIngester.class);

@@ -1,7 +1,8 @@
-# Maven files
-target/*
-
-# Eclipse files
+*~
+*.diff
+*#
 .classpath
 .project
-.settings/*
+.settings
+target
+

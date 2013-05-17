@@ -178,82 +178,82 @@ abstract public class IndexedTokenization extends IndexedProto<Concrete.Tokeniza
 	 * indicated tagging.  If no tagging with the given UUID is found,
 	 * then raise an exception.  If the tagging does not assign any
 	 * tag to the given token, then return null. */
-	public String getTag(int tokenId, Concrete.UUID taggingUuid) throws RebarException {
-		return getTokenTagIndex(taggingUuid).get(tokenId); }
-	public String getTag(Concrete.Token token, Concrete.UUID taggingUuid) throws RebarException {
-		return getTag(token.getTokenId(), taggingUuid); }
+//	public String getTag(int tokenId, Concrete.UUID taggingUuid) throws RebarException {
+//		return getTokenTagIndex(taggingUuid).get(tokenId); }
+//	public String getTag(Concrete.Token token, Concrete.UUID taggingUuid) throws RebarException {
+//		return getTag(token.getTokenId(), taggingUuid); }
 
 	/** Return the tag assigned to the specified token by the unique
 	 * tagging with the given tool name.  If there are no such
 	 * taggings or multiple such taggings, then throw a
 	 * RebarException.  If the tagging does not assign any tag to the
 	 * given token, then return null. */ 
-	public String getTag(int tokenId, String toolName) throws RebarException {
-		return getTokenTagIndex(toolName).get(tokenId); }
-	public String getTag(Concrete.Token token, String toolName) throws RebarException {
-		return getTag(token.getTokenId(), toolName); }
+//	public String getTag(int tokenId, String toolName) throws RebarException {
+//		return getTokenTagIndex(toolName).get(tokenId); }
+//	public String getTag(Concrete.Token token, String toolName) throws RebarException {
+//		return getTag(token.getTokenId(), toolName); }
 
 	/** Return the tag assigned to the specified token.  This method
 	 * requires that the tokenization have a single tagging; if not,
 	 * then it will throw a RebarException. */
-	public String getTag(int tokenId) throws RebarException {
-		if (protoObj.getTaggingCount() == 0)
-			throw new RebarException("No tagging found for this tokenization.");
-		if (protoObj.getTaggingCount() > 1)
-			throw new RebarException("The IndexedTokenization.getTag(int) method requires that "+
-									 "the tokenization have a single tagging; use one of: "+
-									 "getTag(UUID, int), getTag(String, int), or "+
-									 "getTag(String,String,int) to specify which tagging to use");
-		return getTag(tokenId, protoObj.getTagging(0).getUuid());
-	}
-	public String getTag(Concrete.Token token) throws RebarException {
-		return getTag(token.getTokenId());
-	}
+//	public String getTag(int tokenId) throws RebarException {
+//		if (protoObj.getTaggingCount() == 0)
+//			throw new RebarException("No tagging found for this tokenization.");
+//		if (protoObj.getTaggingCount() > 1)
+//			throw new RebarException("The IndexedTokenization.getTag(int) method requires that "+
+//									 "the tokenization have a single tagging; use one of: "+
+//									 "getTag(UUID, int), getTag(String, int), or "+
+//									 "getTag(String,String,int) to specify which tagging to use");
+//		return getTag(tokenId, protoObj.getTagging(0).getUuid());
+//	}
+//	public String getTag(Concrete.Token token) throws RebarException {
+//		return getTag(token.getTokenId());
+//	}
 
 
 	/** Return a map from token-id to tag, extracted from the TokenTagging
 	 * with the given UUID */
-	public Map<Integer, String> getTagMap(Concrete.UUID uuid) throws RebarException {
-		return Collections.unmodifiableMap(getTokenTagIndex(uuid));
-	}
+//	public Map<Integer, String> getTagMap(Concrete.UUID uuid) throws RebarException {
+//		return Collections.unmodifiableMap(getTokenTagIndex(uuid));
+//	}
 
 	/** Private helper -- look up a tag index by tool name. */
-	private Map<Integer, String> getTokenTagIndex(String toolName) throws RebarException {
-		if (taggingsByToolName == null)
-			taggingsByToolName = new HashMap<String, Map<Integer, String>>();
-		Map<Integer, String> tagIndex = taggingsByToolName.get(toolName);
-		if (tagIndex != null) {
-			return tagIndex;
-		} else {
-			Map<Integer, String> result = null;
-			for (Concrete.TokenTagging tagging: protoObj.getTaggingList()) {
-				if (toolName.equals(tagging.getMetadata().getTool())) {
-					if (result != null)
-						throw new RebarException("Multiple taggings have the tool name "+toolName);
-					result = buildTokenTagIndex(tagging);
-				}
-			}
-			taggingsByToolName.put(toolName, result);
-			return result;
-		}
-	}
+//	private Map<Integer, String> getTokenTagIndex(String toolName) throws RebarException {
+//		if (taggingsByToolName == null)
+//			taggingsByToolName = new HashMap<String, Map<Integer, String>>();
+//		Map<Integer, String> tagIndex = taggingsByToolName.get(toolName);
+//		if (tagIndex != null) {
+//			return tagIndex;
+//		} else {
+//			Map<Integer, String> result = null;
+//			for (Concrete.TokenTagging tagging: protoObj.getTaggingList()) {
+//				if (toolName.equals(tagging.getMetadata().getTool())) {
+//					if (result != null)
+//						throw new RebarException("Multiple taggings have the tool name "+toolName);
+//					result = buildTokenTagIndex(tagging);
+//				}
+//			}
+//			taggingsByToolName.put(toolName, result);
+//			return result;
+//		}
+//	}
 
 	/** Private helper -- look up a tag index by UUID. */
-	private Map<Integer, String> getTokenTagIndex(Concrete.UUID uuid) throws RebarException {
-		if (tokenTagIndex==null) 
-			tokenTagIndex = new HashMap<Concrete.UUID, Map<Integer, String>>();
-		Map<Integer, String> tagIndex = tokenTagIndex.get(uuid);
-		if (tagIndex != null) {
-			return tagIndex;
-		} else {
-			for (Concrete.TokenTagging tagging: protoObj.getTaggingList()) {
-				if (IdUtil.getUUID(tagging) == uuid) 
-					return buildTokenTagIndex(tagging);
-			}
-		}
-		throw new RebarException("This tokenization does not contain a tagging "+
-								 "with the specified UUID.");
-	}
+//	private Map<Integer, String> getTokenTagIndex(Concrete.UUID uuid) throws RebarException {
+//		if (tokenTagIndex==null) 
+//			tokenTagIndex = new HashMap<Concrete.UUID, Map<Integer, String>>();
+//		Map<Integer, String> tagIndex = tokenTagIndex.get(uuid);
+//		if (tagIndex != null) {
+//			return tagIndex;
+//		} else {
+//			for (Concrete.TokenTagging tagging: protoObj.getTaggingList()) {
+//				if (IdUtil.getUUID(tagging) == uuid) 
+//					return buildTokenTagIndex(tagging);
+//			}
+//		}
+//		throw new RebarException("This tokenization does not contain a tagging "+
+//								 "with the specified UUID.");
+//	}
 
 	/** Private helper -- build a tag index. */
 	private Map<Integer, String> buildTokenTagIndex(Concrete.TokenTagging tagging) 
