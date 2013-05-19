@@ -15,10 +15,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Stack;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.FilenameUtils;
@@ -60,6 +62,33 @@ public class FileUtil {
         }
 
         return stream;
+    }
+    
+    /**
+     * Delete folder and all subcontents. Avoids recursion so won't crash on deeply
+     * nested folders. 
+     * 
+     * @param pathToFile - {@link Path} to the file to be deleted
+     */
+    public static void deleteFolderAndSubfolders(Path pathToFile) {
+        File f = pathToFile.toFile();
+        File[] currentFileList;
+        Stack<File> stack = new Stack<>();
+        stack.push(f);
+        while (! stack.isEmpty()) {
+            if (stack.lastElement().isDirectory()) {
+                currentFileList = stack.lastElement().listFiles();
+                if (currentFileList.length > 0) {
+                    for (File curr: currentFileList) 
+                        stack.push(curr);
+                    
+                } else 
+                    stack.pop().delete();
+                
+            } else 
+                stack.pop().delete();
+            
+        }
     }
 
     public static BufferedReader getReaderFromFile(File f) throws UnsupportedEncodingException, FileNotFoundException, IOException {

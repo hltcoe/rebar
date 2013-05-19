@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.CorpusFactory;
 import edu.jhu.rebar.RebarException;
+import edu.jhu.rebar.util.FileUtil;
 
 /**
  * @author max
@@ -72,7 +73,7 @@ public class FileCorpusFactory implements CorpusFactory {
                 if (!Files.exists(this.getPathToCorpus(corpusName)))
                     Files.createDirectory(this.getPathToCorpus(corpusName));
                 return new FileBackedCorpus(this.getPathToCorpus(corpusName));
-                
+
             }
         } catch (IOException e) {
             throw new RebarException(e);
@@ -108,11 +109,7 @@ public class FileCorpusFactory implements CorpusFactory {
 
     @Override
     public void deleteCorpus(String corpusName) throws RebarException {
-        try {
-            Files.deleteIfExists(this.getPathToCorpus(corpusName));
-        } catch (IOException e) {
-            throw new RebarException(e);
-        }
+        FileUtil.deleteFolderAndSubfolders(this.getPathToCorpus(corpusName));
     }
 
     private Path getPathToCorpus(String corpusName) {

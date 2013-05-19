@@ -3,17 +3,19 @@ package edu.jhu.rebar.file;
 import static org.junit.Assert.*;
 
 import java.nio.file.Paths;
+import java.util.TreeSet;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.jhu.rebar.RebarException;
+import edu.jhu.rebar.Stage;
 
 public class FileBackedCorpusTest {
 
     FileBackedCorpus fbc;
-    final String pathString = "target/file_corpus_factory_test/file_corpus_test";
+    final String pathString = "target/file_corpus_test/";
     
     @Before
     public void setUp() throws Exception {
@@ -22,7 +24,8 @@ public class FileBackedCorpusTest {
 
     @After
     public void tearDown() throws Exception {
-        
+        this.fbc.close();
+        new FileCorpusFactory("target/").deleteCorpus("file_corpus_test");
     }
 
     @Test
@@ -46,10 +49,14 @@ public class FileBackedCorpusTest {
     }
 
     @Test
-    public void testMakeStage() throws RebarException {
+    public void testMakeStageNotExists() throws RebarException {
         this.fbc.makeStage("test_stage", "ingest", null, "Unit test stage", false);
-        this.fbc.makeStage("test_stage", "ingest", null, "Unit test stage", false);
-        this.fbc.makeStage("test_stage", "ingest", null, "Unit test stage", false);
+    }
+    
+    @Test(expected = RebarException.class)
+    public void testMakeStageAlreadyExists() throws RebarException {
+        this.fbc.makeStage("test_stage", "ingest", new TreeSet<Stage>(), "Unit test stage", false);
+        this.fbc.makeStage("test_stage", "ingest", new TreeSet<Stage>(), "Unit test stage", false);
     }
 
     @Test
@@ -58,13 +65,30 @@ public class FileBackedCorpusTest {
     }
 
     @Test
-    public void testGetStageStringString() {
-        fail("Not yet implemented");
+    public void testGetStageStringString() throws RebarException {
+        this.fbc.makeStage("test_stage", "ingest", new TreeSet<Stage>(), "Unit test stage", false);
+        Stage s = this.fbc.getStage("test_stage", "ingest");
+        assertEquals(1, s.getStageId());
+        assertEquals("test_stage", s.getStageName());
+        assertEquals("ingest", s.getStageVersion());
+        assertTrue(s.getDependencies().size() == 0);
+        assertEquals("Unit test stage", s.getDescription());
+    }
+    
+    @Test(expected = RebarException.class)
+    public void testGetStageNotExist() throws RebarException {
+        this.fbc.getStage(15135);
     }
 
     @Test
-    public void testGetStageInt() {
-        fail("Not yet implemented");
+    public void testGetStageInt() throws RebarException {
+        this.fbc.makeStage("test_stage", "ingest", new TreeSet<Stage>(), "Unit test stage", false);
+        Stage s = this.fbc.getStage(1);
+        assertEquals(1, s.getStageId());
+        assertEquals("test_stage", s.getStageName());
+        assertEquals("ingest", s.getStageVersion());
+        assertTrue(s.getDependencies().size() == 0);
+        assertEquals("Unit test stage", s.getDescription());
     }
 
     @Test
@@ -78,8 +102,14 @@ public class FileBackedCorpusTest {
     }
 
     @Test
-    public void testHasStage() {
-        fail("Not yet implemented");
+    public void testHasStageNoStage() throws RebarException {
+        assertFalse(this.fbc.hasStage("foobar", "v1.0.0"));
+    }
+    
+    @Test
+    public void testHasStageStageExists() throws RebarException {
+        this.fbc.makeStage("test_stage", "ingest", new TreeSet<Stage>(), "Unit test stage", true);
+        assertTrue(this.fbc.hasStage("test_stage", "ingest"));
     }
 
     @Test
