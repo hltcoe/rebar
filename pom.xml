@@ -11,6 +11,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <groovy.version>2.1.3</groovy.version>
   </properties>
 
   <build>
@@ -45,6 +46,21 @@
     </plugins>
   </build>
   <dependencies>
+    <dependency> 
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.0.7</version>
+      <exclusions>
+	<exclusion> 
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+	</exclusion>
+	<exclusion> 
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+	</exclusion>
+      </exclusions> 
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -121,10 +137,12 @@
       <artifactId>tift</artifactId>
       <version>1.0.0-SNAPSHOT</version>
     </dependency>
-    <dependency> 
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.0.7</version>
+    
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
+      <version>${groovy.version}</version>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 </project>

@@ -8,8 +8,8 @@ package edu.jhu.rebar.ingest;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 
@@ -73,7 +73,7 @@ public class TwitterCorpusMaker {
     private boolean duplicatesDetected = false;
 
     public TwitterCorpusMaker(Corpus corpus) throws RebarException {
-        List<Stage> noDependencies = new ArrayList<Stage>();
+        Set<Stage> noDependencies = new TreeSet<Stage>();
         this.corpus = corpus;
         // For writing the root communication objects:
         this.initializer = corpus.makeInitializer();
@@ -95,7 +95,7 @@ public class TwitterCorpusMaker {
 
         // Stage for sentence segmentation
         if (!this.corpus.hasStage(SENT_SEG_STAGE_NAME, SENT_SEG_STAGE_VERSION)) {
-            List<Stage> sentSegDeps = new ArrayList<Stage>();
+            Set<Stage> sentSegDeps = new TreeSet<Stage>();
             sentSegDeps.add(this.secSegStage);
             this.sentSegStage = corpus.makeStage(SENT_SEG_STAGE_NAME, SENT_SEG_STAGE_VERSION, sentSegDeps, SENT_SEG_STAGE_DESCRIPTION,
                     false);

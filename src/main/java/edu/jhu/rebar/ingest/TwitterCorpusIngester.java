@@ -12,11 +12,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.log4j.Logger;
@@ -102,7 +101,7 @@ public class TwitterCorpusIngester {
     int dupes = 0;
 
     public TwitterCorpusIngester(Corpus corpus) throws RebarException {
-        List<Stage> noDependencies = new ArrayList<Stage>();
+        Set<Stage> noDependencies = new TreeSet<Stage>();
         this.corpus = corpus;
         // For writing the root communication objects:
         this.initializer = corpus.makeInitializer();
@@ -124,7 +123,7 @@ public class TwitterCorpusIngester {
         this.secSegWriter = corpus.makeWriter(this.secSegStage);
         // Stage writer for sentence segmentation
         if (!this.corpus.hasStage(SENT_SEG_STAGE_NAME, SENT_SEG_STAGE_VERSION)) {
-            List<Stage> sentSegDeps = new ArrayList<Stage>();
+            Set<Stage> sentSegDeps = new TreeSet<Stage>();
             sentSegDeps.add(this.secSegStage);
             this.sentSegStage = corpus.makeStage(SENT_SEG_STAGE_NAME, SENT_SEG_STAGE_VERSION, sentSegDeps, SENT_SEG_STAGE_DESCRIPTION,
                     false);

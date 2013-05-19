@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 
@@ -531,7 +533,7 @@ class UnnamedPipeRPC {
 
     private RPCResponse handleCorpusMakeStage(ConcreteRpc.Corpus.MakeStage request) throws RebarException {
         Corpus self = corpora.get(request.getSelf().getId());
-        Collection<Stage> dependencies = new ArrayList<Stage>();
+        Set<Stage> dependencies = new TreeSet<Stage>();
         for (int dep : request.getDependencyList())
             dependencies.add(self.getStage(dep));
         Stage newStage = self.makeStage(request.getStageName(), request.getStageVersion(), dependencies, request.getDescription(),
@@ -744,7 +746,7 @@ class UnnamedPipeRPC {
 
     private RPCResponse handleGraphMakeStage(ConcreteRpc.Graph.MakeStage request) throws RebarException {
         Graph self = graphs.get(request.getSelf().getId());
-        Collection<Stage> dependencies = new ArrayList<Stage>();
+        Set<Stage> dependencies = new TreeSet<Stage>();
         for (int dep : request.getDependencyList())
             dependencies.add(self.getStage(dep));
         Stage newStage = self.makeStage(request.getStageName(), request.getStageVersion(), dependencies, request.getDescription(),

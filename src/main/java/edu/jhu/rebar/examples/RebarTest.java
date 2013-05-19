@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 
@@ -21,9 +23,7 @@ import edu.jhu.concrete.util.IdUtil;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.CorpusFactory;
 import edu.jhu.rebar.IndexedCommunication;
-
 import edu.jhu.rebar.RebarBackends;
-
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 
@@ -45,7 +45,7 @@ public class RebarTest {
         summarize(corpus);
         initialize(corpus);
         summarize(corpus);
-        writeLid(corpus, new ArrayList<Stage>(), "4.0");
+        writeLid(corpus, new TreeSet<Stage>(), "4.0");
         summarize(corpus);
 
         ArrayList<Stage> stages = new ArrayList<Stage>();
@@ -70,7 +70,7 @@ public class RebarTest {
         }
     }
 
-    public static void writeLid(Corpus corpus, Collection<Stage> deps, String version) throws RebarException {
+    public static void writeLid(Corpus corpus, Set<Stage> deps, String version) throws RebarException {
         // Our output field:
         final FieldDescriptor lidField = Concrete.Communication.getDescriptor().findFieldByName("language_id");
 

@@ -6,7 +6,7 @@
 
 package edu.jhu.rebar.accumulo;
 
-import java.util.Collection;
+import java.util.Set;
 import java.util.SortedSet;
 
 import org.apache.hadoop.io.Text;
@@ -94,7 +94,7 @@ public class AccumuloBackedStagedDataCollection implements StagedDataCollection 
     }
 
     @Override
-    public Stage makeStage(String stageName, String stageVersion, Collection<Stage> dependencies, String description, boolean deleteIfExists)
+    public Stage makeStage(String stageName, String stageVersion, Set<Stage> dependencies, String description, boolean deleteIfExists)
             throws RebarException {
         return stageTable.addStage(stageName, stageVersion, dependencies, description, deleteIfExists);
     }

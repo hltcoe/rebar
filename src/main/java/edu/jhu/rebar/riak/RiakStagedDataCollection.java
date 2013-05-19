@@ -3,7 +3,7 @@
  */
 package edu.jhu.rebar.riak;
 
-import java.util.Collection;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -74,7 +74,7 @@ public abstract class RiakStagedDataCollection implements StagedDataCollection {
      * java.lang.String, java.util.Collection, java.lang.String, boolean)
      */
     @Override
-    public Stage makeStage(String stageName, String stageVersion, Collection<Stage> dependencies, String description, boolean deleteIfExists)
+    public Stage makeStage(String stageName, String stageVersion, Set<Stage> dependencies, String description, boolean deleteIfExists)
             throws RebarException {
 //        Stage stage = new RiakStage(stageName, stageVersion, owner, description, stageId, dependencies)
         // TODO Auto-generated method stub

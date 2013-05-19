@@ -7,10 +7,11 @@
 package edu.jhu.rebar.tokenization;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,6 @@ import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.CorpusFactory;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.IndexedSentence;
-
 import edu.jhu.rebar.RebarBackends;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
@@ -198,7 +198,7 @@ public class JerboaTokenizer {
         Corpus corpus = cf.getCorpus(corpusName);
 
         logger.info("Looking up dependencies...");
-        List<Stage> dependencies = new ArrayList<Stage>();
+        Set<Stage> dependencies = new TreeSet<Stage>();
         for (String srcStage : srcStages)
             dependencies.add(corpus.getStage(srcStage));
 

@@ -6,7 +6,7 @@
 
 package edu.jhu.rebar;
 
-import java.util.Collection;
+import java.util.Set;
 import java.util.SortedSet;
 
 /**
@@ -45,7 +45,7 @@ public interface StagedDataCollection {
      * @raise RebarException if a stage with the given name and version already
      *        exists (and deleteIfExists=false)
      */
-    public Stage makeStage(String stageName, String stageVersion, Collection<Stage> dependencies, String description, boolean deleteIfExists)
+    public Stage makeStage(String stageName, String stageVersion, Set<Stage> dependencies, String description, boolean deleteIfExists)
             throws RebarException;
 
     /**
