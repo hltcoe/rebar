@@ -245,8 +245,8 @@ public class FileBackedCorpus implements Corpus {
 
     @Override
     public Writer makeWriter(Stage stage) throws RebarException {
-        // TODO Auto-generated method stub
-        return null;
+        FileStage fs = (FileStage) stage;
+        return new FileCorpusWriter(fs);
     }
 
     @Override

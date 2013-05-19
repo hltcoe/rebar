@@ -1,7 +1,14 @@
 package edu.jhu.rebar.file;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.TreeSet;
 
@@ -9,6 +16,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.jhu.concrete.Concrete.Communication;
+import edu.jhu.concrete.ConcreteException;
+import edu.jhu.concrete.io.ProtocolBufferReader;
+import edu.jhu.concrete.util.ProtoFactory;
+import edu.jhu.rebar.Corpus.Writer;
+import edu.jhu.rebar.IndexedCommunication;
+import edu.jhu.rebar.ProtoIndex;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 
@@ -50,7 +64,7 @@ public class FileBackedCorpusTest {
 
     @Test
     public void testMakeStageNotExists() throws RebarException {
-        this.fbc.makeStage("test_stage", "ingest", null, "Unit test stage", false);
+        this.fbc.makeStage("test_stage", "ingest", new TreeSet<Stage>(), "Unit test stage", false);
     }
     
     @Test(expected = RebarException.class)
@@ -188,8 +202,19 @@ public class FileBackedCorpusTest {
     }
 
     @Test
-    public void testMakeWriter() {
-        fail("Not yet implemented");
+    public void testMakeWriter() throws RebarException, FileNotFoundException, ConcreteException {
+        Stage s = this.fbc.makeStage("test_stage", "ingest", new TreeSet<Stage>(), "Unit test stage", false);
+        Writer w = this.fbc.makeWriter(s);
+        Communication c = new ProtoFactory().generateMockCommunication();
+        ProtoIndex pi = new ProtoIndex(c);
+        IndexedCommunication ic = new IndexedCommunication(c, pi, null);
+        w.saveCommunication(ic);
+        
+        Path outputPath = Paths.get(this.pathString).resolve("stages").resolve("test_stage").resolve("ingest").resolve(ic.getCommunicationId());
+        assertTrue(Files.exists(outputPath));
+        ProtocolBufferReader pbr = new ProtocolBufferReader(new FileInputStream(outputPath.toFile()), Communication.class);
+        Communication comm = (Communication) pbr.next();
+        assertEquals(c.getUuid(), comm.getUuid());
     }
 
     @Test
