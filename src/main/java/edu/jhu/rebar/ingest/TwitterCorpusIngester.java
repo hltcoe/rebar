@@ -18,11 +18,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.log4j.Logger;
 import org.itadaki.bzip2.BZip2InputStream;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -56,7 +57,8 @@ import edu.jhu.rebar.accumulo.AccumuloBackedCorpus;
  *      communication, the twitter account, and the sender.
  */
 public class TwitterCorpusIngester {
-    private static final Logger LOGGER = Logger.getLogger(TwitterCorpusIngester.class);
+    
+    private static final Logger logger = LoggerFactory.getLogger(TwitterCorpusIngester.class);    
 
     private static final Set<Long> dupeIds = new HashSet<>();
 
@@ -161,13 +163,13 @@ public class TwitterCorpusIngester {
     }
 
     void close() throws RebarException {
-        LOGGER.info("Closing writers");
+        logger.info("Closing writers");
         this.initializer.close();
         this.tweetInfoWriter.close();
         this.secSegWriter.close();
         this.sentSegWriter.close();
         this.initialGraphWriter.close();
-        LOGGER.info("Marking stages as public");
+        logger.info("Marking stages as public");
         corpus.markStagePublic(tweetInfoStage);
         corpus.markStagePublic(secSegStage);
         corpus.markStagePublic(sentSegStage);
@@ -192,7 +194,7 @@ public class TwitterCorpusIngester {
                 DateTime dateTime = tweetDateFormat.parseDateTime(tweet.getCreatedAt());
                 comBuilder.setStartTime(dateTime.getMillis() / 1000);
             } catch (IllegalArgumentException iae) {
-                LOGGER.debug("Tweet " + docid + " had a malformed date. Skipping date creation.");
+                logger.debug("Tweet " + docid + " had a malformed date. Skipping date creation.");
             }
         }
         // Build it & add it to the corpus.
@@ -275,19 +277,19 @@ public class TwitterCorpusIngester {
 
     private void ingestTweet(Concrete.TweetInfo tweet) throws RebarException {
         long tweetId = tweet.getId();
-        LOGGER.debug("Tweet id: " + tweetId);
+        logger.debug("Tweet id: " + tweetId);
 
         if (dupeIds.contains(tweetId)) {
-            LOGGER.debug("In our tweet ID set.");
+            logger.debug("In our tweet ID set.");
             this.dupes++;
             return;
         }
 
         else
-            LOGGER.debug("Not in our tweet ID set.");
+            logger.debug("Not in our tweet ID set.");
 
         if (this.initializer.communicationExists(Long.toString(tweetId))) {
-            LOGGER.debug("Tweet " + tweetId + " has been ingested previously. Skipping.");
+            logger.debug("Tweet " + tweetId + " has been ingested previously. Skipping.");
             this.dupes++;
             return;
         }
@@ -318,7 +320,7 @@ public class TwitterCorpusIngester {
     private void ingest(File filename) throws RebarException, IOException, FileNotFoundException {
         InputStream is = getInputStreamFromFile(filename);
         Scanner sc = new Scanner(is, "UTF-8");
-        LOGGER.info("Ingesting " + filename + "...");
+        logger.info("Ingesting " + filename + "...");
         long lineno = 0;
         while (sc.hasNextLine()) {
             try {
@@ -329,11 +331,11 @@ public class TwitterCorpusIngester {
                     ingestTweet(tweet);
 
                 if (lineno % 10000 == 0)
-                    LOGGER.info("On line: " + lineno);
+                    logger.info("On line: " + lineno);
             } catch (JsonParseException jpe) {
-                LOGGER.error("Couldn't parse this json: line " + lineno + ": " + jpe.getMessage());
+                logger.error("Couldn't parse this json: line " + lineno + ": " + jpe.getMessage());
             } catch (JsonMappingException jme) {
-                LOGGER.error("Couldn't parse this json: line " + lineno + ": " + jme.getMessage());
+                logger.error("Couldn't parse this json: line " + lineno + ": " + jme.getMessage());
             }
         }
 
@@ -351,31 +353,31 @@ public class TwitterCorpusIngester {
 
     public static void main(String[] args) throws RebarException, IOException, FileNotFoundException {
         if (args.length < 2) {
-            LOGGER.info("Usage: TwitterCorpusIngester <corpusname> <filename>...");
+            logger.info("Usage: TwitterCorpusIngester <corpusname> <filename>...");
             return;
         }
 
-        LOGGER.info("Starting.");
+        logger.info("Starting.");
         // Thread.sleep(10000);
         String corpusName = args[0];
         CorpusFactory cf = RebarBackends.ACCUMULO.getCorpusFactory();
         if (cf.corpusExists(corpusName)) {
-            LOGGER.info("Deleting existing corpus: " + corpusName);
+            logger.info("Deleting existing corpus: " + corpusName);
             AccumuloBackedCorpus.deleteCorpus(corpusName);
         } else {
-            LOGGER.error("Corpus " + corpusName + " does not exist. Creating it.");
+            logger.error("Corpus " + corpusName + " does not exist. Creating it.");
         }
 
         Corpus corpus = cf.makeCorpus(corpusName);
-        LOGGER.info("Ingesting twitter files...");
+        logger.info("Ingesting twitter files...");
         TwitterCorpusIngester ingester = new TwitterCorpusIngester(corpus);
         for (int i = 1; i < args.length; i++) {
             ingester.ingest(new File(args[i]));
         }
         ingester.close();
-        LOGGER.info("Closing corpus.");
-        LOGGER.info("Tweets ingested: " + ingester.getTweetsAdded());
-        LOGGER.info("Dupes: " + ingester.getDupes());
+        logger.info("Closing corpus.");
+        logger.info("Tweets ingested: " + ingester.getTweetsAdded());
+        logger.info("Dupes: " + ingester.getDupes());
         corpus.close();
     }
 }
