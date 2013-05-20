@@ -35,7 +35,8 @@ public class FileCorpusFactory implements CorpusFactory {
      * 
      */
     public FileCorpusFactory() throws RebarException {
-        this(Paths.get("/export", "common", "rebar"));
+        //this(Paths.get("/export", "common", "rebar"));
+        this(Paths.get("target"));
     }
 
     /**
@@ -44,7 +45,7 @@ public class FileCorpusFactory implements CorpusFactory {
      * @throws RebarException
      */
     public FileCorpusFactory(String... params) throws RebarException {
-        this(Paths.get(params[0]));
+        this(Paths.get("target"));
     }
 
     /**

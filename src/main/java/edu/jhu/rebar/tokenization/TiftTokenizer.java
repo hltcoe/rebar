@@ -88,15 +88,15 @@ public class TiftTokenizer {
     // ======================================================================
     // eg: runjava JerboaTokenizer my_corpus 1.0 segments:1.0
 
-    public static void main(String[] args) throws RebarException, IOException {
+    public static void main(String[] args) {
         // Parse arguments.
         if (args.length < 2) {
             logger.info("Usage: JerboaTokenizer <corpusname> " + "<dst_stage_version> [<src_stage>...]");
             System.exit(-1);
         }
 
-        IndexedCommunication comm = new IndexedCommunication(null, null, null);
-        comm.getProto().getLanguageIdCount();
+        //IndexedCommunication comm = new IndexedCommunication(null, null, null);
+        //comm.getProto().getLanguageIdCount();
 
         // We use system.exit here (rather than just returning) to be
         // *sure* that we exit, even if some accumulo thread didn't
@@ -108,9 +108,9 @@ public class TiftTokenizer {
             tokenize(corpusName, dstStageVersion, srcStages);
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            System.exit(0);
         }
+        
+        System.exit(0);
     }
 
     public static void tokenize(String corpusName, String dstStageVersion, List<String> srcStages) throws RebarException, IOException {

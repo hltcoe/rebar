@@ -42,7 +42,7 @@ import edu.jhu.rebar.IndexedVertex;
 import edu.jhu.rebar.RebarBackends;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
-import edu.jhu.rebar.accumulo.AccumuloBackedCorpus;
+import edu.jhu.rebar.file.FileCorpusFactory;
 
 /** 
  * Processing class for reading a twitter corpus from a set of files,
@@ -360,10 +360,10 @@ public class TwitterCorpusIngester {
         logger.info("Starting.");
         // Thread.sleep(10000);
         String corpusName = args[0];
-        CorpusFactory cf = RebarBackends.ACCUMULO.getCorpusFactory();
+        CorpusFactory cf = RebarBackends.FILE.getCorpusFactory();
         if (cf.corpusExists(corpusName)) {
             logger.info("Deleting existing corpus: " + corpusName);
-            AccumuloBackedCorpus.deleteCorpus(corpusName);
+            new FileCorpusFactory("target/").deleteCorpus(corpusName);
         } else {
             logger.error("Corpus " + corpusName + " does not exist. Creating it.");
         }

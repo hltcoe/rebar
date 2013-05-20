@@ -42,7 +42,7 @@ public class FileBackedCorpus implements Corpus {
     private final Connection conn;
 
     /**
-     * 
+     * TODO:: Refactor this so that connections aren't dependent on this ctor
      */
     public FileBackedCorpus(Path pathOnDisk) throws RebarException {
         this.pathOnDisk = pathOnDisk;
@@ -52,18 +52,28 @@ public class FileBackedCorpus implements Corpus {
             Files.createDirectories(this.pathOnDisk);
             boolean initializeStageFile = !Files.exists(this.stageIdToStageNameFile);
 
-            Class.forName("org.sqlite.JDBC");
-            String connString = "jdbc:sqlite:" + this.stageIdToStageNameFile.toString();
-            this.conn = DriverManager.getConnection(connString);
+            this.conn = this.getConnection();
             if (initializeStageFile) {
                 Statement statement = this.conn.createStatement();
                 statement.executeUpdate("CREATE TABLE stages (id integer PRIMARY KEY, name string, version string, description text)");
-                statement
-                        .executeUpdate("CREATE TABLE dependencies (stage_id integer, dependency_id integer, " +
+                statement.executeUpdate("CREATE TABLE dependencies (stage_id integer, dependency_id integer, " +
                         		"FOREIGN KEY(stage_id) REFERENCES stages(id))");
+                statement.executeUpdate("CREATE TABLE comm_ids (id integer PRIMARY KEY, guid string)");
             }
-        } catch (IOException | ClassNotFoundException | SQLException ioe) {
+        } catch (IOException | SQLException ioe) {
             throw new RebarException(ioe);
+        }
+    }
+    
+    public Connection getConnection() throws RebarException {
+        try {
+            Class.forName("org.sqlite.JDBC");
+            String connString = "jdbc:sqlite:" + this.stageIdToStageNameFile.toString();
+            return DriverManager.getConnection(connString);
+        } catch (ClassNotFoundException e) {
+            throw new RebarException(e);
+        } catch (SQLException e) {
+            throw new RebarException(e);
         }
     }
 
@@ -89,7 +99,12 @@ public class FileBackedCorpus implements Corpus {
     public Stage makeStage(String stageName, String stageVersion, Set<Stage> dependencies, String description, boolean deleteIfExists)
             throws RebarException {
         try {
-            if (this.hasStage(stageName, stageVersion))
+            if (deleteIfExists)
+                if (this.hasStage(stageName, stageVersion))
+                    this.deleteStage(this.getStage(stageName, stageVersion));
+            
+            // if we don't want to delete and the stage exists, throw an exception. 
+            if (this.hasStage(stageName, stageVersion) && !deleteIfExists)
                 throw new RebarException("Stage: " + stageName + " already exists!");
             
             PreparedStatement ps = this.conn.prepareStatement("INSERT INTO stages VALUES (?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
@@ -138,14 +153,13 @@ public class FileBackedCorpus implements Corpus {
 
     @Override
     public Stage getStage(String stageString) throws RebarException {
-        // TODO Auto-generated method stub
-        return null;
+        String[] splits = stageString.split(" ");
+        return this.queryStage(splits[0], splits[1]);
     }
 
     @Override
     public SortedSet<Stage> getStages() throws RebarException {
-        // TODO Auto-generated method stub
-        return null;
+        return this.getStagesInCorpus();
     }
 
     @Override
@@ -185,8 +199,7 @@ public class FileBackedCorpus implements Corpus {
 
     @Override
     public Initializer makeInitializer() throws RebarException {
-        // TODO Auto-generated method stub
-        return null;
+        return new FileCorpusInitializer(this.pathOnDisk.resolve("raw"), this.getConnection());
     }
 
     @Override
@@ -375,6 +388,26 @@ public class FileBackedCorpus implements Corpus {
                 } catch (SQLException e) {
                     logger.debug("Failed to close statement.", e);
                 }
+        }
+    }
+    
+    private SortedSet<Stage> getStagesInCorpus() throws RebarException {
+        try {
+            SortedSet<Stage> corpusStages = new TreeSet<>();
+            PreparedStatement ps = this.conn.prepareStatement("SELECT id, name, version, description FROM stages");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int stageId = rs.getInt("id");
+                String stageName = rs.getString("name");
+                String stageVersion = rs.getString("version");
+                String stageDesc = rs.getString("description");
+                corpusStages.add(new FileStage(stageName, stageVersion, stageId, this.pathOnDisk, 
+                        this.queryStageDependencies(stageId), stageDesc, true));
+            }
+            
+            return corpusStages;
+        } catch (SQLException e) {
+            throw new RebarException(e);
         }
     }
     

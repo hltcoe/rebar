@@ -14,7 +14,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
@@ -26,19 +27,21 @@ import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.RebarBackends;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
+import edu.jhu.rebar.file.FileCorpusFactory;
 
 public class RebarTest {
-
-    private static final Logger LOGGER = Logger.getLogger(RebarTest.class);
+    
+    private static final Logger logger = LoggerFactory.getLogger(RebarTest.class);
     private static final SecureRandom sr = new SecureRandom();
 
     public static void main(String[] args) throws RebarException {
-        System.err.println("Hello world");
-        String corpusName = "test" + sr.nextInt();
-        CorpusFactory cf = RebarBackends.ACCUMULO.getCorpusFactory();
+        String corpusName = "mock_test_corpus";
+        CorpusFactory cf = RebarBackends.FILE.getCorpusFactory();
         if (cf.corpusExists(corpusName)) {
-            LOGGER.fatal("A corpus by the name of: " + corpusName + " already exists. Try to run the program again.");
-            System.exit(-1);
+            //logger.error("A corpus by the name of: " + corpusName + " already exists. Try to run the program again.");
+            //System.exit(-1);
+            logger.info("Deleting corpus: " + corpusName);
+            new FileCorpusFactory().deleteCorpus(corpusName);
         }
         // AccumuloBackedCorpus.deleteCorpus(corpusName);
         Corpus corpus = cf.makeCorpus(corpusName);
@@ -57,24 +60,24 @@ public class RebarTest {
     }
 
     public static void summarize(Corpus corpus) throws RebarException {
-        Collection<Stage> stages = corpus.getStages();
-        System.err.println("================== CORPUS " + corpus.getName() + " ================");
-        System.err.println("  Stages:");
+        Set<Stage> stages = corpus.getStages();
+        logger.info("================== CORPUS " + corpus.getName() + " ================");
+        logger.info("  Stages:");
         for (Stage stage : stages) {
-            System.err.println("    " + stage.getStageId() + ") " + stage.getStageName() + " [" + stage.getStageVersion() + "]");
+            logger.info("    " + stage.getStageId() + ") " + stage.getStageName() + " [" + stage.getStageVersion() + "]");
         }
-        System.err.println("  Subsets:");
-        for (String name : corpus.getComIdSetNames()) {
-            Collection<String> idset = corpus.lookupComIdSet(name);
-            System.err.println("    * " + name + " (" + idset.size() + " ids)");
-        }
+//        logger.info("  Subsets:");
+//        for (String name : corpus.getComIdSetNames()) {
+//            Collection<String> idset = corpus.lookupComIdSet(name);
+//            logger.info("    * " + name + " (" + idset.size() + " ids)");
+//        }
     }
 
     public static void writeLid(Corpus corpus, Set<Stage> deps, String version) throws RebarException {
         // Our output field:
         final FieldDescriptor lidField = Concrete.Communication.getDescriptor().findFieldByName("language_id");
 
-        System.err.println("Writing...");
+        logger.info("Writing...");
         final Stage lidStage = corpus.makeStage("lid", version, deps, "test stage", true);
         final Corpus.Reader reader = corpus.makeReader(deps);
         final Corpus.Writer lidWriter = corpus.makeWriter(lidStage);
@@ -99,18 +102,18 @@ public class RebarTest {
         Collection<String> subset = Arrays.asList(new String[] { "doc-3", "doc-9" });
         corpus.registerComIdSet("my-ids", subset);
 
-        System.err.println("Reading...");
+        logger.info("Reading...");
         Corpus.Reader reader = corpus.makeReader(stages);
         subset = corpus.lookupComIdSet("all");
         for (String s : subset)
-            System.err.println("HELLO " + s);
+            logger.info("HELLO " + s);
         Iterator<IndexedCommunication> readIter = reader.loadCommunications(subset);
         while (readIter.hasNext()) {
             IndexedCommunication com = readIter.next();
-            System.err.println("===================\n" + com);
+            logger.info("===================\n" + com);
         }
         reader.close();
-        System.err.println("All done");
+        logger.info("All done");
     }
 
     public static void initialize(Corpus corpus) throws RebarException {

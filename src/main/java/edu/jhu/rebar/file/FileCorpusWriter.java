@@ -21,8 +21,8 @@ import edu.jhu.rebar.Stage;
  */
 public class FileCorpusWriter implements Writer {
 
-    private final Path path;
-    private final FileStage stage;
+    protected final Path path;
+    protected final FileStage stage;
     
     /**
      * @throws FileNotFoundException 
@@ -40,8 +40,8 @@ public class FileCorpusWriter implements Writer {
     public void saveCommunication(IndexedCommunication comm) throws RebarException {
         try {
             CommunicationGUID guid = comm.getGuid();
-            Path outputPath = this.path.resolve(guid.getCommunicationId());
-            ProtocolBufferWriter pbw = new ProtocolBufferWriter(new FileOutputStream(outputPath.toString()));
+            Path outputPath = this.path.resolve(guid.getCommunicationId() + ".pb");
+            ProtocolBufferWriter pbw = new ProtocolBufferWriter(new FileOutputStream(outputPath.toFile()));
             pbw.write(comm.getProto());
             pbw.close();
         } catch (IOException e) {
