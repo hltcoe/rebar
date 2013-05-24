@@ -1,9 +1,10 @@
 package edu.jhu.rebar.ingest.twitter;
 
-import java.io.IOException;
-import java.util.Scanner;
+import static org.junit.Assert.*;
 
-import org.apache.log4j.Logger;
+import java.io.IOException;
+
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,10 +14,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.riak.RiakCommunication;
+import edu.jhu.rebar.util.TestTweets;
 
 public class TwitterCommunicationParserTest {
-
-    private static final Logger logger = Logger.getLogger(TwitterCommunicationParserTest.class);
     
     TwitterCommunicationParser tcp = new TwitterCommunicationParser();
     
@@ -30,14 +30,8 @@ public class TwitterCommunicationParserTest {
 
     @Test
     public void testParseTweetFromTwitterAPIJsonString() throws RebarException, JsonParseException, JsonMappingException, IOException {
-        Scanner sc = new Scanner(TwitterCommunicationParser.class.getClassLoader().getResourceAsStream("1k-tweets.txt"));
-        while (sc.hasNextLine()) {
-            String line = sc.nextLine().trim();
-            RiakCommunication rc = this.tcp.parseTweetFromTwitterAPIJsonString(line);
-            logger.debug(rc.toString());
-        }
-        
-        sc.close();
+    	RiakCommunication rc = this.tcp.parseTweetFromTwitterAPIJsonString(TestTweets.TWEET);
+    	assertEquals("327330790637703168", rc.getGuid());
     }
 
 }

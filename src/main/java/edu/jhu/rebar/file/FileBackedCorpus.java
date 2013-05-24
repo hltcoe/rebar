@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -23,6 +24,7 @@ import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
@@ -37,48 +39,33 @@ public class FileBackedCorpus implements Corpus {
 
     private final Path pathOnDisk;
     private final Path stagesPath;
-    private final Path stageIdToStageNameFile;
 
     private final Connection conn;
+    private final Set<String> commIdSet;
 
     /**
      * TODO:: Refactor this so that connections aren't dependent on this ctor
      */
-    public FileBackedCorpus(Path pathOnDisk) throws RebarException {
+    public FileBackedCorpus(Path pathOnDisk, Set<String> commIdSet, Connection conn) throws RebarException {
         this.pathOnDisk = pathOnDisk;
         this.stagesPath = this.pathOnDisk.resolve("stages");
-        this.stageIdToStageNameFile = this.pathOnDisk.resolve("stages.db");
-        try {
-            Files.createDirectories(this.pathOnDisk);
-            boolean initializeStageFile = !Files.exists(this.stageIdToStageNameFile);
-
-            this.conn = this.getConnection();
-            if (initializeStageFile) {
-                Statement statement = this.conn.createStatement();
-                statement.executeUpdate("CREATE TABLE stages (id integer PRIMARY KEY, name string, version string, description text)");
-                statement.executeUpdate("CREATE TABLE dependencies (stage_id integer, dependency_id integer, " +
-                        		"FOREIGN KEY(stage_id) REFERENCES stages(id))");
-                statement.executeUpdate("CREATE TABLE comm_ids (id integer PRIMARY KEY, guid string)");
-            }
-        } catch (IOException | SQLException ioe) {
-            throw new RebarException(ioe);
-        }
+        this.conn = conn;
+        this.commIdSet = commIdSet;
     }
     
-    public Connection getConnection() throws RebarException {
-        try {
-            Class.forName("org.sqlite.JDBC");
-            String connString = "jdbc:sqlite:" + this.stageIdToStageNameFile.toString();
-            return DriverManager.getConnection(connString);
-        } catch (ClassNotFoundException e) {
-            throw new RebarException(e);
-        } catch (SQLException e) {
-            throw new RebarException(e);
-        }
+    public FileBackedCorpus(Path pathOnDisk, Connection conn) throws RebarException {
+        this.pathOnDisk = pathOnDisk;
+        this.stagesPath = this.pathOnDisk.resolve("stages");
+        this.conn = conn;
+        this.commIdSet = this.queryCommIdSet();
     }
 
     public Path getPath() {
         return this.pathOnDisk;
+    }
+    
+    public Set<String> getCommIdSet() {
+    	return new TreeSet<String>(this.commIdSet);
     }
 
     @Override
@@ -199,7 +186,9 @@ public class FileBackedCorpus implements Corpus {
 
     @Override
     public Initializer makeInitializer() throws RebarException {
-        return new FileCorpusInitializer(this.pathOnDisk.resolve("raw"), this.getConnection());
+    	// TODO
+    	return null;
+    	//return new FileCorpusInitializer(this.pathOnDisk.resolve("raw"), this.getConnection());
     }
 
     @Override
@@ -252,8 +241,7 @@ public class FileBackedCorpus implements Corpus {
 
     @Override
     public long getNumCommunications() throws RebarException {
-        // TODO Auto-generated method stub
-        return 0;
+        return this.commIdSet.size();
     }
 
     @Override
@@ -440,5 +428,45 @@ public class FileBackedCorpus implements Corpus {
                     logger.debug("Failed to close statement.", e);
                 }
         }
+    }
+    
+    private Set<String> queryCommunicationIds() throws RebarException {
+        Set<String> stages = new TreeSet<>();
+        PreparedStatement ps = null;
+        try {
+            ps = this.conn.prepareStatement("SELECT guid " +
+            		"FROM comm_ids");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+            	stages.add(rs.getString(1));
+            }
+            
+            return stages;
+        } catch (SQLException ioe) {
+            throw new RebarException(ioe);
+        } finally {
+            if (ps != null)
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    logger.debug("Failed to close statement.", e);
+                }
+        }
+    }
+    
+    private Set<String> queryCommIdSet() throws RebarException {
+    	try {
+    		Set<String> commIdSet = new TreeSet<>();
+    		PreparedStatement ps = this.conn.prepareStatement("SELECT guid FROM comm_ids");
+    		ResultSet rs = ps.executeQuery();
+    		while (rs.next()) {
+    			commIdSet.add(rs.getString(1));
+    		}
+    		
+    		ps.close();
+    		return commIdSet;
+    	} catch (SQLException e) {
+    		throw new RebarException(e);
+    	}
     }
 }

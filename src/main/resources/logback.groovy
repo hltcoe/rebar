@@ -5,7 +5,7 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder
 import ch.qos.logback.core.ConsoleAppender
 import ch.qos.logback.core.status.OnConsoleStatusListener
 
-statusListener(OnConsoleStatusListener)
+//statusListener(OnConsoleStatusListener)
 
 appender("STDOUT", ConsoleAppender) {
   encoder(PatternLayoutEncoder) {

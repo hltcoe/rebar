@@ -32,7 +32,7 @@ public class FileCorpusWriterTest {
     
     @Before
     public void setUp() throws Exception {
-        this.fbc = new FileBackedCorpus(Paths.get(pathString));
+//        this.fbc = new FileBackedCorpus(Paths.get(pathString));
         this.stage = (FileStage)this.fbc.makeStage("ingest", "v1.0", new TreeSet<Stage>(), "Ingest test stage", false);
     }
 

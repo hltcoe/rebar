@@ -19,6 +19,7 @@ public class RiakCommunication {
 
     @RiakKey
     private String id;
+    private String guid;
     private Communication comm;
     
     /**
@@ -27,6 +28,7 @@ public class RiakCommunication {
     public RiakCommunication(Communication comm) {
         this.comm = comm;
         this.id = IdUtil.uuidToString(comm.getUuid());
+        this.guid = this.comm.getGuid().getCommunicationId();
     }
     
     public RiakCommunication(byte[] commBytes) throws InvalidProtocolBufferException {
@@ -42,6 +44,13 @@ public class RiakCommunication {
      */
     public String getId() {
         return id;
+    }
+    
+    /**
+     * @return the guid
+     */
+    public String getGuid() {
+        return guid;
     }
 
     /**

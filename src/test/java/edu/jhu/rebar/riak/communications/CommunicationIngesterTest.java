@@ -19,6 +19,8 @@ import edu.jhu.rebar.riak.RiakCommunication;
 import edu.jhu.rebar.riak.RiakCorpus;
 import edu.jhu.rebar.riak.RiakCorpusFactory;
 
+import static org.mockito.Mockito.*;
+
 public class CommunicationIngesterTest {
     
     private static final Logger logger = Logger.getLogger(CommunicationIngesterTest.class);
