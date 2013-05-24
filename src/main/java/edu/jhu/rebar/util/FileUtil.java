@@ -23,8 +23,8 @@ import java.util.Scanner;
 import java.util.Stack;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.io.FilenameUtils;
-import org.itadaki.bzip2.BZip2InputStream;
 
 public class FileUtil {
     public static Collection<String> getStringListFromFile(File f) {
@@ -34,15 +34,19 @@ public class FileUtil {
         try {
             if (FilenameUtils.getExtension(f.toString()).equals("bz2")) {
                 FileInputStream in = new FileInputStream(f);
-                BZip2InputStream bzIn = new BZip2InputStream(in, false);
+                BufferedInputStream bis = new BufferedInputStream(in);
+                BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(bis);
+                
                 sc = new Scanner(bzIn);
+                bzIn.close();
             } else {
                 sc = new Scanner(f);
             }
             while (sc.hasNextLine())
                 stringList.add(sc.nextLine());
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Couldn't find the file at: " + f + " !", e);
+            
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
             if (sc != null)
                 sc.close();
@@ -56,7 +60,7 @@ public class FileUtil {
         if (fileName.matches(".*\\.(gz|GZ)$")) {
             stream = new GZIPInputStream(new BufferedInputStream(new FileInputStream(f)));
         } else if (fileName.matches(".*\\.(bz2|BZ2)$")) {
-            stream = new BZip2InputStream(new BufferedInputStream(new FileInputStream(f)), false);
+            stream = new BZip2CompressorInputStream(new BufferedInputStream(new FileInputStream(f)), false);
         } else {
             stream = new BufferedInputStream(new FileInputStream(f));
         }

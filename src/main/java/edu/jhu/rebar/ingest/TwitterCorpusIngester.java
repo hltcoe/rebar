@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
-import org.itadaki.bzip2.BZip2InputStream;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -43,6 +42,7 @@ import edu.jhu.rebar.RebarBackends;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.file.FileCorpusFactory;
+import edu.jhu.rebar.util.FileUtil;
 
 /** 
  * Processing class for reading a twitter corpus from a set of files,
@@ -304,21 +304,8 @@ public class TwitterCorpusIngester {
         this.tweetsAdded++;
     }
 
-    public static InputStream getInputStreamFromFile(File f) throws FileNotFoundException, IOException {
-        InputStream stream;
-        if (f.getName().matches(".*\\.(gz|GZ)$")) {
-            stream = new GZIPInputStream(new BufferedInputStream(new FileInputStream(f)));
-        } else if (f.getName().matches(".*\\.(bz2|BZ2)$")) {
-            stream = new BZip2InputStream(new BufferedInputStream(new FileInputStream(f)), false);
-        } else {
-            stream = new BufferedInputStream(new FileInputStream(f));
-        }
-
-        return stream;
-    }
-
     private void ingest(File filename) throws RebarException, IOException, FileNotFoundException {
-        InputStream is = getInputStreamFromFile(filename);
+        InputStream is = FileUtil.getInputStream(filename);
         Scanner sc = new Scanner(is, "UTF-8");
         logger.info("Ingesting " + filename + "...");
         long lineno = 0;

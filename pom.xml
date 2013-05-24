@@ -118,10 +118,11 @@
       <version>1.1.1</version>
     </dependency>
     <dependency>
-      <groupId>org.itadaki.bzip2</groupId>
-      <artifactId>jbzip2</artifactId>
-      <version>0.9.1</version>
-    </dependency>
+	<groupId>org.apache.commons</groupId>
+	<artifactId>commons-compress</artifactId>
+	<version>1.5</version>
+</dependency>
+            
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
