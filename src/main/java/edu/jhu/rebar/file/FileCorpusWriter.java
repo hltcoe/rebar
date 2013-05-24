@@ -8,8 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import edu.jhu.concrete.Concrete.CommunicationGUID;
-import edu.jhu.concrete.io.ProtocolBufferWriter;
+import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
+import edu.jhu.hlt.concrete.io.ProtocolBufferWriter;
 import edu.jhu.rebar.Corpus.Writer;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.RebarException;

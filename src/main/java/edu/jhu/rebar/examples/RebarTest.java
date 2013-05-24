@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
-import edu.jhu.concrete.Concrete;
-import edu.jhu.concrete.util.IdUtil;
+import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.CorpusFactory;
 import edu.jhu.rebar.IndexedCommunication;

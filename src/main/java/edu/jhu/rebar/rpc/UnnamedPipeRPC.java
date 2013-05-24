@@ -31,10 +31,10 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 
-import edu.jhu.concrete.Concrete;
-import edu.jhu.concrete.rpc.ConcreteRpc;
-import edu.jhu.concrete.rpc.ConcreteRpc.RPCRequest;
-import edu.jhu.concrete.rpc.ConcreteRpc.RPCResponse;
+import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.rpc.ConcreteRpc;
+import edu.jhu.hlt.concrete.rpc.ConcreteRpc.RPCRequest;
+import edu.jhu.hlt.concrete.rpc.ConcreteRpc.RPCResponse;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.CorpusFactory;
 import edu.jhu.rebar.Graph;
@@ -46,8 +46,8 @@ import edu.jhu.rebar.RebarBackends;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.StageOwnership;
-//import edu.jhu.concrete.rpc.*;
-//import edu.jhu.concrete.rpc.ConcreteRpc.RPCResponse;
+//import edu.jhu.hlt.concrete.rpc.*;
+//import edu.jhu.hlt.concrete.rpc.ConcreteRpc.RPCResponse;
 
 /**
  * Remote Procedure Call (RPC) server that uses unnamed pipes (aka stdin and

@@ -31,7 +31,7 @@ import org.apache.accumulo.core.iterators.LongCombiner.VarLenEncoder;
 import org.apache.accumulo.core.iterators.user.SummingCombiner;
 import org.apache.hadoop.io.Text;
 
-import edu.jhu.concrete.util.ByteUtil;
+import edu.jhu.hlt.concrete.util.ByteUtil;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 

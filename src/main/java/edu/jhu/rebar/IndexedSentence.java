@@ -12,7 +12,7 @@ import java.util.List;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
-import edu.jhu.concrete.Concrete;
+import edu.jhu.hlt.concrete.Concrete;
 
 public class IndexedSentence extends IndexedProto<Concrete.Sentence> {
 	private final FieldDescriptor TOKENIZATION_FIELD = 

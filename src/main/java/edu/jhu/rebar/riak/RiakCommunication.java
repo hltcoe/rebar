@@ -6,8 +6,8 @@ package edu.jhu.rebar.riak;
 import com.basho.riak.client.convert.RiakKey;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import edu.jhu.concrete.Concrete.Communication;
-import edu.jhu.concrete.util.IdUtil;
+import edu.jhu.hlt.concrete.Concrete.Communication;
+import edu.jhu.hlt.concrete.util.IdUtil;
 
 /**
  * Wrapper around {@link Communication} object that provides Riak functionality.

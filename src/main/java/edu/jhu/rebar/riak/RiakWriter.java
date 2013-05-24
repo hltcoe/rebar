@@ -11,8 +11,8 @@ import com.basho.riak.client.bucket.Bucket;
 import com.basho.riak.client.cap.UnresolvedConflictException;
 import com.basho.riak.client.convert.ConversionException;
 
-import edu.jhu.concrete.Concrete.Communication;
-import edu.jhu.concrete.util.IdUtil;
+import edu.jhu.hlt.concrete.Concrete.Communication;
+import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.rebar.RebarException;
 
 /**

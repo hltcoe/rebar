@@ -28,7 +28,7 @@ import java.util.List;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
-import edu.jhu.concrete.Concrete;
+import edu.jhu.hlt.concrete.Concrete;
 
 /** A wrapper for a Communication that tracks modifications and
  * provides automatically built indices.

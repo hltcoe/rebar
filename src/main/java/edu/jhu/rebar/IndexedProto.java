@@ -13,8 +13,8 @@ import java.util.Map;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 
-import edu.jhu.concrete.Concrete;
-import edu.jhu.concrete.util.IdUtil;
+import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.util.IdUtil;
 
 public abstract class IndexedProto<ProtoObj extends Message> {
 	//======================================================================

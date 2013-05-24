@@ -12,12 +12,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.jhu.concrete.Concrete.Communication;
-import edu.jhu.concrete.Concrete.CommunicationGUID;
-import edu.jhu.concrete.Concrete.KnowledgeGraph;
-import edu.jhu.concrete.ConcreteException;
-import edu.jhu.concrete.io.ProtocolBufferReader;
-import edu.jhu.concrete.util.ProtoFactory;
+import edu.jhu.hlt.concrete.Concrete.Communication;
+import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
+import edu.jhu.hlt.concrete.Concrete.KnowledgeGraph;
+import edu.jhu.hlt.concrete.ConcreteException;
+import edu.jhu.hlt.concrete.io.ProtocolBufferReader;
+import edu.jhu.hlt.concrete.util.ProtoFactory;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.ProtoIndex;
 import edu.jhu.rebar.RebarException;

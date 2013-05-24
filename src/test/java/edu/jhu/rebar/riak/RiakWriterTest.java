@@ -20,12 +20,12 @@ import com.basho.riak.client.RiakFactory;
 import com.basho.riak.client.bucket.Bucket;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import edu.jhu.concrete.Concrete.Communication;
-import edu.jhu.concrete.Concrete.CommunicationGUID;
-import edu.jhu.concrete.Concrete.KnowledgeGraph;
-import edu.jhu.concrete.Concrete.UUID;
+import edu.jhu.hlt.concrete.Concrete.Communication;
+import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
+import edu.jhu.hlt.concrete.Concrete.KnowledgeGraph;
+import edu.jhu.hlt.concrete.Concrete.UUID;
 import edu.jhu.rebar.RebarException;
-import edu.jhu.concrete.util.IdUtil;
+import edu.jhu.hlt.concrete.util.IdUtil;
 
 /**
  * @author max

@@ -10,7 +10,7 @@ package edu.jhu.rebar;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.jhu.concrete.Concrete;
+import edu.jhu.hlt.concrete.Concrete;
 
 public class IndexedSentenceSegmentation extends IndexedProto<Concrete.SentenceSegmentation> {
 

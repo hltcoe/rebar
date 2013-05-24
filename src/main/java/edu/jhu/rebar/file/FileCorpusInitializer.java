@@ -14,8 +14,8 @@ import java.sql.SQLException;
 import java.util.Set;
 import java.util.TreeSet;
 
-import edu.jhu.concrete.Concrete.Communication;
-import edu.jhu.concrete.io.ProtocolBufferWriter;
+import edu.jhu.hlt.concrete.Concrete.Communication;
+import edu.jhu.hlt.concrete.io.ProtocolBufferWriter;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.ProtoIndex;

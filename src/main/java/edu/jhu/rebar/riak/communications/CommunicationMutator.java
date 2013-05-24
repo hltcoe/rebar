@@ -5,7 +5,7 @@ package edu.jhu.rebar.riak.communications;
 
 import com.basho.riak.client.cap.Mutation;
 
-import edu.jhu.concrete.Concrete.Communication;
+import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.rebar.riak.RiakCommunication;
 
 /**

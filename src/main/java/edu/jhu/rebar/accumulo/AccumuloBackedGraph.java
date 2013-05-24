@@ -19,9 +19,9 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
 
-import edu.jhu.concrete.Concrete;
-import edu.jhu.concrete.util.ByteUtil;
-import edu.jhu.concrete.util.IdUtil;
+import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.util.ByteUtil;
+import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.rebar.Graph;
 import edu.jhu.rebar.IndexedEdge;
 import edu.jhu.rebar.IndexedVertex;

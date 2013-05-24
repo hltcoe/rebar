@@ -12,7 +12,7 @@ import java.util.List;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
-import edu.jhu.concrete.Concrete;
+import edu.jhu.hlt.concrete.Concrete;
 
 public class IndexedSection extends IndexedProto<Concrete.Section> {
 	private final FieldDescriptor SENTENCE_SEGMENTATION_FIELD = 

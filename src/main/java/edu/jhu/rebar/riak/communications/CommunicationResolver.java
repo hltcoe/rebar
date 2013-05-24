@@ -8,7 +8,7 @@ import java.util.Iterator;
 
 import com.basho.riak.client.cap.ConflictResolver;
 
-import edu.jhu.concrete.Concrete.Communication;
+import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.rebar.riak.RiakCommunication;
 
 /**

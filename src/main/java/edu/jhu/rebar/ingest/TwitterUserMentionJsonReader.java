@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.jhu.concrete.Concrete;
+import edu.jhu.hlt.concrete.Concrete;
 
 /** Class used to read in a JSON Twitter UserMention record and convert it to
  * a rebar protobuf object (Concrete.TwitterEntities.UserMention).  The input JSON record

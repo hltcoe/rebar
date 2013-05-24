@@ -22,8 +22,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import edu.jhu.concrete.Concrete;
-import edu.jhu.concrete.util.IdUtil;
+import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.util.IdUtil;
 
 /** A wrapper for a Tokenization objects that makes them easier to
  * use.  In particular, this wrapper provides:

@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
-import edu.jhu.concrete.Concrete.Communication;
+import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.RebarException;

@@ -23,8 +23,8 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
-import edu.jhu.concrete.Concrete;
-import edu.jhu.concrete.util.ByteUtil;
+import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.util.ByteUtil;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.IndexedKnowledgeGraph;

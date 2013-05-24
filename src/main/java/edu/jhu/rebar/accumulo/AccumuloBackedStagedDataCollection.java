@@ -11,7 +11,7 @@ import java.util.SortedSet;
 
 import org.apache.hadoop.io.Text;
 
-import edu.jhu.concrete.util.ByteUtil;
+import edu.jhu.hlt.concrete.util.ByteUtil;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.StagedDataCollection;

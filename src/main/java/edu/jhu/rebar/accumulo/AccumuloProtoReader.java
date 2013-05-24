@@ -32,9 +32,9 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
-import edu.jhu.concrete.Concrete;
-import edu.jhu.concrete.util.ByteUtil;
-import edu.jhu.concrete.util.IdUtil;
+import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.util.ByteUtil;
+import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.rebar.IndexedProto;
 import edu.jhu.rebar.ProtoIndex;
 import edu.jhu.rebar.RebarException;

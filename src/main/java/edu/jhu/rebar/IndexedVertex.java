@@ -10,9 +10,9 @@ import java.util.List;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
-import edu.jhu.concrete.Concrete;
-import edu.jhu.concrete.ConcreteException;
-import edu.jhu.concrete.util.AttribUtil;
+import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.ConcreteException;
+import edu.jhu.hlt.concrete.util.AttribUtil;
 
 /** Use different subclasses for different vertex types?? */
 public class IndexedVertex extends IndexedProto<Concrete.Vertex> {
