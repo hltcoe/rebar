@@ -39,6 +39,7 @@ public class FileBackedCorpus implements Corpus {
 
     private final Path pathOnDisk;
     private final Path stagesPath;
+    private final Path commsPath;
 
     private final Connection conn;
     private final Set<String> commIdSet;
@@ -49,6 +50,7 @@ public class FileBackedCorpus implements Corpus {
     public FileBackedCorpus(Path pathOnDisk, Set<String> commIdSet, Connection conn) throws RebarException {
         this.pathOnDisk = pathOnDisk;
         this.stagesPath = this.pathOnDisk.resolve("stages");
+        this.commsPath = this.pathOnDisk.resolve("communications");
         this.conn = conn;
         this.commIdSet = commIdSet;
     }
@@ -56,6 +58,7 @@ public class FileBackedCorpus implements Corpus {
     public FileBackedCorpus(Path pathOnDisk, Connection conn) throws RebarException {
         this.pathOnDisk = pathOnDisk;
         this.stagesPath = this.pathOnDisk.resolve("stages");
+        this.commsPath = this.pathOnDisk.resolve("communications");
         this.conn = conn;
         this.commIdSet = this.queryCommIdSet();
     }

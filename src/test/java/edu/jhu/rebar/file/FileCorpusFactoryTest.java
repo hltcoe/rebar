@@ -1,15 +1,15 @@
 package edu.jhu.rebar.file;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
-import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -19,7 +19,6 @@ import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
 import edu.jhu.hlt.concrete.Concrete.KnowledgeGraph;
 import edu.jhu.hlt.concrete.util.ProtoFactory;
-import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.util.FileUtil;
 
@@ -65,6 +64,12 @@ public class FileCorpusFactoryTest {
     	assertTrue(this.fcf.corpusExists("bar"));
     	assertTrue(fbc.getCommIdSet().contains(guidOne.getCommunicationId()));
     	assertTrue(fbc.getCommIdSet().contains(guidTwo.getCommunicationId()));
+    	
+    	Path commPath = Paths.get(pathString)
+    			.resolve("bar")
+    			.resolve("communications");
+    	assertTrue(Files.exists(commPath.resolve(guidOne.getCommunicationId() + ".pb")));
+    	assertTrue(Files.exists(commPath.resolve(guidTwo.getCommunicationId() + ".pb")));
     }
     
     @Test(expected = RebarException.class) 
