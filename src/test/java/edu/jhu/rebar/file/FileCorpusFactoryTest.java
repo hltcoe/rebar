@@ -6,6 +6,10 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,6 +22,8 @@ import org.junit.Test;
 import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
 import edu.jhu.hlt.concrete.Concrete.KnowledgeGraph;
+import edu.jhu.hlt.concrete.ConcreteException;
+import edu.jhu.hlt.concrete.io.ProtocolBufferReader;
 import edu.jhu.hlt.concrete.util.ProtoFactory;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.util.FileUtil;
@@ -57,8 +63,8 @@ public class FileCorpusFactoryTest {
     }
     
     @Test
-    public void testInitializeCorpus() throws RebarException {
-    	Iterator<Communication> commIter = this.generateCommIter();
+    public void testInitializeCorpus() throws RebarException, ConcreteException, IOException {
+    	Iterator<Communication> commIter = this.generateMockCommunicationIterator();
     	
     	FileBackedCorpus fbc = this.fcf.initializeCorpus("bar", commIter);
     	assertTrue(this.fcf.corpusExists("bar"));
@@ -68,19 +74,37 @@ public class FileCorpusFactoryTest {
     	Path commPath = Paths.get(pathString)
     			.resolve("bar")
     			.resolve("communications");
+    	
     	assertTrue(Files.exists(commPath.resolve(guidOne.getCommunicationId() + ".pb")));
     	assertTrue(Files.exists(commPath.resolve(guidTwo.getCommunicationId() + ".pb")));
+    	
+    	File iCommOne = commPath.resolve(guidOne.getCommunicationId() + ".pb").toFile();
+    	ProtocolBufferReader pbr = 
+    			new ProtocolBufferReader(new FileInputStream(iCommOne), Communication.class);
+    	Communication icOne = (Communication) pbr.next();
+    	assertEquals(commOne.getUuid(), icOne.getUuid());
+    	assertEquals(commOne.getGuid(), icOne.getGuid());
+    	assertEquals(commOne.getGuid().getCorpusName(), "bar");
+    	pbr.close();
+    	
+    	File iCommTwo = commPath.resolve(guidTwo.getCommunicationId() + ".pb").toFile();
+    	pbr = new ProtocolBufferReader(new FileInputStream(iCommTwo), Communication.class);
+    	Communication icTwo = (Communication) pbr.next();
+    	assertEquals(commTwo.getUuid(), icTwo.getUuid());
+    	assertEquals(commTwo.getGuid(), icTwo.getGuid());
+    	assertEquals(commTwo.getGuid().getCorpusName(), "bar");
+    	pbr.close();
     }
     
     @Test(expected = RebarException.class) 
     public void testInitializeCorpusThatExists() throws RebarException {
-    	Iterator<Communication> commIter = this.generateCommIter();
+    	Iterator<Communication> commIter = this.generateMockCommunicationIterator();
     	
     	this.fcf.initializeCorpus("bar", commIter);
     	this.fcf.initializeCorpus("bar", commIter);
     }
     
-    private Iterator<Communication> generateCommIter() {
+    public Iterator<Communication> generateMockCommunicationIterator() {
     	Iterator<Communication> commIter = mock(Iterator.class);
     	when(commIter.hasNext()).thenReturn(true).thenReturn(true).thenReturn(false);
     	when(commIter.next())
@@ -92,7 +116,7 @@ public class FileCorpusFactoryTest {
     
     @Test
     public void testGetCorpusExists() throws RebarException {
-    	Iterator<Communication> commIter = this.generateCommIter();
+    	Iterator<Communication> commIter = this.generateMockCommunicationIterator();
     	this.fcf.initializeCorpus("bar", commIter);
     	
     	FileBackedCorpus retCorpus = (FileBackedCorpus) this.fcf.getCorpus("bar");
@@ -107,7 +131,7 @@ public class FileCorpusFactoryTest {
     
     @Test
     public void testGetCorpusSizeUpdates() throws RebarException {
-    	Iterator<Communication> commIter = this.generateCommIter();
+    	Iterator<Communication> commIter = this.generateMockCommunicationIterator();
     	this.fcf.initializeCorpus("bar", commIter);
     	
     	assertEquals(1, this.fcf.listCorpora().size());
@@ -120,7 +144,7 @@ public class FileCorpusFactoryTest {
     
     @Test
     public void testDeleteCorpus() throws RebarException {
-    	Iterator<Communication> commIter = this.generateCommIter();
+    	Iterator<Communication> commIter = this.generateMockCommunicationIterator();
     	this.fcf.initializeCorpus("bar", commIter);
     	
     	this.fcf.deleteCorpus("bar");

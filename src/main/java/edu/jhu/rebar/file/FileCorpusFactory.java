@@ -3,9 +3,9 @@
  */
 package edu.jhu.rebar.file;
 
-import java.io.BufferedOutputStream;
+
 import java.io.File;
-import java.io.FileNotFoundException;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
