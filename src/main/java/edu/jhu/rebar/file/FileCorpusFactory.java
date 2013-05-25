@@ -85,6 +85,8 @@ public class FileCorpusFactory implements CorpusFactory {
     
 	public FileBackedCorpus initializeCorpus(String corpusName,
 			Iterator<Communication> commIdIter) throws RebarException {
+		if (this.corpusExists(corpusName))
+			throw new RebarException("Corpus " + corpusName + " already exists. Call getCorpus() instead.");
 		try {
 			Path pathToCorpus = this.getPathToCorpus(corpusName);
 			Connection conn = this.getConnection(corpusName);
@@ -194,7 +196,12 @@ public class FileCorpusFactory implements CorpusFactory {
 
     @Override
     public void deleteCorpus(String corpusName) throws RebarException {
-        FileUtil.deleteFolderAndSubfolders(this.getPathToCorpus(corpusName));
+    	if (this.corpusExists(corpusName)) {
+    		FileUtil.deleteFolderAndSubfolders(this.getPathToCorpus(corpusName));
+    		this.corporaList.remove(corpusName);
+    	} else {
+    		throw new RebarException("Corpus: " + corpusName + " doesn't exist; couldn't delete it.");
+    	}
     }
 
     private Path getPathToCorpus(String corpusName) {

@@ -62,8 +62,17 @@ public class FileCorpusFactoryTest {
     	Iterator<Communication> commIter = this.generateCommIter();
     	
     	FileBackedCorpus fbc = this.fcf.initializeCorpus("bar", commIter);
+    	assertTrue(this.fcf.corpusExists("bar"));
     	assertTrue(fbc.getCommIdSet().contains(guidOne.getCommunicationId()));
     	assertTrue(fbc.getCommIdSet().contains(guidTwo.getCommunicationId()));
+    }
+    
+    @Test(expected = RebarException.class) 
+    public void testInitializeCorpusThatExists() throws RebarException {
+    	Iterator<Communication> commIter = this.generateCommIter();
+    	
+    	this.fcf.initializeCorpus("bar", commIter);
+    	this.fcf.initializeCorpus("bar", commIter);
     }
     
     private Iterator<Communication> generateCommIter() {
@@ -79,65 +88,37 @@ public class FileCorpusFactoryTest {
     @Test
     public void testGetCorpusExists() throws RebarException {
     	Iterator<Communication> commIter = this.generateCommIter();
-    	FileBackedCorpus fbc = this.fcf.initializeCorpus("bar", commIter);
+    	this.fcf.initializeCorpus("bar", commIter);
     	
     	FileBackedCorpus retCorpus = (FileBackedCorpus) this.fcf.getCorpus("bar");
     	assertTrue(retCorpus.getCommIdSet().contains(guidOne.getCommunicationId()));
     	assertTrue(retCorpus.getCommIdSet().contains(guidTwo.getCommunicationId()));
-    	
     }
-
-    @Test
-    public void testMakeCorpus() throws RebarException {
-        String corpusName = "foo";
-        fcf.makeCorpus(corpusName);
-        assertTrue(new File(pathString + File.separator + corpusName).exists());
+    
+    @Test(expected = RebarException.class) 
+    public void testGetCorpusNotExists() throws RebarException {
+    	this.fcf.getCorpus("bar");
     }
     
     @Test
-    public void testMakeCorpusAlreadyExists() throws RebarException {
-        String corpusName = "foo";
-        fcf.makeCorpus(corpusName);
-        fcf.makeCorpus(corpusName);
-        assertTrue(new File(pathString + File.separator + corpusName).exists());
+    public void testGetCorpusSizeUpdates() throws RebarException {
+    	Iterator<Communication> commIter = this.generateCommIter();
+    	this.fcf.initializeCorpus("bar", commIter);
+    	
+    	assertEquals(1, this.fcf.listCorpora().size());
     }
 
-    @Test
-    public void testGetCorpus() throws RebarException {
-        String corpusName = "qux";
-        Corpus c = fcf.getCorpus(corpusName);
-        assertEquals(corpusName, c.getName());
+    @Test(expected = RebarException.class) 
+    public void testDeleteCorpusNotExists() throws RebarException {
+    	this.fcf.deleteCorpus("bar");
     }
-
-    @Test
-    public void testCorpusExists() throws RebarException {
-        String corpusName = "baz";
-        fcf.makeCorpus(corpusName);
-        assertTrue(fcf.corpusExists(corpusName));
-    }
-
-    @Test
-    public void testListCorpora() throws RebarException {
-        String[] names = new String[] {
-            "foo", "bar", "qux"
-        };
-        
-        for (String name : names)
-            fcf.makeCorpus(name);
-        
-        
-        Set<String> corporaList = fcf.listCorpora();
-        for (String corp : corporaList)
-            assertTrue(corporaList.contains(corp));
-    }
-
+    
     @Test
     public void testDeleteCorpus() throws RebarException {
-        String corpusName = "noo";
-        fcf.makeCorpus(corpusName);
-        fcf.deleteCorpus(corpusName);
-        fcf.deleteCorpus(corpusName);
-        fcf.deleteCorpus(corpusName);
+    	Iterator<Communication> commIter = this.generateCommIter();
+    	this.fcf.initializeCorpus("bar", commIter);
+    	
+    	this.fcf.deleteCorpus("bar");
+    	assertFalse(this.fcf.corpusExists("bar"));
     }
-
 }
