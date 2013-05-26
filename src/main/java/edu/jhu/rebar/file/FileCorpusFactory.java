@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.concrete.Concrete.Communication;
+import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
 import edu.jhu.hlt.concrete.io.ProtocolBufferWriter;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.CorpusFactory;
@@ -104,6 +105,11 @@ public class FileCorpusFactory implements CorpusFactory {
 				PreparedStatement ps = conn.prepareStatement("INSERT INTO comm_ids VALUES (?, ?)");
 				while (this.commIter.hasNext()) {
 					Communication comm = this.commIter.next();
+					CommunicationGUID corpusNameGuid = CommunicationGUID.newBuilder(comm.getGuid())
+							.setCorpusName(this.name)
+							.build();
+					comm = Communication.newBuilder(comm).setGuid(corpusNameGuid).build();
+					
 					String guid = comm.getGuid().getCommunicationId();
 					boolean newComm = commIdSet.add(guid);
 					if (newComm) {

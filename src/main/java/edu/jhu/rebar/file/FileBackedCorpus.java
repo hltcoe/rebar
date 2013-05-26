@@ -4,7 +4,10 @@
 package edu.jhu.rebar.file;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -26,7 +29,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.concrete.Concrete.Communication;
+import edu.jhu.hlt.concrete.ConcreteException;
+import edu.jhu.hlt.concrete.io.ProtocolBufferReader;
+import edu.jhu.hlt.concrete.util.ProtoFactory;
 import edu.jhu.rebar.Corpus;
+import edu.jhu.rebar.IndexedCommunication;
+import edu.jhu.rebar.ProtoIndex;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 
@@ -194,6 +202,95 @@ public class FileBackedCorpus implements Corpus {
     	return null;
     	//return new FileCorpusInitializer(this.pathOnDisk.resolve("raw"), this.getConnection());
     }
+    
+    public class FileCorpusReader implements Reader {
+
+    	private FileBackedCorpus corpus;
+    	private Path commPath;
+    	
+    	public FileCorpusReader(FileBackedCorpus corpus) {
+    		this.corpus = corpus;
+    		this.commPath = this.corpus.commsPath;
+    	}
+    	
+		@Override
+		public IndexedCommunication loadCommunication(String comid)
+				throws RebarException {
+			Path pathToComm = this.commPath.resolve(comid + ".pb");
+			if (!Files.exists(pathToComm))
+				throw new RebarException("Comm: " + comid + " doesn't exist.");
+			
+			try {
+				File commFile = pathToComm.toFile();
+				ProtocolBufferReader pbr = new ProtocolBufferReader(
+						new FileInputStream(commFile), Communication.class);
+				Communication comm = (Communication)pbr.next();
+				pbr.close();
+				
+				IndexedCommunication ic = new IndexedCommunication(comm, 
+						new ProtoIndex(comm), null);
+				return ic;
+			} catch (ConcreteException | IOException e) {
+				throw new RebarException(e);
+			}
+		}
+
+		@Override
+		public Iterator<IndexedCommunication> loadCommunications(
+				Collection<String> subset) throws RebarException {
+			if (!commIdSet.containsAll(subset))
+				throw new RebarException("One or more subset comms " + 
+						" were not in this corpus' communication ID set.");
+			try {
+				List<IndexedCommunication> commSet = new ArrayList<>();
+				
+				DirectoryStream<Path> ds = Files.newDirectoryStream(this.commPath);
+				Iterator<Path> pathIter = ds.iterator();
+				while (pathIter.hasNext()) {
+					Path nextPath = pathIter.next();
+					String fileName = nextPath.getFileName().toString();
+					// remove ".pb"
+					String commId = fileName.substring(0, fileName.length() - 3);
+					if (subset.contains(commId)) {
+				    Communication c = ProtoFactory
+				    		.readCommunicationFromPath(nextPath);
+				    IndexedCommunication ic = new IndexedCommunication(c, 
+				    		new ProtoIndex(c), null);
+				    commSet.add(ic);
+					}
+				}
+				
+				ds.close();
+				return commSet.iterator();
+			} catch (IOException | ConcreteException e) {
+				throw new RebarException(e);
+			}
+		}
+
+		@Override
+		public Iterator<IndexedCommunication> loadCommunications()
+				throws RebarException {
+			return loadCommunications(commIdSet);
+		}
+
+		@Override
+		public void close() throws RebarException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public Collection<Stage> getInputStages() throws RebarException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Corpus getCorpus() {
+			return this.corpus;
+		}
+    	
+    }
 
     @Override
     public Reader makeReader(Collection<Stage> stages) throws RebarException {
@@ -215,8 +312,7 @@ public class FileBackedCorpus implements Corpus {
 
     @Override
     public Reader makeReader() throws RebarException {
-        // TODO Auto-generated method stub
-        return null;
+    	return new FileCorpusReader(this);
     }
 
     @Override

@@ -83,16 +83,14 @@ public class FileCorpusFactoryTest {
     			new ProtocolBufferReader(new FileInputStream(iCommOne), Communication.class);
     	Communication icOne = (Communication) pbr.next();
     	assertEquals(commOne.getUuid(), icOne.getUuid());
-    	assertEquals(commOne.getGuid(), icOne.getGuid());
-    	assertEquals(commOne.getGuid().getCorpusName(), "bar");
+    	assertEquals("bar", icOne.getGuid().getCorpusName());
     	pbr.close();
     	
     	File iCommTwo = commPath.resolve(guidTwo.getCommunicationId() + ".pb").toFile();
     	pbr = new ProtocolBufferReader(new FileInputStream(iCommTwo), Communication.class);
     	Communication icTwo = (Communication) pbr.next();
     	assertEquals(commTwo.getUuid(), icTwo.getUuid());
-    	assertEquals(commTwo.getGuid(), icTwo.getGuid());
-    	assertEquals(commTwo.getGuid().getCorpusName(), "bar");
+    	assertEquals("bar", icTwo.getGuid().getCorpusName());
     	pbr.close();
     }
     
