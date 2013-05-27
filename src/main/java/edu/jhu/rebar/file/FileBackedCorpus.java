@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -215,12 +216,18 @@ public class FileBackedCorpus implements Corpus {
 
     public class FileCorpusReader implements Reader {
 
-        private FileBackedCorpus corpus;
-        private Path commPath;
+        private final FileBackedCorpus corpus;
+        private final Path commPath;
+        private final Set<Stage> stagesToLoad;
 
         public FileCorpusReader(FileBackedCorpus corpus) {
+            this(corpus, new TreeSet<Stage>());
+        }
+        
+        public FileCorpusReader(FileBackedCorpus corpus, Set<Stage> stagesToLoad) {
             this.corpus = corpus;
             this.commPath = this.corpus.commsPath;
+            this.stagesToLoad = stagesToLoad;
         }
 
         @Override
@@ -287,14 +294,12 @@ public class FileBackedCorpus implements Corpus {
 
         @Override
         public void close() throws RebarException {
-            // TODO Auto-generated method stub
-
+            // nothing to do here.
         }
 
         @Override
         public Collection<Stage> getInputStages() throws RebarException {
-            // TODO Auto-generated method stub
-            return null;
+            return this.stagesToLoad;
         }
 
         @Override
@@ -306,20 +311,26 @@ public class FileBackedCorpus implements Corpus {
 
     @Override
     public Reader makeReader(Collection<Stage> stages) throws RebarException {
-        // TODO Auto-generated method stub
-        return null;
+        Set<Stage> stageSet = new TreeSet<>();
+        stageSet.addAll(stages);
+        return new FileCorpusReader(this, stageSet);
     }
 
     @Override
     public Reader makeReader(Stage[] stages) throws RebarException {
-        // TODO Auto-generated method stub
-        return null;
+        Set<Stage> stageSet = new TreeSet<>();
+        List<Stage> stageList = Arrays.asList(stages);
+        stageSet.addAll(stageList);
+        return new FileCorpusReader(this, stageSet);
     }
 
     @Override
     public Reader makeReader(Stage stage) throws RebarException {
-        // TODO Auto-generated method stub
-        return null;
+        if (!this.hasStage(stage.getStageName(), stage.getStageVersion()))
+            throw new RebarException("Stage: " + stage.getStageName() + " doesn't exist.");
+        Set<Stage> stageSet = new TreeSet<>();
+        stageSet.add(stage);
+        return new FileCorpusReader(this, stageSet);
     }
 
     @Override
@@ -330,28 +341,24 @@ public class FileBackedCorpus implements Corpus {
     @Override
     public Reader makeReader(Collection<Stage> stages,
             boolean loadStageOwnership) throws RebarException {
-        // TODO Auto-generated method stub
-        return null;
+        return this.makeReader(stages);
     }
 
     @Override
     public Reader makeReader(Stage[] stages, boolean loadStageOwnership)
             throws RebarException {
-        // TODO Auto-generated method stub
-        return null;
+        return this.makeReader(stages);
     }
 
     @Override
     public Reader makeReader(Stage stage, boolean loadStageOwnership)
             throws RebarException {
-        // TODO Auto-generated method stub
-        return null;
+        return this.makeReader(stage);
     }
 
     @Override
     public Reader makeReader(boolean loadStageOwnership) throws RebarException {
-        // TODO Auto-generated method stub
-        return null;
+        return this.makeReader();
     }
 
     @Override

@@ -172,6 +172,25 @@ public class FileBackedCorpusTest {
     }
     
     @Test
+    public void testLoadCommunicationsStage() throws RebarException {
+        Stage testStage = this.fbc.makeStage(this.testStageName, 
+                            this.testStageVersion, 
+                            this.noDependencySet, 
+                            this.testStageDesc, true);
+        
+        final Corpus.Reader testReader = this.fbc.makeReader(testStage);
+        final Iterator<IndexedCommunication> readIter = 
+                testReader.loadCommunications();
+    }
+    
+    @Test(expected = RebarException.class)
+    public void testLoadCommunicationsStageNotExists() throws RebarException {
+        Stage s = new FileStage("foo", "v1", 1, this.fbc.getPath(),
+                this.noDependencySet, "test stage", true);
+        this.fbc.makeReader(s);
+    }
+    
+    @Test
     public void testQueryStageNameVersion() throws RebarException {
         this.fbc.makeStage(this.testStageName, 
                 this.testStageVersion, 
