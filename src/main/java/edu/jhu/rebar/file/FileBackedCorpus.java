@@ -3,8 +3,11 @@
  */
 package edu.jhu.rebar.file;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -20,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -30,10 +34,12 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.ConcreteException;
 import edu.jhu.hlt.concrete.io.ProtocolBufferReader;
+import edu.jhu.hlt.concrete.io.ProtocolBufferWriter;
 import edu.jhu.hlt.concrete.util.ProtoFactory;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.ProtoIndex;
+import edu.jhu.rebar.ProtoIndex.ModificationTarget;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 
@@ -216,7 +222,6 @@ public class FileBackedCorpus implements Corpus {
 
     public class FileCorpusReader implements Reader {
 
-        private final FileBackedCorpus corpus;
         private final Path commPath;
         private final Set<Stage> stagesToLoad;
 
@@ -225,8 +230,7 @@ public class FileBackedCorpus implements Corpus {
         }
         
         public FileCorpusReader(FileBackedCorpus corpus, Set<Stage> stagesToLoad) {
-            this.corpus = corpus;
-            this.commPath = this.corpus.commsPath;
+            this.commPath = FileBackedCorpus.this.commsPath;
             this.stagesToLoad = stagesToLoad;
         }
 
@@ -304,7 +308,7 @@ public class FileBackedCorpus implements Corpus {
 
         @Override
         public Corpus getCorpus() {
-            return this.corpus;
+            return FileBackedCorpus.this;
         }
 
     }
@@ -368,10 +372,36 @@ public class FileBackedCorpus implements Corpus {
 
     public class FileCorpusWriter implements Writer {
 
+        private Stage stage;
+        private Path stagePath;
+        private File stageOutputFile;
+        private ProtocolBufferWriter pbw;
+        
+        public FileCorpusWriter (Stage stage, Path stagePath) throws RebarException {
+            try {
+                this.stage = stage;
+                this.stagePath = stagePath;
+                Path outputStagePath = this.stagePath
+                        .resolve(this.stage.getStageName())
+                        .resolve(this.stage.getStageVersion())
+                        .resolve("stage.pb");
+                this.stageOutputFile = outputStagePath.toFile();
+                this.pbw = new ProtocolBufferWriter(
+                        new BufferedOutputStream(
+                        new FileOutputStream(this.stageOutputFile, true)));
+                
+            } catch (FileNotFoundException e) {
+                throw new RebarException(e);
+            }
+            
+        }
+        
         @Override
         public void saveCommunication(IndexedCommunication comm)
                 throws RebarException {
-            // TODO Auto-generated method stub
+            Map<ModificationTarget, byte[]> delta = 
+                    comm.getIndex().getUnsavedModifications();
+            
 
         }
 
@@ -389,8 +419,7 @@ public class FileBackedCorpus implements Corpus {
 
         @Override
         public Stage getOutputStage() {
-            // TODO Auto-generated method stub
-            return null;
+            return this.stage;
         }
 
     }
