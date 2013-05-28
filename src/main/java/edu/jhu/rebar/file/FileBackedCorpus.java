@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -24,12 +25,17 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
 
 import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.ConcreteException;
@@ -375,7 +381,8 @@ public class FileBackedCorpus implements Corpus {
         private Stage stage;
         private Path stagePath;
         private File stageOutputFile;
-        private ProtocolBufferWriter pbw;
+        private Kryo kryo;
+        private Output out;
         
         public FileCorpusWriter (Stage stage, Path stagePath) throws RebarException {
             try {
@@ -386,11 +393,18 @@ public class FileBackedCorpus implements Corpus {
                         .resolve(this.stage.getStageVersion())
                         .resolve("stage.pb");
                 this.stageOutputFile = outputStagePath.toFile();
-                this.pbw = new ProtocolBufferWriter(
-                        new BufferedOutputStream(
-                        new FileOutputStream(this.stageOutputFile, true)));
-                
-            } catch (FileNotFoundException e) {
+//                this.pbw = new ProtocolBufferWriter(
+//                        new BufferedOutputStream(
+//                        new FileOutputStream(this.stageOutputFile, true)));
+                this.kryo = new Kryo();
+                this.kryo.register(ModificationTarget.class, new ModificationTargetSerializer());
+                FieldSerializer<StageOutput> fs = 
+                        new FieldSerializer<>(this.kryo, StageOutput.class);
+                fs.getField("mt").setClass(ModificationTarget.class);
+                this.kryo.register(StageOutput.class, fs);
+                FileOutputStream fos = new FileOutputStream(this.stageOutputFile, true);
+                this.out = new Output(fos);
+            } catch (IOException e) {
                 throw new RebarException(e);
             }
             
@@ -399,34 +413,38 @@ public class FileBackedCorpus implements Corpus {
         @Override
         public void saveCommunication(IndexedCommunication comm)
                 throws RebarException {
+            ProtoIndex pi = comm.getIndex();
             Map<ModificationTarget, byte[]> delta = 
-                    comm.getIndex().getUnsavedModifications();
+                    pi.getUnsavedModifications();
+            for (Entry<ModificationTarget, byte[]> entry : delta.entrySet()) {
+                ModificationTarget mt = entry.getKey();
+                byte[] mods = entry.getValue();
+                StageOutput so  = new StageOutput(mt, mods);
+                kryo.writeObject(this.out, so);
+            }
             
-
+            pi.clearUnsavedModifications();
         }
 
         @Override
         public void flush() throws RebarException {
-            // TODO Auto-generated method stub
-
+            this.out.flush();
         }
 
         @Override
         public void close() throws RebarException {
-            // TODO Auto-generated method stub
-
+            this.out.close();
         }
 
         @Override
         public Stage getOutputStage() {
             return this.stage;
         }
-
     }
 
     @Override
     public Writer makeWriter(Stage stage) throws RebarException {
-        return null;
+        return new FileCorpusWriter(stage, this.stagesPath);
     }
 
     @Override

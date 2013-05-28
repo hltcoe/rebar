@@ -14,7 +14,7 @@ import com.basho.riak.client.convert.KeyUtil;
 import com.basho.riak.client.convert.NoKeySpecifedException;
 import com.basho.riak.client.http.util.Constants;
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.ObjectBuffer;
+
 
 /**
  * Implementation of {@link Converter} interface that uses Kryo library to serialize
@@ -54,20 +54,21 @@ public class KryoRiakCorpusConverter implements Converter<RiakCorpus> {
      */
     @Override
     public IRiakObject fromDomain(RiakCorpus domainObject, VClock vClock) throws ConversionException {
-        String key = KeyUtil.getKey(domainObject);
-
-        if (key == null) {
-            throw new NoKeySpecifedException(domainObject);
-        }
-
-        ObjectBuffer ob = new ObjectBuffer(kryo, 2 * 1024, 25 * 1024 * 1024);
-        byte[] value = ob.writeObject(domainObject);
-
-        return RiakObjectBuilder.newBuilder(bucket, key)
-                .withValue(value)
-                .withVClock(vClock)
-                .withContentType(Constants.CTYPE_OCTET_STREAM)
-                .build();
+//        String key = KeyUtil.getKey(domainObject);
+//
+//        if (key == null) {
+//            throw new NoKeySpecifedException(domainObject);
+//        }
+//
+//        ObjectBuffer ob = new ObjectBuffer(kryo, 2 * 1024, 25 * 1024 * 1024);
+//        byte[] value = ob.writeObject(domainObject);
+//
+//        return RiakObjectBuilder.newBuilder(bucket, key)
+//                .withValue(value)
+//                .withVClock(vClock)
+//                .withContentType(Constants.CTYPE_OCTET_STREAM)
+//                .build();
+        return null;
     }
 
     /*
@@ -79,10 +80,11 @@ public class KryoRiakCorpusConverter implements Converter<RiakCorpus> {
      */
     @Override
     public RiakCorpus toDomain(IRiakObject riakObject) throws ConversionException {
-        if (riakObject == null)
-            return null;
-        ObjectBuffer ob = new ObjectBuffer(this.kryo);
-        return ob.readObject(riakObject.getValue(), RiakCorpus.class);
+//        if (riakObject == null)
+//            return null;
+//        ObjectBuffer ob = new ObjectBuffer(this.kryo);
+//        return ob.readObject(riakObject.getValue(), RiakCorpus.class);
+        return null;
     }
 
 }
