@@ -314,7 +314,8 @@ abstract class AccumuloProtoReader
 		}
 
 		// Index the remaining messages by uuid.
-		Map<ProtoIndex.ModificationTarget, List<StageOutput>> stageValues = new HashMap<ProtoIndex.ModificationTarget, List<StageOutput>>();
+		Map<ProtoIndex.ModificationTarget, List<StageOutput>> stageValues = 
+		        new HashMap<ProtoIndex.ModificationTarget, List<StageOutput>>();
 		for (; cell != null; cell=getNextStageCell(cellIter)) {
 			ProtoIndex.ModificationTarget target = 
 				new ProtoIndex.ModificationTarget(cell.getKey().getColumnQualifier().getBytes());

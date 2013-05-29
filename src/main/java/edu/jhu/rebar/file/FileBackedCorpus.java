@@ -3,12 +3,8 @@
  */
 package edu.jhu.rebar.file;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -26,21 +22,24 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.serializers.FieldSerializer;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 
+import edu.jhu.hlt.concrete.Concrete;
 import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.ConcreteException;
 import edu.jhu.hlt.concrete.io.ProtocolBufferReader;
-import edu.jhu.hlt.concrete.io.ProtocolBufferWriter;
+import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.hlt.concrete.util.ProtoFactory;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.IndexedCommunication;
@@ -230,14 +229,35 @@ public class FileBackedCorpus implements Corpus {
 
         private final Path commPath;
         private final Set<Stage> stagesToLoad;
+        private final Connection conn;
+        private final NavigableMap<Integer, Stage> stagesToRead;
 
-        public FileCorpusReader(FileBackedCorpus corpus) {
-            this(corpus, new TreeSet<Stage>());
+        public FileCorpusReader() {
+            this(new TreeSet<Stage>());
         }
         
-        public FileCorpusReader(FileBackedCorpus corpus, Set<Stage> stagesToLoad) {
+        public FileCorpusReader(Set<Stage> stagesToLoad) {
             this.commPath = FileBackedCorpus.this.commsPath;
             this.stagesToLoad = stagesToLoad;
+            this.conn = FileBackedCorpus.this.conn;
+            this.stagesToRead = new TreeMap<>();
+            stagesToRead.put(0, null); // root cell.
+            for (Stage stage : this.stagesToLoad)
+                addStageDependencies(stage);
+        }
+        
+        /**
+         * Recursively add dependencies.
+         * 
+         * @param stage
+         * @param ids
+         */
+        private void addStageDependencies(Stage stage) {
+            if (!this.stagesToRead.containsKey(stage.getStageId())) {
+                this.stagesToRead.put(stage.getStageId(), stage);
+                for (Stage dep : stage.getDependencies())
+                    addStageDependencies(dep);
+            }
         }
 
         @Override
@@ -254,10 +274,145 @@ public class FileBackedCorpus implements Corpus {
                 Communication comm = (Communication) pbr.next();
                 pbr.close();
 
-                IndexedCommunication ic = new IndexedCommunication(comm,
-                        new ProtoIndex(comm), null);
+                Communication commToUse = this.assembleComm(comm);
+                IndexedCommunication ic = 
+                        new IndexedCommunication(commToUse,
+                        new ProtoIndex(commToUse), null);
                 return ic;
             } catch (ConcreteException | IOException e) {
+                throw new RebarException(e);
+            }
+        }
+        
+        /**
+         * Returns null if nothing changed, or the new value if we merged
+         * something in.
+         */
+        private Message mergeStages(
+                Message msg,
+                Map<ProtoIndex.ModificationTarget, List<StageOutput>> stageValues)
+                throws RebarException {
+            Message.Builder builder = null;
+
+            // Get the modification target for this message.
+            final ProtoIndex.ModificationTarget target;
+            Concrete.UUID uuid = IdUtil.getUUIDOrNull(msg); // uuid may be null.
+            if (uuid != null)
+                target = new ProtoIndex.ModificationTarget(uuid);
+            else if (msg instanceof Concrete.Edge) {
+                target = new ProtoIndex.ModificationTarget(
+                        ((Concrete.Edge) msg).getEdgeId());
+            } else
+                target = null;
+            // System.err.println("Merging, target="+target);
+            // Get any values we should merge into this target, and merge them.
+            List<StageOutput> valuesToMerge = stageValues.remove(target);
+            if (valuesToMerge != null) {
+                try {
+                    // Merge in the new values.
+                    for (StageOutput stageOutput : valuesToMerge) {
+                        if (builder == null)
+                            builder = msg.toBuilder();
+                        
+                            builder.mergeFrom(stageOutput.mod);
+                        
+                    }
+                } catch (InvalidProtocolBufferException e) {
+                    throw new RebarException(e);
+                }
+                // If we're done with everything, then return immediately.
+                if (stageValues.isEmpty())
+                    return builder.build();
+                // If the stage we just merged in is depended on by other
+                // stages, then we need to rebuild the message before we
+                // traverse it... Currently we don't keep that info, so
+                // for now, just always do it.
+                if (true) {
+                    msg = builder.build();
+                    builder = null;
+                }
+            }
+
+            // Recurse to subfields
+            for (Map.Entry<FieldDescriptor, Object> field : msg.getAllFields()
+                    .entrySet()) {
+                FieldDescriptor fd = field.getKey();
+                if (fd.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+                    if (fd.isRepeated()) {
+                        @SuppressWarnings("unchecked")
+                        List<Message> children = (List<Message>) field
+                                .getValue();
+                        for (int i = 0; i < children.size(); i++) {
+                            Message child = children.get(i);
+                            Message mergedChild = mergeStages(child,
+                                    stageValues);
+                            if (mergedChild != null) {
+                                if (builder == null)
+                                    builder = msg.toBuilder();
+                                builder.setRepeatedField(fd, i, mergedChild);
+                                if (stageValues.isEmpty())
+                                    return builder.build();
+                            }
+                        }
+                    } else {
+                        Message child = (Message) field.getValue();
+                        
+                        Message mergedChild = mergeStages(child, stageValues);
+                        if (mergedChild != null) {
+                            if (builder == null)
+                                builder = msg.toBuilder();
+                            builder.setField(fd, mergedChild);
+                            if (stageValues.isEmpty())
+                                return builder.build();
+                        }
+                    }
+                }
+            }
+
+            if (builder != null)
+                return builder.build();
+            else if (valuesToMerge != null)
+                return msg;
+            else
+                return null;
+        }
+        
+        private List<StageOutput> queryStages(String commId) throws RebarException {
+            try {
+                List<StageOutput> soList = new ArrayList<>();
+                String sql = "SELECT stage_id, target, mods FROM stage_mods WHERE " +
+                		"comm_id = ?";
+                PreparedStatement ps = this.conn.prepareStatement(sql);
+                ps.setString(1, commId);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    int stageId = rs.getInt(1);
+                    ModificationTarget mt = new ModificationTarget(rs.getBytes(2));
+                    byte[] value = rs.getBytes(3);
+                    
+                    StageOutput so = new StageOutput(stageId, mt, value);
+                    soList.add(so);
+                }
+                ps.close();
+                
+                return soList;
+            } catch (SQLException e) {
+                throw new RebarException(e);
+            }
+        }
+        
+        private Communication assembleComm(Communication original) 
+                throws RebarException {
+            try {
+                String commId = original.getGuid().getCommunicationId();
+                List<StageOutput> soList = this.queryStages(commId);
+                Communication.Builder mergedComm = original.toBuilder();
+                for (StageOutput so : soList) 
+                    mergedComm = mergedComm.mergeFrom(so.mod);
+                
+                Communication commToUse = mergedComm.build();
+                return commToUse;
+            } catch (InvalidProtocolBufferException e) {
                 throw new RebarException(e);
             }
         }
@@ -283,6 +438,7 @@ public class FileBackedCorpus implements Corpus {
                     if (subset.contains(commId)) {
                         Communication c = ProtoFactory
                                 .readCommunicationFromPath(nextPath);
+                        c = this.assembleComm(c);
                         IndexedCommunication ic = new IndexedCommunication(c,
                                 new ProtoIndex(c), null);
                         commSet.add(ic);
@@ -323,7 +479,7 @@ public class FileBackedCorpus implements Corpus {
     public Reader makeReader(Collection<Stage> stages) throws RebarException {
         Set<Stage> stageSet = new TreeSet<>();
         stageSet.addAll(stages);
-        return new FileCorpusReader(this, stageSet);
+        return new FileCorpusReader(stageSet);
     }
 
     @Override
@@ -331,7 +487,7 @@ public class FileBackedCorpus implements Corpus {
         Set<Stage> stageSet = new TreeSet<>();
         List<Stage> stageList = Arrays.asList(stages);
         stageSet.addAll(stageList);
-        return new FileCorpusReader(this, stageSet);
+        return new FileCorpusReader(stageSet);
     }
 
     @Override
@@ -340,12 +496,12 @@ public class FileBackedCorpus implements Corpus {
             throw new RebarException("Stage: " + stage.getStageName() + " doesn't exist.");
         Set<Stage> stageSet = new TreeSet<>();
         stageSet.add(stage);
-        return new FileCorpusReader(this, stageSet);
+        return new FileCorpusReader(stageSet);
     }
 
     @Override
     public Reader makeReader() throws RebarException {
-        return new FileCorpusReader(this);
+        return new FileCorpusReader();
     }
 
     @Override
@@ -379,33 +535,17 @@ public class FileBackedCorpus implements Corpus {
     public class FileCorpusWriter implements Writer {
 
         private Stage stage;
-        private Path stagePath;
-        private File stageOutputFile;
-        private Kryo kryo;
-        private Output out;
+        private String tableName;
+        private Connection conn;
+//        private Kryo kryo;
         
-        public FileCorpusWriter (Stage stage, Path stagePath) throws RebarException {
+        public FileCorpusWriter (Stage stage) throws RebarException {
             try {
                 this.stage = stage;
-                this.stagePath = stagePath;
-                Path outputStagePath = this.stagePath
-                        .resolve(this.stage.getStageName())
-                        .resolve(this.stage.getStageVersion())
-                        .resolve("stage.pb");
-                this.stageOutputFile = outputStagePath.toFile();
-//                this.pbw = new ProtocolBufferWriter(
-//                        new BufferedOutputStream(
-//                        new FileOutputStream(this.stageOutputFile, true)));
-                this.kryo = new Kryo();
-                this.kryo.register(ModificationTarget.class, new ModificationTargetSerializer());
-                FieldSerializer<StageOutput> fs = 
-                        new FieldSerializer<>(this.kryo, StageOutput.class);
-                fs.getField("mt").setClass(ModificationTarget.class);
-                this.kryo.register(StageOutput.class, fs);
-                FileOutputStream fos = new FileOutputStream(this.stageOutputFile, true);
-                this.out = new Output(fos);
-            } catch (IOException e) {
-                throw new RebarException(e);
+                this.conn = FileBackedCorpus.this.conn;
+                this.tableName = stage.getStageName() + "_" + stage.getStageVersion();
+            } finally {
+                
             }
             
         }
@@ -413,27 +553,45 @@ public class FileBackedCorpus implements Corpus {
         @Override
         public void saveCommunication(IndexedCommunication comm)
                 throws RebarException {
-            ProtoIndex pi = comm.getIndex();
-            Map<ModificationTarget, byte[]> delta = 
-                    pi.getUnsavedModifications();
-            for (Entry<ModificationTarget, byte[]> entry : delta.entrySet()) {
-                ModificationTarget mt = entry.getKey();
-                byte[] mods = entry.getValue();
-                StageOutput so  = new StageOutput(mt, mods);
-                kryo.writeObject(this.out, so);
+            try {
+                String sql = "INSERT INTO '" + "stage_mods" + "' VALUES(?, ?, ?, ?)";
+                PreparedStatement ps = this.conn.prepareStatement(sql);
+                ps.setInt(1, this.stage.getStageId());
+                ps.setString(2, comm.getCommunicationId());
+                
+                ProtoIndex pi = comm.getIndex();
+                Map<ModificationTarget, byte[]> delta = 
+                        pi.getUnsavedModifications();
+                for (Entry<ModificationTarget, byte[]> entry : delta.entrySet()) {
+                    ModificationTarget mt = entry.getKey();
+                    byte[] mods = entry.getValue();
+
+                    ps.setBytes(3, mt.toBytes());
+                    ps.setBytes(4, mods);
+                    
+                    ps.addBatch();
+                }
+                
+                ps.executeBatch();
+                ps.close();
+                pi.clearUnsavedModifications();
+            } catch (SQLException e) {
+                throw new RebarException(e);
             }
-            
-            pi.clearUnsavedModifications();
         }
 
         @Override
         public void flush() throws RebarException {
-            this.out.flush();
+
         }
 
         @Override
         public void close() throws RebarException {
-            this.out.close();
+            try {
+                this.conn = null;
+            } finally {
+                
+            }
         }
 
         @Override
@@ -444,7 +602,7 @@ public class FileBackedCorpus implements Corpus {
 
     @Override
     public Writer makeWriter(Stage stage) throws RebarException {
-        return new FileCorpusWriter(stage, this.stagesPath);
+        return new FileCorpusWriter(stage);
     }
 
     @Override

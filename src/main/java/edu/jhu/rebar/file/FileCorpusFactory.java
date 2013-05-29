@@ -89,6 +89,11 @@ public class FileCorpusFactory implements CorpusFactory {
 	    	statement.executeUpdate("CREATE TABLE dependencies (stage_id integer, dependency_id integer, " +
 	    			"FOREIGN KEY(stage_id) REFERENCES stages(id))");
 	    	statement.executeUpdate("CREATE TABLE comm_ids (id integer PRIMARY KEY, guid string)");
+	    	statement.executeUpdate("CREATE TABLE '" + "stage_mods" + "' (stage_id integer, " +
+                        "comm_id string, " +
+                        "target blob, " +
+                        "mods blob, " +
+                        "FOREIGN KEY(stage_id) REFERENCES stages(id))");
 	    	statement.close();
 	        } catch (SQLException ioe) {
 	            throw new RebarException(ioe);
@@ -190,7 +195,7 @@ public class FileCorpusFactory implements CorpusFactory {
 		return fbc;
 	}
     
-    private Connection getConnection(String corpusName) throws RebarException {
+    Connection getConnection(String corpusName) throws RebarException {
         try {
             Class.forName("org.sqlite.JDBC");
             String connString = "jdbc:sqlite:" + 
