@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd version="4.2.5" timestamp="2013-05-29T03:50:03.203">
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/IndexedProto.java">
+<violation beginline="126" endline="126" begincolumn="44" endcolumn="63" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar" class="IndexedProto" variable="unsavedModifications" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'unsavedModifications'.
+</violation>
+<violation beginline="129" endline="129" begincolumn="45" endcolumn="53" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar" class="IndexedProto" variable="uuidIndex" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'uuidIndex'.
+</violation>
+<violation beginline="132" endline="132" begincolumn="51" endcolumn="61" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar" class="IndexedProto" variable="parentIndex" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'parentIndex'.
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/IndexedTokenization.java">
+<violation beginline="19" endline="19" begincolumn="1" endcolumn="29" rule="UnusedImports" ruleset="Import Statement Rules" package="edu.jhu.rebar" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'java.util.Collections'
+</violation>
+<violation beginline="52" endline="52" begincolumn="51" endcolumn="68" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar" class="IndexedTokenization" variable="taggingsByToolName" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'taggingsByToolName'.
+</violation>
+<violation beginline="259" endline="259" begincolumn="38" endcolumn="86" rule="UnusedPrivateMethod" ruleset="Unused Code Rules" package="edu.jhu.rebar" class="IndexedTokenization" method="buildTokenTagIndex" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateMethod" priority="3">
+Avoid unused private methods such as 'buildTokenTagIndex(Concrete.TokenTagging)'.
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/IndexedVertex.java">
+<violation beginline="26" endline="26" begincolumn="32" endcolumn="42" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar" class="IndexedVertex" variable="graphReader" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'graphReader'.
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/ProtoIndex.java">
+<violation beginline="383" endline="383" begincolumn="45" endcolumn="73" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar" class="ProtoIndex" variable="ZERO_UUID_MODIFICATION_TARGET" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'ZERO_UUID_MODIFICATION_TARGET'.
+</violation>
+<violation beginline="420" endline="426" begincolumn="21" endcolumn="21" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="edu.jhu.rebar" class="ProtoIndex" method="recordModification" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+These nested if statements could be combined
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/TokenLatticeIndexedTokenization.java">
+<violation beginline="158" endline="158" begincolumn="32" endcolumn="38" rule="UnusedLocalVariable" ruleset="Unused Code Rules" package="edu.jhu.rebar" class="TokenLatticeIndexedTokenization" method="getNextToken" variable="bestTok" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedLocalVariable" priority="3">
+Avoid unused local variables such as 'bestTok'.
+</violation>
+<violation beginline="173" endline="173" begincolumn="32" endcolumn="38" rule="UnusedLocalVariable" ruleset="Unused Code Rules" package="edu.jhu.rebar" class="TokenLatticeIndexedTokenization" method="getPrevToken" variable="bestTok" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedLocalVariable" priority="3">
+Avoid unused local variables such as 'bestTok'.
+</violation>
+<violation beginline="201" endline="203" begincolumn="33" endcolumn="116" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="edu.jhu.rebar" class="TokenLatticeIndexedTokenization" method="indexArcs" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+These nested if statements could be combined
+</violation>
+<violation beginline="228" endline="228" begincolumn="22" endcolumn="34" rule="UnusedPrivateMethod" ruleset="Unused Code Rules" package="edu.jhu.rebar" class="TokenLatticeIndexedTokenization" method="initFwdCost" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateMethod" priority="3">
+Avoid unused private methods such as 'initFwdCost()'.
+</violation>
+<violation beginline="249" endline="249" begincolumn="22" endcolumn="34" rule="UnusedPrivateMethod" ruleset="Unused Code Rules" package="edu.jhu.rebar" class="TokenLatticeIndexedTokenization" method="initBkwCost" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateMethod" priority="3">
+Avoid unused private methods such as 'initBkwCost()'.
+</violation>
+<violation beginline="292" endline="292" begincolumn="22" endcolumn="37" rule="UnusedPrivateMethod" ruleset="Unused Code Rules" package="edu.jhu.rebar" class="TokenLatticeIndexedTokenization" method="initMinBkwCost" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateMethod" priority="3">
+Avoid unused private methods such as 'initMinBkwCost()'.
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/accumulo/AccumuloBackedCorpus.java">
+<violation beginline="174" endline="174" begincolumn="17" endcolumn="29" rule="UnusedLocalVariable" ruleset="Unused Code Rules" package="edu.jhu.rebar.accumulo" class="AccumuloBackedCorpus" method="mergeDuplicateEdges" variable="mergeIsNeeded" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedLocalVariable" priority="3">
+Avoid unused local variables such as 'mergeIsNeeded'.
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/accumulo/AccumuloBackedGraph.java">
+<violation beginline="187" endline="187" begincolumn="37" endcolumn="39" rule="UnusedLocalVariable" ruleset="Unused Code Rules" package="edu.jhu.rebar.accumulo" class="AccumuloBackedGraph$VertexReader" method="wrap" variable="key" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedLocalVariable" priority="3">
+Avoid unused local variables such as 'key'.
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/accumulo/AccumuloProtoReader.java">
+<violation beginline="452" endline="452" begincolumn="29" endcolumn="32" rule="UnconditionalIfStatement" ruleset="Basic Rules" package="edu.jhu.rebar.accumulo" class="AccumuloProtoReader" method="mergeStages" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#UnconditionalIfStatement" priority="3">
+Do not use if statements that are always true or always false
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/accumulo/AccumuloStageTable.java">
+<violation beginline="121" endline="121" begincolumn="31" endcolumn="36" rule="UnusedLocalVariable" ruleset="Unused Code Rules" package="edu.jhu.rebar.accumulo" class="AccumuloStageTable" method="getStage" variable="result" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedLocalVariable" priority="3">
+Avoid unused local variables such as 'result'.
+</violation>
+<violation beginline="281" endline="281" begincolumn="41" endcolumn="54" rule="UnusedLocalVariable" ruleset="Unused Code Rules" package="edu.jhu.rebar.accumulo" class="AccumuloStageTable" method="getNewStageId" variable="already_locked" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedLocalVariable" priority="3">
+Avoid unused local variables such as 'already_locked'.
+</violation>
+<violation beginline="369" endline="371" begincolumn="79" endcolumn="25" rule="EmptyIfStmt" ruleset="Basic Rules" package="edu.jhu.rebar.accumulo" class="AccumuloStageTable" method="readStageTable" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyIfStmt" priority="3">
+Avoid empty if statements
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/examples/RebarTest.java">
+<violation beginline="35" endline="35" begincolumn="39" endcolumn="40" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar.examples" class="RebarTest" variable="sr" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'sr'.
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/file/FileCorpusWriter.java">
+<violation beginline="6" endline="6" begincolumn="1" endcolumn="37" rule="UnusedImports" ruleset="Import Statement Rules" package="edu.jhu.rebar.file" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'java.io.FileNotFoundException'
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/ingest/TwitterCorpusMaker.java">
+<violation beginline="42" endline="42" begincolumn="47" endcolumn="64" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar.ingest" class="TwitterCorpusMaker" variable="annotationMetadata" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'annotationMetadata'.
+</violation>
+<violation beginline="43" endline="43" begincolumn="46" endcolumn="59" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar.ingest" class="TwitterCorpusMaker" variable="attribMetadata" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'attribMetadata'.
+</violation>
+<violation beginline="46" endline="46" begincolumn="35" endcolumn="50" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar.ingest" class="TwitterCorpusMaker" variable="TWEET_INFO_FIELD" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'TWEET_INFO_FIELD'.
+</violation>
+<violation beginline="65" endline="65" begincolumn="35" endcolumn="50" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar.ingest" class="TwitterCorpusMaker" variable="GRAPH_EDGE_FIELD" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'GRAPH_EDGE_FIELD'.
+</violation>
+<violation beginline="73" endline="73" begincolumn="21" endcolumn="38" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar.ingest" class="TwitterCorpusMaker" variable="duplicatesDetected" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'duplicatesDetected'.
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/riak/KryoRiakCorpusConverter.java">
+<violation beginline="9" endline="9" begincolumn="1" endcolumn="56" rule="UnusedImports" ruleset="Import Statement Rules" package="edu.jhu.rebar.riak" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'com.basho.riak.client.builders.RiakObjectBuilder'
+</violation>
+<violation beginline="13" endline="13" begincolumn="1" endcolumn="45" rule="UnusedImports" ruleset="Import Statement Rules" package="edu.jhu.rebar.riak" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'com.basho.riak.client.convert.KeyUtil'
+</violation>
+<violation beginline="14" endline="14" begincolumn="1" endcolumn="60" rule="UnusedImports" ruleset="Import Statement Rules" package="edu.jhu.rebar.riak" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'com.basho.riak.client.convert.NoKeySpecifedException'
+</violation>
+<violation beginline="15" endline="15" begincolumn="1" endcolumn="49" rule="UnusedImports" ruleset="Import Statement Rules" package="edu.jhu.rebar.riak" externalInfoUrl="http://pmd.sourceforge.net/rules/imports.html#UnusedImports" priority="4">
+Avoid unused imports such as 'com.basho.riak.client.http.util.Constants'
+</violation>
+<violation beginline="28" endline="28" begincolumn="20" endcolumn="25" rule="UnusedPrivateField" ruleset="Unused Code Rules" package="edu.jhu.rebar.riak" class="KryoRiakCorpusConverter" variable="bucket" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedPrivateField" priority="3">
+Avoid unused private fields such as 'bucket'.
+</violation>
+</file>
+<file name="/home/max/git/rebar/src/main/java/edu/jhu/rebar/rpc/UnnamedPipeRPC.java">
+<violation beginline="405" endline="407" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'owner'.
+</violation>
+<violation beginline="409" endline="411" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'owner'.
+</violation>
+<violation beginline="413" endline="415" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'owner'.
+</violation>
+<violation beginline="417" endline="419" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'owner'.
+</violation>
+<violation beginline="421" endline="423" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'owner'.
+</violation>
+<violation beginline="433" endline="435" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'owner'.
+</violation>
+<violation beginline="437" endline="439" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'owner'.
+</violation>
+<violation beginline="441" endline="443" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'owner'.
+</violation>
+<violation beginline="445" endline="447" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'owner'.
+</violation>
+<violation beginline="449" endline="451" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'owner'.
+</violation>
+<violation beginline="453" endline="455" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'owner'.
+</violation>
+<violation beginline="457" endline="459" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'owner'.
+</violation>
+<violation beginline="510" endline="512" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'request'.
+</violation>
+<violation beginline="729" endline="731" begincolumn="13" endcolumn="5" rule="UnusedFormalParameter" ruleset="Unused Code Rules" package="edu.jhu.rebar.rpc" class="UnnamedPipeRPC" externalInfoUrl="http://pmd.sourceforge.net/rules/unusedcode.html#UnusedFormalParameter" priority="3">
+Avoid unused method parameters such as 'request'.
+</violation>
+</file>
+</pmd>

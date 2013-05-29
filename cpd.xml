@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd-cpd>
+<duplication lines="28" tokens="149">
+<file line="442" path="/home/max/git/rebar/src/main/java/edu/jhu/rebar/accumulo/AccumuloProtoReader.java"/>
+<file line="319" path="/home/max/git/rebar/src/main/java/edu/jhu/rebar/file/FileBackedCorpus.java"/>
+<codefragment>
+<![CDATA[
+                    }
+                } catch (InvalidProtocolBufferException e) {
+                    throw new RebarException(e);
+                }
+                // If we're done with everything, then return immediately.
+                if (stageValues.isEmpty())
+                    return builder.build();
+                // If the stage we just merged in is depended on by other
+                // stages, then we need to rebuild the message before we
+                // traverse it... Currently we don't keep that info, so
+                // for now, just always do it.
+                if (true) {
+                    msg = builder.build();
+                    builder = null;
+                }
+            }
+
+            // Recurse to subfields
+            for (Map.Entry<FieldDescriptor, Object> field : msg.getAllFields()
+                    .entrySet()) {
+                FieldDescriptor fd = field.getKey();
+                if (fd.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+                    if (fd.isRepeated()) {
+                        @SuppressWarnings("unchecked")
+                        List<Message> children = (List<Message>) field
+                                .getValue();
+                        for (int i = 0; i < children.size(); i++) {
+                            Message child = children.get(i);
+]]>
+</codefragment>
+</duplication>
+<duplication lines="23" tokens="118">
+<file line="411" path="/home/max/git/rebar/src/main/java/edu/jhu/rebar/accumulo/AccumuloProtoReader.java"/>
+<file line="293" path="/home/max/git/rebar/src/main/java/edu/jhu/rebar/file/FileBackedCorpus.java"/>
+<codefragment>
+<![CDATA[
+                Map<ProtoIndex.ModificationTarget, List<StageOutput>> stageValues)
+                throws RebarException {
+            Message.Builder builder = null;
+
+            // Get the modification target for this message.
+            final ProtoIndex.ModificationTarget target;
+            Concrete.UUID uuid = IdUtil.getUUIDOrNull(msg); // uuid may be null.
+            if (uuid != null)
+                target = new ProtoIndex.ModificationTarget(uuid);
+            else if (msg instanceof Concrete.Edge) {
+                target = new ProtoIndex.ModificationTarget(
+                        ((Concrete.Edge) msg).getEdgeId());
+            } else
+                target = null;
+            // System.err.println("Merging, target="+target);
+            // Get any values we should merge into this target, and merge them.
+            List<StageOutput> valuesToMerge = stageValues.remove(target);
+            if (valuesToMerge != null) {
+                try {
+                    // Merge in the new values.
+                    for (StageOutput stageOutput : valuesToMerge) {
+                        if (builder == null)
+                            builder = msg.toBuilder();
+]]>
+</codefragment>
+</duplication>
+<duplication lines="9" tokens="103">
+<file line="85" path="/home/max/git/rebar/src/main/java/edu/jhu/rebar/IndexedKnowledgeGraph.java"/>
+<file line="187" path="/home/max/git/rebar/src/main/java/edu/jhu/rebar/accumulo/AccumuloBackedCorpus.java"/>
+<codefragment>
+<![CDATA[
+	    Concrete.UUID v1 = edge.getEdgeId().getV1();
+	    Concrete.UUID v2 = edge.getEdgeId().getV2();
+	    if (!neighbors.containsKey(v1))
+		neighbors.put(v1, new HashSet<Concrete.UUID>());
+	    if (!neighbors.containsKey(v2))
+		neighbors.put(v2, new HashSet<Concrete.UUID>());
+	    neighbors.get(v1).add(v2);
+	    neighbors.get(v2).add(v1);
+	}
+]]>
+</codefragment>
+</duplication>
+<duplication lines="10" tokens="102">
+<file line="535" path="/home/max/git/rebar/src/main/java/edu/jhu/rebar/rpc/UnnamedPipeRPC.java"/>
+<file line="748" path="/home/max/git/rebar/src/main/java/edu/jhu/rebar/rpc/UnnamedPipeRPC.java"/>
+<codefragment>
+<![CDATA[
+        Graph self = graphs.get(request.getSelf().getId());
+        Set<Stage> dependencies = new TreeSet<Stage>();
+        for (int dep : request.getDependencyList())
+            dependencies.add(self.getStage(dep));
+        Stage newStage = self.makeStage(request.getStageName(), request.getStageVersion(), dependencies, request.getDescription(),
+                request.getDeleteIfExists());
+        return RPCResponse.newBuilder().addStage(buildRpcStage(newStage)).build();
+    }
+
+    private RPCResponse handleGraphDeleteStage(ConcreteRpc.Graph.DeleteStage request) throws RebarException {
+]]>
+</codefragment>
+</duplication>
+</pmd-cpd>

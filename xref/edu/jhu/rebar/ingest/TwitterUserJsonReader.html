@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>TwitterUserJsonReader xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../apidocs/edu/jhu/rebar/ingest/TwitterUserJsonReader.html">View Javadoc</a></div><pre>
+
+<a class="jxr_linenumber" name="1" href="#1">1</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="2" href="#2">2</a>   <em class="jxr_javadoccomment"> * Copyright 2012-2013 Johns Hopkins University HLTCOE. All rights reserved.</em>
+<a class="jxr_linenumber" name="3" href="#3">3</a>   <em class="jxr_javadoccomment"> * This software is released under the 2-clause BSD license.</em>
+<a class="jxr_linenumber" name="4" href="#4">4</a>   <em class="jxr_javadoccomment"> * See LICENSE in the project root directory.</em>
+<a class="jxr_linenumber" name="5" href="#5">5</a>   <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="6" href="#6">6</a>   
+<a class="jxr_linenumber" name="7" href="#7">7</a>   
+<a class="jxr_linenumber" name="8" href="#8">8</a>   <strong class="jxr_keyword">package</strong> edu.jhu.rebar.ingest;
+<a class="jxr_linenumber" name="9" href="#9">9</a>   <strong class="jxr_keyword">import</strong> com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+<a class="jxr_linenumber" name="10" href="#10">10</a>  <strong class="jxr_keyword">import</strong> com.fasterxml.jackson.annotation.JsonProperty;
+<a class="jxr_linenumber" name="11" href="#11">11</a>  <strong class="jxr_keyword">import</strong> com.fasterxml.jackson.databind.ObjectMapper;
+<a class="jxr_linenumber" name="12" href="#12">12</a>  
+<a class="jxr_linenumber" name="13" href="#13">13</a>  <strong class="jxr_keyword">import</strong> edu.jhu.hlt.concrete.Concrete;
+<a class="jxr_linenumber" name="14" href="#14">14</a>  
+<a class="jxr_linenumber" name="15" href="#15">15</a>  <em class="jxr_javadoccomment">/**</em><em class="jxr_javadoccomment"> Class used to read in a JSON Twitter User record and convert it to</em>
+<a class="jxr_linenumber" name="16" href="#16">16</a>  <em class="jxr_javadoccomment"> * a rebar protobuf object (Concrete.TwitterUser).  The input JSON record</em>
+<a class="jxr_linenumber" name="17" href="#17">17</a>  <em class="jxr_javadoccomment"> * should use the standard twitter API, as defined at:</em>
+<a class="jxr_linenumber" name="18" href="#18">18</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="19" href="#19">19</a>  <em class="jxr_javadoccomment"> * https://dev.twitter.com/docs/platform-objects/users</em>
+<a class="jxr_linenumber" name="20" href="#20">20</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="21" href="#21">21</a>  @JsonIgnoreProperties({
+<a class="jxr_linenumber" name="22" href="#22">22</a>  	<span class="jxr_string">"profile_background_tile"</span>, <span class="jxr_string">"profile_background_color"</span>, 
+<a class="jxr_linenumber" name="23" href="#23">23</a>  	<span class="jxr_string">"profile_background_image_url"</span>, <span class="jxr_string">"profile_background_image_url_https"</span>, 
+<a class="jxr_linenumber" name="24" href="#24">24</a>  	<span class="jxr_string">"profile_image_url"</span>, <span class="jxr_string">"profile_image_url_https"</span>, <span class="jxr_string">"profile_link_color"</span>, 
+<a class="jxr_linenumber" name="25" href="#25">25</a>  	<span class="jxr_string">"profile_text_color"</span>, <span class="jxr_string">"profile_sidebar_border_color"</span>, 
+<a class="jxr_linenumber" name="26" href="#26">26</a>  	<span class="jxr_string">"profile_sidebar_fill_color"</span>, <span class="jxr_string">"protected"</span>,
+<a class="jxr_linenumber" name="27" href="#27">27</a>  	<em class="jxr_comment">// The following are deprecated in the Twitter API </em>
+<a class="jxr_linenumber" name="28" href="#28">28</a>  	<span class="jxr_string">"following"</span>, <span class="jxr_string">"notifications"</span>, <span class="jxr_string">"id_str"</span>,
+<a class="jxr_linenumber" name="29" href="#29">29</a>  	<em class="jxr_comment">// The following are non-standard additions in the mtire data set</em>
+<a class="jxr_linenumber" name="30" href="#30">30</a>  	<span class="jxr_string">"mitre_gender"</span>})
+<a class="jxr_linenumber" name="31" href="#31">31</a>  <strong class="jxr_keyword">class</strong> <a href="../../../../edu/jhu/rebar/ingest/TwitterUserJsonReader.html">TwitterUserJsonReader</a> {
+<a class="jxr_linenumber" name="32" href="#32">32</a>  	<em class="jxr_comment">// Public interface</em>
+<a class="jxr_linenumber" name="33" href="#33">33</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> Concrete.TwitterUser parseJson(String json) <strong class="jxr_keyword">throws</strong> java.io.IOException {
+<a class="jxr_linenumber" name="34" href="#34">34</a>  		<strong class="jxr_keyword">if</strong> (mapper==<strong class="jxr_keyword">null</strong>) mapper = <strong class="jxr_keyword">new</strong> ObjectMapper();
+<a class="jxr_linenumber" name="35" href="#35">35</a>  		<strong class="jxr_keyword">return</strong> mapper.readValue(json, TwitterUserJsonReader.<strong class="jxr_keyword">class</strong>).toProto();
+<a class="jxr_linenumber" name="36" href="#36">36</a>  	}
+<a class="jxr_linenumber" name="37" href="#37">37</a>  
+<a class="jxr_linenumber" name="38" href="#38">38</a>  	<em class="jxr_comment">// Private implementation details</em>
+<a class="jxr_linenumber" name="39" href="#39">39</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> ObjectMapper mapper = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="40" href="#40">40</a>  	<strong class="jxr_keyword">private</strong> Concrete.TwitterUser.Builder builder;
+<a class="jxr_linenumber" name="41" href="#41">41</a>  	TwitterUserJsonReader() {
+<a class="jxr_linenumber" name="42" href="#42">42</a>  		builder = Concrete.TwitterUser.newBuilder(); }
+<a class="jxr_linenumber" name="43" href="#43">43</a>  	Concrete.TwitterUser toProto() {
+<a class="jxr_linenumber" name="44" href="#44">44</a>  		<strong class="jxr_keyword">return</strong> builder.build(); }
+<a class="jxr_linenumber" name="45" href="#45">45</a>  
+<a class="jxr_linenumber" name="46" href="#46">46</a>  	<em class="jxr_comment">// Converters: one property for each expected json field.</em>
+<a class="jxr_linenumber" name="47" href="#47">47</a>  	@JsonProperty(<span class="jxr_string">"id"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setId(<strong class="jxr_keyword">long</strong> id) { 
+<a class="jxr_linenumber" name="48" href="#48">48</a>  		builder.setId(id); }
+<a class="jxr_linenumber" name="49" href="#49">49</a>  	@JsonProperty(<span class="jxr_string">"name"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setName(String name) { 
+<a class="jxr_linenumber" name="50" href="#50">50</a>  		<strong class="jxr_keyword">if</strong> (name != <strong class="jxr_keyword">null</strong>) builder.setName(name); }
+<a class="jxr_linenumber" name="51" href="#51">51</a>  	@JsonProperty(<span class="jxr_string">"screen_name"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setScreenName(String screenName) { 
+<a class="jxr_linenumber" name="52" href="#52">52</a>  		<strong class="jxr_keyword">if</strong> (screenName != <strong class="jxr_keyword">null</strong>) builder.setScreenName(screenName); }
+<a class="jxr_linenumber" name="53" href="#53">53</a>  	@JsonProperty(<span class="jxr_string">"lang"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setLang(String lang) { 
+<a class="jxr_linenumber" name="54" href="#54">54</a>  		<strong class="jxr_keyword">if</strong> (lang != <strong class="jxr_keyword">null</strong>) builder.setLang(lang); }
+<a class="jxr_linenumber" name="55" href="#55">55</a>  	@JsonProperty(<span class="jxr_string">"geo_enabled"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setGeoEnabled(<strong class="jxr_keyword">boolean</strong> geoEnabled) { 
+<a class="jxr_linenumber" name="56" href="#56">56</a>  		builder.setGeoEnabled(geoEnabled); }
+<a class="jxr_linenumber" name="57" href="#57">57</a>  	@JsonProperty(<span class="jxr_string">"created_at"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setCreatedAt(String createdAt) { 
+<a class="jxr_linenumber" name="58" href="#58">58</a>  		<strong class="jxr_keyword">if</strong> (createdAt != <strong class="jxr_keyword">null</strong>) builder.setCreatedAt(createdAt); }
+<a class="jxr_linenumber" name="59" href="#59">59</a>  	@JsonProperty(<span class="jxr_string">"friends_count"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setFriendsCount(<strong class="jxr_keyword">int</strong> friendsCount) { 
+<a class="jxr_linenumber" name="60" href="#60">60</a>  		builder.setFriendsCount(friendsCount); }
+<a class="jxr_linenumber" name="61" href="#61">61</a>  	@JsonProperty(<span class="jxr_string">"statuses_count"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setStatusesCount(<strong class="jxr_keyword">int</strong> statusesCount) { 
+<a class="jxr_linenumber" name="62" href="#62">62</a>  		builder.setStatusesCount(statusesCount); }
+<a class="jxr_linenumber" name="63" href="#63">63</a>  	@JsonProperty(<span class="jxr_string">"verified"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setVerified(<strong class="jxr_keyword">boolean</strong> verified) { 
+<a class="jxr_linenumber" name="64" href="#64">64</a>  		builder.setVerified(verified); }
+<a class="jxr_linenumber" name="65" href="#65">65</a>  	@JsonProperty(<span class="jxr_string">"listed_count"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setListedCount(<strong class="jxr_keyword">int</strong> listedCount) { 
+<a class="jxr_linenumber" name="66" href="#66">66</a>  		builder.setListedCount(listedCount); }
+<a class="jxr_linenumber" name="67" href="#67">67</a>  	@JsonProperty(<span class="jxr_string">"favourites_count"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setFavouritesCount(<strong class="jxr_keyword">int</strong> favouritesCount) { 
+<a class="jxr_linenumber" name="68" href="#68">68</a>  		builder.setFavouritesCount(favouritesCount); }
+<a class="jxr_linenumber" name="69" href="#69">69</a>  	@JsonProperty(<span class="jxr_string">"followers_count"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setFollowersCount(<strong class="jxr_keyword">int</strong> followersCount) { 
+<a class="jxr_linenumber" name="70" href="#70">70</a>  		builder.setFollowersCount(followersCount); }
+<a class="jxr_linenumber" name="71" href="#71">71</a>  	@JsonProperty(<span class="jxr_string">"location"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setLocation(String location) { 
+<a class="jxr_linenumber" name="72" href="#72">72</a>  		<strong class="jxr_keyword">if</strong> (location != <strong class="jxr_keyword">null</strong>) builder.setLocation(location); }
+<a class="jxr_linenumber" name="73" href="#73">73</a>  	@JsonProperty(<span class="jxr_string">"time_zone"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setTimeZone(String timeZone) { 
+<a class="jxr_linenumber" name="74" href="#74">74</a>  		<strong class="jxr_keyword">if</strong> (timeZone != <strong class="jxr_keyword">null</strong>) builder.setTimeZone(timeZone); }
+<a class="jxr_linenumber" name="75" href="#75">75</a>  	@JsonProperty(<span class="jxr_string">"description"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setDescription(String description) { 
+<a class="jxr_linenumber" name="76" href="#76">76</a>  		<strong class="jxr_keyword">if</strong> (description != <strong class="jxr_keyword">null</strong>) builder.setDescription(description); }
+<a class="jxr_linenumber" name="77" href="#77">77</a>  	@JsonProperty(<span class="jxr_string">"utc_offset"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setUtcOffset(<strong class="jxr_keyword">int</strong> utcOffset) { 
+<a class="jxr_linenumber" name="78" href="#78">78</a>  		builder.setUtcOffset(utcOffset); }
+<a class="jxr_linenumber" name="79" href="#79">79</a>  	@JsonProperty(<span class="jxr_string">"url"</span>) <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> setUrl(String url) { 
+<a class="jxr_linenumber" name="80" href="#80">80</a>  		<strong class="jxr_keyword">if</strong> (url != <strong class="jxr_keyword">null</strong>) builder.setUrl(url); }
+<a class="jxr_linenumber" name="81" href="#81">81</a>  }
+</pre>
+<hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
+</html>
+
