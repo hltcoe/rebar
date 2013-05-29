@@ -170,7 +170,7 @@ public class FileCorpusFactory implements CorpusFactory {
         this.corporaList = new TreeSet<>();
         try {
             if (!Files.exists(pathOnDisk)) {
-                logger.info("Creating path: " + this.pathOnDisk.toString());
+                logger.debug("Creating path: " + this.pathOnDisk.toString());
                 Files.createDirectories(pathOnDisk);
                 this.corporaList = new TreeSet<>();
             } else {
