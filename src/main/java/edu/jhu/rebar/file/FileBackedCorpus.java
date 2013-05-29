@@ -766,6 +766,50 @@ public class FileBackedCorpus implements Corpus {
             throw new RebarException(e);
         }
     }
+    
+    private class StringThreeTuple {
+        public final String name;
+        public final String version;        
+        public final String desc;
+        
+        private StringThreeTuple(String name, String version, String desc) {
+            this.name = name;
+            this.version = version;
+            this.desc = desc;
+        }
+    }
+    
+    private StringThreeTuple queryStageInfo(int stageId) throws RebarException {
+        String sql = "SELECT name, version, description FROM stages " +
+                "WHERE id = ?";
+        PreparedStatement ps = null;
+        try {
+            ps = this.conn.prepareStatement(sql);
+            ps.setInt(1, stageId); 
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                String n = rs.getString(1);
+                String v = rs.getString(2);
+                String d = rs.getString(3);
+                
+                return new StringThreeTuple(n, v, d);
+            }
+        } catch (SQLException e) {
+            throw new RebarException(e);
+        } finally {
+            if (ps != null)
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    logger.trace(e.getMessage(), e);
+                }
+        }
+        
+        // if we get here, we didn't find a stage with that ID. 
+        // throw an exception.
+        throw new RebarException("Couldn't find stage with id: " + stageId + 
+                " in stages table.");
+    }
 
     private Set<Stage> queryStageDependencies(int stageId)
             throws RebarException {
@@ -776,18 +820,25 @@ public class FileBackedCorpus implements Corpus {
                     + "FROM dependencies WHERE stage_id = ?");
             ps.setInt(1, stageId);
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                int depId = rs.getInt(1);
-                // recurse to find dependencies until we've satisfied them.
-                Set<Stage> deps = this.queryStageDependencies(depId);
-                String depName = rs.getString(2);
-                String depVersion = rs.getString(3);
-                String description = rs.getString(4);
-                stages.add(new FileStage(depName, depVersion, depId,
-                        this.pathOnDisk, deps, description, true));
-            }
+            boolean hasMoreDeps = rs.next();
+            
+            // if no deps, exit recursion.
+            if (!hasMoreDeps) {
+                return new TreeSet<Stage>();
+            } else {
+                while (hasMoreDeps) {
+                    int depId = rs.getInt(1);
+                    // recurse to find dependencies until we've satisfied them.
+                    Set<Stage> deps = this.queryStageDependencies(depId);
+                    StringThreeTuple stt = this.queryStageInfo(depId);
+                    stages.add(new FileStage(stt.name, stt.version, stageId,
+                            this.pathOnDisk, deps, stt.desc, true));
+                    
+                    hasMoreDeps = rs.next();
+                }
 
-            return stages;
+                return stages;
+            }
         } catch (SQLException ioe) {
             throw new RebarException(ioe);
         } finally {
