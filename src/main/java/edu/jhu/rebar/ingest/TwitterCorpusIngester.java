@@ -6,9 +6,7 @@
 
 package edu.jhu.rebar.ingest;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +14,6 @@ import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.zip.GZIPInputStream;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;

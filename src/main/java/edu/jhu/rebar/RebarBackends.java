@@ -33,7 +33,7 @@ public enum RebarBackends {
     }, FILE {
         @Override
         public CorpusFactory getCorpusFactory(String... params) throws RebarException {
-            return new FileCorpusFactory(params);
+            return new FileCorpusFactory();
         }
     };
     
