@@ -27,6 +27,7 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.CorpusFactory;
@@ -35,10 +36,10 @@ import edu.jhu.rebar.IndexedEdge;
 import edu.jhu.rebar.IndexedKnowledgeGraph;
 import edu.jhu.rebar.IndexedSection;
 import edu.jhu.rebar.IndexedVertex;
+import edu.jhu.rebar.ProtoIndex;
 import edu.jhu.rebar.RebarBackends;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
-import edu.jhu.rebar.file.FileCorpusFactory;
 import edu.jhu.rebar.util.FileUtil;
 
 /** 
@@ -60,7 +61,7 @@ public class TwitterCorpusIngester {
     private static final Set<Long> dupeIds = new HashSet<>();
 
     private final Corpus corpus;
-    private final Corpus.Initializer initializer;
+
     private final Concrete.AnnotationMetadata annotationMetadata;
     private final Concrete.AttributeMetadata attribMetadata;
 
@@ -103,7 +104,7 @@ public class TwitterCorpusIngester {
         Set<Stage> noDependencies = new TreeSet<Stage>();
         this.corpus = corpus;
         // For writing the root communication objects:
-        this.initializer = corpus.makeInitializer();
+        // this.initializer = corpus.makeInitializer();
         // Stage writer for tweet information (from twitter api)
         if (!this.corpus.hasStage(TWEET_INFO_STAGE_NAME, TWEET_INFO_STAGE_VERSION)) {
             this.tweetInfoStage = corpus.makeStage(TWEET_INFO_STAGE_NAME, TWEET_INFO_STAGE_VERSION, noDependencies,
@@ -161,7 +162,6 @@ public class TwitterCorpusIngester {
 
     void close() throws RebarException {
         logger.info("Closing writers");
-        this.initializer.close();
         this.tweetInfoWriter.close();
         this.secSegWriter.close();
         this.sentSegWriter.close();
@@ -174,29 +174,6 @@ public class TwitterCorpusIngester {
     }
 
     private static final DateTimeFormatter tweetDateFormat = DateTimeFormat.forPattern("EEE MMM dd HH:mm:ss Z YYYY");
-
-    private IndexedCommunication addRoot(Concrete.TweetInfo tweet) throws RebarException {
-        // Use the tweet id as the document id.
-        String docid = new Long(tweet.getId()).toString();
-        Concrete.CommunicationGUID guid = Concrete.CommunicationGUID.newBuilder().setCommunicationId(docid).setCorpusName(corpus.getName())
-                .build();
-        // Create an empty knowledge graph and assign it a uuid.
-        Concrete.KnowledgeGraph graph = Concrete.KnowledgeGraph.newBuilder().setUuid(IdUtil.generateUUID()).build();
-        // Create the basic communication with the tweet text
-        Concrete.Communication.Builder comBuilder = Concrete.Communication.newBuilder().setUuid(IdUtil.generateUUID()).setGuid(guid)
-                .setText(tweet.getText()).setKind(Concrete.Communication.Kind.TWEET).setKnowledgeGraph(graph);
-        // Add the start time/date, if we have it.
-        if (tweet.hasCreatedAt()) {
-            try {
-                DateTime dateTime = tweetDateFormat.parseDateTime(tweet.getCreatedAt());
-                comBuilder.setStartTime(dateTime.getMillis() / 1000);
-            } catch (IllegalArgumentException iae) {
-                logger.debug("Tweet " + docid + " had a malformed date. Skipping date creation.");
-            }
-        }
-        // Build it & add it to the corpus.
-        return initializer.addCommunication(comBuilder.build());
-    }
 
     private void addTweetInfo(IndexedCommunication com, Concrete.TweetInfo tweet) throws RebarException {
         com.setField(TWEET_INFO_FIELD, tweet);
@@ -219,9 +196,8 @@ public class TwitterCorpusIngester {
     private void addSentenceSegmentation(IndexedCommunication com) throws RebarException {
         for (IndexedSection sec : com.getSections()) {
             Concrete.SentenceSegmentation.Builder segmentation = Concrete.SentenceSegmentation.newBuilder();
-            segmentation.setUuid(IdUtil.generateUUID()).setMetadata(annotationMetadata).addSentenceBuilder() // start
-                                                                                                             // new
-                                                                                                             // sub-builder
+            segmentation.setUuid(IdUtil.generateUUID()).setMetadata(annotationMetadata).addSentenceBuilder() 
+            // start new sub-builder
                     .setTextSpan(sec.getTextSpan()).setUuid(IdUtil.generateUUID());
             sec.addSentenceSegmentation(segmentation.build());
         }
@@ -277,26 +253,46 @@ public class TwitterCorpusIngester {
         logger.debug("Tweet id: " + tweetId);
 
         if (dupeIds.contains(tweetId)) {
-            logger.debug("In our tweet ID set.");
+            logger.debug(tweetId + ": In our tweet ID set.");
             this.dupes++;
             return;
         }
 
-        else
-            logger.debug("Not in our tweet ID set.");
-
-        if (this.initializer.communicationExists(Long.toString(tweetId))) {
-            logger.debug("Tweet " + tweetId + " has been ingested previously. Skipping.");
-            this.dupes++;
-            return;
+        // Use the tweet id as the document id.
+        String docid = new Long(tweetId).toString();
+        Concrete.CommunicationGUID guid = Concrete.CommunicationGUID.newBuilder()
+                .setCommunicationId(docid)
+                .setCorpusName(corpus.getName())
+                .build();
+        // Create an empty knowledge graph and assign it a uuid.
+        Concrete.KnowledgeGraph graph = Concrete.KnowledgeGraph.newBuilder()
+                .setUuid(IdUtil.generateUUID())
+                .build();
+        // Create the basic communication with the tweet text
+        Concrete.Communication.Builder comBuilder = Concrete.Communication.newBuilder()
+                .setUuid(IdUtil.generateUUID())
+                .setGuid(guid)
+                .setText(tweet.getText())
+                .setKind(Concrete.Communication.Kind.TWEET)
+                .setKnowledgeGraph(graph);
+        // Add the start time/date, if we have it.
+        if (tweet.hasCreatedAt()) {
+            try {
+                DateTime dateTime = tweetDateFormat.parseDateTime(tweet.getCreatedAt());
+                comBuilder.setStartTime(dateTime.getMillis() / 1000);
+            } catch (IllegalArgumentException iae) {
+                logger.trace("Tweet " + docid + " had a malformed date. Skipping date creation.");
+            }
         }
-        // this.initialGraphWriter.
-
-        IndexedCommunication com = addRoot(tweet);
-        addTweetInfo(com, tweet);
-        addSectionSegmentation(com);
-        addSentenceSegmentation(com);
-        addInitialGraph(com, tweet);
+        
+        Communication comm = comBuilder.build();
+        IndexedCommunication ic = new IndexedCommunication(comm, 
+                new ProtoIndex(comm), null);
+        
+        addTweetInfo(ic, tweet);
+        addSectionSegmentation(ic);
+        addSentenceSegmentation(ic);
+        addInitialGraph(ic, tweet);
         dupeIds.add(tweetId);
         this.tweetsAdded++;
     }
@@ -347,11 +343,10 @@ public class TwitterCorpusIngester {
         CorpusFactory cf = RebarBackends.FILE.getCorpusFactory();
         if (cf.corpusExists(corpusName)) {
             logger.info("Deleting existing corpus: " + corpusName);
-            new FileCorpusFactory("target/").deleteCorpus(corpusName);
-        } else {
-            logger.error("Corpus " + corpusName + " does not exist. Creating it.");
+            cf.deleteCorpus(corpusName);
         }
 
+        logger.info("Creating corpus: " + corpusName);
         Corpus corpus = cf.makeCorpus(corpusName);
         logger.info("Ingesting twitter files...");
         TwitterCorpusIngester ingester = new TwitterCorpusIngester(corpus);

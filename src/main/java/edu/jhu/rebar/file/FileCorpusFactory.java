@@ -43,16 +43,19 @@ public class FileCorpusFactory implements CorpusFactory {
 		private final Path corpusPath;
 		private final Path commsPath;
 		private final Path dbPath;
-		private final Iterator<Communication> commIter;
+		private final Set<String> commIdSet;
+		private final Connection conn;
 		
-		public FileCorpusFactoryInitializer (String name, 
-				Iterator<Communication> commIter) {
+		public FileCorpusFactoryInitializer (String name) 
+		        throws RebarException {
 			this.name = name;
 			this.corpusPath = getPathToCorpus(name);
 			this.dbPath = this.corpusPath.resolve(this.name + ".db");
 			this.commsPath = this.corpusPath.resolve("communications");
-			
-			this.commIter = commIter;
+			this.commIdSet = new TreeSet<>();
+			this.createFoldersAndFiles();
+			this.conn = FileCorpusFactory.this.getConnection(name);
+			this.createSQLiteBackend();
 		}
 		
 		private void createFoldersAndFiles() throws RebarException {
@@ -67,72 +70,80 @@ public class FileCorpusFactory implements CorpusFactory {
 		
 		private void writeCommunicationProtobufFile(Communication comm) 
 	    		throws RebarException {
-			
-			try{ String guid = comm.getGuid().getCommunicationId();
-	    	Path fileOutPath = this.commsPath.resolve(guid + ".pb");
-			Files.createFile(fileOutPath);
-			File outFile = fileOutPath.toFile();
-			ProtocolBufferWriter pbw = new ProtocolBufferWriter(
-					new FileOutputStream(outFile));
-			pbw.write(comm);
-			pbw.close();
-			}catch (IOException ioe) {
-				throw new RebarException(ioe);
-			}
+            try {
+                String guid = comm.getGuid().getCommunicationId();
+                Path fileOutPath = this.commsPath.resolve(guid + ".pb");
+                Files.createFile(fileOutPath);
+                File outFile = fileOutPath.toFile();
+                ProtocolBufferWriter pbw = new ProtocolBufferWriter(
+                        new FileOutputStream(outFile));
+                pbw.write(comm);
+                pbw.close();
+            } catch (IOException ioe) {
+                throw new RebarException(ioe);
+            }
 	    }
 		
-		private void createSQLiteBackend (Connection conn) throws RebarException {
-	    	try {
-	    	Statement statement = conn.createStatement();
-	    	statement.executeUpdate("CREATE TABLE stages (id integer PRIMARY KEY, name string, version string, description text)");
-	    	statement.executeUpdate("CREATE TABLE dependencies (stage_id integer, dependency_id integer, " +
-	    			"FOREIGN KEY(stage_id) REFERENCES stages(id))");
-	    	statement.executeUpdate("CREATE TABLE comm_ids (id integer PRIMARY KEY, guid string)");
-	    	statement.executeUpdate("CREATE TABLE '" + "stage_mods" + "' (stage_id integer, " +
-                        "comm_id string, " +
-                        "target blob, " +
-                        "mods blob, " +
-                        "FOREIGN KEY(stage_id) REFERENCES stages(id))");
-	    	statement.close();
-	        } catch (SQLException ioe) {
-	            throw new RebarException(ioe);
-	        }
+		private void createSQLiteBackend () throws RebarException {
+            try {
+                Statement statement = this.conn.createStatement();
+                statement.executeUpdate("CREATE TABLE stages "
+                        + "(id integer PRIMARY KEY, "
+                        + "name string, version string, description text)");
+                statement.executeUpdate("CREATE TABLE dependencies "
+                        + "(stage_id integer, " + "dependency_id integer, "
+                        + "FOREIGN KEY(stage_id) REFERENCES stages(id))");
+                statement.executeUpdate("CREATE TABLE comm_ids "
+                        + "(id integer PRIMARY KEY, " + "guid string)");
+                statement.executeUpdate("CREATE TABLE '" + "stage_mods"
+                        + "' (stage_id integer, " + "comm_id string, "
+                        + "target blob, " + "mods blob, "
+                        + "FOREIGN KEY(stage_id) REFERENCES stages(id))");
+                statement.close();
+            } catch (SQLException ioe) {
+                throw new RebarException(ioe);
+            }
 	    }
 		
-		public FileBackedCorpus initialize() throws RebarException {
-			try {
-				this.createFoldersAndFiles();
-				Connection conn = getConnection(this.name);
-				this.createSQLiteBackend(conn);
-				
-				Set<String> commIdSet = new TreeSet<>();
-				PreparedStatement ps = conn.prepareStatement("INSERT INTO comm_ids VALUES (?, ?)");
-				while (this.commIter.hasNext()) {
-					Communication comm = this.commIter.next();
-					CommunicationGUID corpusNameGuid = CommunicationGUID.newBuilder(comm.getGuid())
-							.setCorpusName(this.name)
-							.build();
-					comm = Communication.newBuilder(comm).setGuid(corpusNameGuid).build();
-					
-					String guid = comm.getGuid().getCommunicationId();
-					boolean newComm = commIdSet.add(guid);
-					if (newComm) {
-						ps.setString(1, null);
-						ps.setString(2, guid);
-						ps.addBatch();
-						
-						this.writeCommunicationProtobufFile(comm);
-					}
-				}
-				
-				ps.executeBatch();
-				
-				corporaList.add(this.name);
-				return new FileBackedCorpus(this.corpusPath, commIdSet, conn);
-			} catch (SQLException e) {
-				throw new RebarException(e);
-			}
+		public void ingest(Communication comm) throws RebarException {
+		    String guid = comm.getGuid().getCommunicationId();
+            boolean newComm = commIdSet.add(guid);
+            if (newComm) {
+                CommunicationGUID corpusNameGuid = CommunicationGUID.newBuilder(comm.getGuid())
+                        .setCorpusName(this.name)
+                        .build();
+                comm = Communication.newBuilder(comm)
+                        .setGuid(corpusNameGuid)
+                        .build();
+                this.writeCommunicationProtobufFile(comm);
+            }
 		}
+		
+		public void ingest(Iterator<Communication> commIter) throws RebarException {
+		    while (commIter.hasNext()) {
+                Communication comm = commIter.next();
+                this.ingest(comm);
+            }
+		}
+		
+        public FileBackedCorpus seal() throws RebarException {
+            try {
+                for (String id : this.commIdSet) {
+                PreparedStatement ps = conn
+                        .prepareStatement("INSERT INTO comm_ids VALUES (?, ?)");
+                    ps.setString(1, null);
+                    ps.setString(2, id);
+                    ps.addBatch();
+                    ps.executeBatch();
+                }
+                
+                corporaList.add(this.name);
+                return new FileBackedCorpus(this.corpusPath, 
+                        this.commIdSet, this.conn);
+            } catch (SQLException e) {
+                throw new RebarException(e);
+            }
+        }
 	}
 	
     private final Path pathOnDisk;
@@ -184,8 +195,10 @@ public class FileCorpusFactory implements CorpusFactory {
 			Iterator<Communication> commIdIter) throws RebarException {
 		if (this.corpusExists(corpusName))
 			throw new RebarException("Corpus " + corpusName + " already exists. Call getCorpus() instead.");
-		FileCorpusFactoryInitializer init = new FileCorpusFactoryInitializer(corpusName, commIdIter);
-		FileBackedCorpus fbc = init.initialize();
+		FileCorpusFactoryInitializer init = 
+		        new FileCorpusFactoryInitializer(corpusName);
+		init.ingest(commIdIter);
+		FileBackedCorpus fbc = init.seal();
 		return fbc;
 	}
 	
@@ -194,7 +207,7 @@ public class FileCorpusFactory implements CorpusFactory {
         return this.initializeCorpus(corpusName, commColl.iterator());
     }
     
-    Connection getConnection(String corpusName) throws RebarException {
+    private Connection getConnection(String corpusName) throws RebarException {
         try {
             Class.forName("org.sqlite.JDBC");
             String connString = "jdbc:sqlite:" + 
