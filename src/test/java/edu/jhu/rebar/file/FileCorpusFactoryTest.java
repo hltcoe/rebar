@@ -12,6 +12,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 import org.junit.After;
@@ -101,6 +103,45 @@ public class FileCorpusFactoryTest {
         assertEquals("bar", icTwo.getGuid().getCorpusName());
         pbr.close();
     }
+    
+    @Test
+    public void testInitializeCorpusCollection() throws RebarException,
+            ConcreteException, IOException {
+        Collection<Communication> commColl = 
+                this.generateMockCommunicationCollection();
+
+        FileBackedCorpus fbc = this.fcf.initializeCorpus("bar", commColl);
+        assertTrue(this.fcf.corpusExists("bar"));
+        assertTrue(fbc.getCommIdSet().contains(guidOne.getCommunicationId()));
+        assertTrue(fbc.getCommIdSet().contains(guidTwo.getCommunicationId()));
+
+        Path commPath = RebarConfiguration.getTestFileCorpusDirectory()
+                .resolve("bar")
+                .resolve("communications");
+
+        assertTrue(Files.exists(commPath.resolve(guidOne.getCommunicationId()
+                + ".pb")));
+        assertTrue(Files.exists(commPath.resolve(guidTwo.getCommunicationId()
+                + ".pb")));
+
+        File iCommOne = commPath.resolve(guidOne.getCommunicationId() + ".pb")
+                .toFile();
+        ProtocolBufferReader pbr = new ProtocolBufferReader(
+                new FileInputStream(iCommOne), Communication.class);
+        Communication icOne = (Communication) pbr.next();
+        assertEquals(commOne.getUuid(), icOne.getUuid());
+        assertEquals("bar", icOne.getGuid().getCorpusName());
+        pbr.close();
+
+        File iCommTwo = commPath.resolve(guidTwo.getCommunicationId() + ".pb")
+                .toFile();
+        pbr = new ProtocolBufferReader(new FileInputStream(iCommTwo),
+                Communication.class);
+        Communication icTwo = (Communication) pbr.next();
+        assertEquals(commTwo.getUuid(), icTwo.getUuid());
+        assertEquals("bar", icTwo.getGuid().getCorpusName());
+        pbr.close();
+    }
 
     @Test(expected = RebarException.class)
     public void testInitializeCorpusThatExists() throws RebarException {
@@ -118,6 +159,13 @@ public class FileCorpusFactoryTest {
         when(commIter.next()).thenReturn(commOne).thenReturn(commTwo)
                 .thenThrow(new IllegalArgumentException());
         return commIter;
+    }
+    
+    public Collection<Communication> generateMockCommunicationCollection() {
+        Collection<Communication> commColl = new ArrayList<>(2);
+        commColl.add(commOne);
+        commColl.add(commTwo);
+        return commColl;
     }
 
     @Test

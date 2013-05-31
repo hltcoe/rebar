@@ -17,6 +17,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
@@ -187,6 +188,11 @@ public class FileCorpusFactory implements CorpusFactory {
 		FileBackedCorpus fbc = init.initialize();
 		return fbc;
 	}
+	
+	public FileBackedCorpus initializeCorpus(String corpusName,
+            Collection<Communication> commColl) throws RebarException {
+        return this.initializeCorpus(corpusName, commColl.iterator());
+    }
     
     Connection getConnection(String corpusName) throws RebarException {
         try {
