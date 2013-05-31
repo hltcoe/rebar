@@ -90,7 +90,7 @@ public class FileBackedCorpusTest {
         commList.add(commOne);
         commList.add(commTwo);
 
-        this.fbc = this.fcf.initializeCorpus(corpusName, commList.iterator());
+        this.fbc = this.fcf.initializeAndSealCorpus(corpusName, commList.iterator());
         
         tokensCommOne.add("Sample");
         tokensCommOne.add("test");

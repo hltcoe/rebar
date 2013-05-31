@@ -36,10 +36,12 @@ import edu.jhu.rebar.IndexedEdge;
 import edu.jhu.rebar.IndexedKnowledgeGraph;
 import edu.jhu.rebar.IndexedSection;
 import edu.jhu.rebar.IndexedVertex;
+import edu.jhu.rebar.NewInitializer;
 import edu.jhu.rebar.ProtoIndex;
 import edu.jhu.rebar.RebarBackends;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
+import edu.jhu.rebar.file.FileCorpusFactory;
 import edu.jhu.rebar.util.FileUtil;
 
 /** 
@@ -56,7 +58,8 @@ import edu.jhu.rebar.util.FileUtil;
  */
 public class TwitterCorpusIngester {
     
-    private static final Logger logger = LoggerFactory.getLogger(TwitterCorpusIngester.class);    
+    private static final Logger logger = LoggerFactory
+            .getLogger(TwitterCorpusIngester.class);    
 
     private static final Set<Long> dupeIds = new HashSet<>();
 
@@ -66,7 +69,8 @@ public class TwitterCorpusIngester {
     private final Concrete.AttributeMetadata attribMetadata;
 
     // TweetInfo stage
-    private final FieldDescriptor TWEET_INFO_FIELD = Concrete.Communication.getDescriptor().findFieldByName("tweet_info");
+    private final FieldDescriptor TWEET_INFO_FIELD = Concrete.Communication
+            .getDescriptor().findFieldByName("tweet_info");
     private final String TWEET_INFO_STAGE_NAME = "tweet_info";
     private final String TWEET_INFO_STAGE_VERSION = "1.0";
     private final String TWEET_INFO_STAGE_DESCRIPTION = "Information about this tweet that is provided by the standard Twitter JSON API.";
@@ -88,7 +92,8 @@ public class TwitterCorpusIngester {
     private final Corpus.Writer sentSegWriter;
 
     // InitialGraph stage
-    private final FieldDescriptor GRAPH_EDGE_FIELD = Concrete.KnowledgeGraph.getDescriptor().findFieldByName("vertex");
+    private final FieldDescriptor GRAPH_EDGE_FIELD = Concrete.KnowledgeGraph
+            .getDescriptor().findFieldByName("vertex");
     private final String INITIAL_GRAPH_STAGE_NAME = "com_graph";
     private final String INITIAL_GRAPH_STAGE_VERSION = "1.0";
     private final String INITIAL_GRAPH_STAGE_DESCRIPTION = "An initial communication graph, containing three vertices: one for the "
@@ -100,9 +105,9 @@ public class TwitterCorpusIngester {
     int tweetsAdded = 0;
     int dupes = 0;
 
-    public TwitterCorpusIngester(Corpus corpus) throws RebarException {
+    public TwitterCorpusIngester(NewInitializer init) throws RebarException {
         Set<Stage> noDependencies = new TreeSet<Stage>();
-        this.corpus = corpus;
+        this.corpus = null;
         // For writing the root communication objects:
         // this.initializer = corpus.makeInitializer();
         // Stage writer for tweet information (from twitter api)
@@ -142,7 +147,8 @@ public class TwitterCorpusIngester {
         // Metadata
         this.attribMetadata = Concrete.AttributeMetadata.newBuilder().setTool("jhu.hltcoe.rebar2.ingest.TwitterCorpusIngester")
                 .setConfidence(1.0f).build();
-        this.annotationMetadata = Concrete.AnnotationMetadata.newBuilder().setTool("jhu.hltcoe.rebar2.ingest.TwitterCorpusIngester")
+        this.annotationMetadata = Concrete.AnnotationMetadata.newBuilder()
+                .setTool("edu.jhu.rebar.ingest.TwitterCorpusIngester")
         // .setTimestamp()
                 .build();
         // Sanity checks
@@ -297,7 +303,7 @@ public class TwitterCorpusIngester {
         this.tweetsAdded++;
     }
 
-    private void ingest(File filename) throws RebarException, IOException, FileNotFoundException {
+    public void ingestFile(File filename) throws RebarException, IOException, FileNotFoundException {
         InputStream is = FileUtil.getInputStream(filename);
         Scanner sc = new Scanner(is, "UTF-8");
         logger.info("Ingesting " + filename + "...");
@@ -340,23 +346,26 @@ public class TwitterCorpusIngester {
         logger.info("Starting.");
         // Thread.sleep(10000);
         String corpusName = args[0];
-        CorpusFactory cf = RebarBackends.FILE.getCorpusFactory();
+        FileCorpusFactory cf = new FileCorpusFactory();
         if (cf.corpusExists(corpusName)) {
             logger.info("Deleting existing corpus: " + corpusName);
             cf.deleteCorpus(corpusName);
         }
-
-        logger.info("Creating corpus: " + corpusName);
-        Corpus corpus = cf.makeCorpus(corpusName);
+        
+        logger.info("Creating initializer: " + corpusName);
+        NewInitializer init = cf.createCorpusInitializer(corpusName);
+        
+        //logger.info("Creating corpus: " + corpusName);
+        //Corpus corpus = cf.makeCorpus(corpusName);
+        
         logger.info("Ingesting twitter files...");
-        TwitterCorpusIngester ingester = new TwitterCorpusIngester(corpus);
+        TwitterCorpusIngester ingester = new TwitterCorpusIngester(init);
         for (int i = 1; i < args.length; i++) {
-            ingester.ingest(new File(args[i]));
+            ingester.ingestFile(new File(args[i]));
         }
         ingester.close();
-        logger.info("Closing corpus.");
         logger.info("Tweets ingested: " + ingester.getTweetsAdded());
         logger.info("Dupes: " + ingester.getDupes());
-        corpus.close();
+        init.close();
     }
 }

@@ -71,7 +71,7 @@ public class FileCorpusFactoryTest {
         Iterator<Communication> commIter = this
                 .generateMockCommunicationIterator();
 
-        FileBackedCorpus fbc = this.fcf.initializeCorpus("bar", commIter);
+        FileBackedCorpus fbc = this.fcf.initializeAndSealCorpus("bar", commIter);
         assertTrue(this.fcf.corpusExists("bar"));
         assertTrue(fbc.getCommIdSet().contains(guidOne.getCommunicationId()));
         assertTrue(fbc.getCommIdSet().contains(guidTwo.getCommunicationId()));
@@ -110,7 +110,7 @@ public class FileCorpusFactoryTest {
         Collection<Communication> commColl = 
                 this.generateMockCommunicationCollection();
 
-        FileBackedCorpus fbc = this.fcf.initializeCorpus("bar", commColl);
+        FileBackedCorpus fbc = this.fcf.initializeAndSealCorpus("bar", commColl);
         assertTrue(this.fcf.corpusExists("bar"));
         assertTrue(fbc.getCommIdSet().contains(guidOne.getCommunicationId()));
         assertTrue(fbc.getCommIdSet().contains(guidTwo.getCommunicationId()));
@@ -148,8 +148,8 @@ public class FileCorpusFactoryTest {
         Iterator<Communication> commIter = this
                 .generateMockCommunicationIterator();
 
-        this.fcf.initializeCorpus("bar", commIter);
-        this.fcf.initializeCorpus("bar", commIter);
+        this.fcf.initializeAndSealCorpus("bar", commIter);
+        this.fcf.initializeAndSealCorpus("bar", commIter);
     }
 
     public Iterator<Communication> generateMockCommunicationIterator() {
@@ -172,7 +172,7 @@ public class FileCorpusFactoryTest {
     public void testGetCorpusExists() throws RebarException {
         Iterator<Communication> commIter = this
                 .generateMockCommunicationIterator();
-        this.fcf.initializeCorpus("bar", commIter);
+        this.fcf.initializeAndSealCorpus("bar", commIter);
 
         FileBackedCorpus retCorpus = (FileBackedCorpus) this.fcf
                 .getCorpus("bar");
@@ -191,7 +191,7 @@ public class FileCorpusFactoryTest {
     public void testGetCorpusSizeUpdates() throws RebarException {
         Iterator<Communication> commIter = this
                 .generateMockCommunicationIterator();
-        this.fcf.initializeCorpus("bar", commIter);
+        this.fcf.initializeAndSealCorpus("bar", commIter);
 
         assertEquals(1, this.fcf.listCorpora().size());
     }
@@ -205,7 +205,7 @@ public class FileCorpusFactoryTest {
     public void testDeleteCorpus() throws RebarException {
         Iterator<Communication> commIter = this
                 .generateMockCommunicationIterator();
-        this.fcf.initializeCorpus("bar", commIter);
+        this.fcf.initializeAndSealCorpus("bar", commIter);
 
         this.fcf.deleteCorpus("bar");
         assertFalse(this.fcf.corpusExists("bar"));

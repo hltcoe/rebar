@@ -5,7 +5,6 @@ package edu.jhu.rebar.file;
 
 
 import java.io.File;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -28,6 +27,8 @@ import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
 import edu.jhu.hlt.concrete.io.ProtocolBufferWriter;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.CorpusFactory;
+import edu.jhu.rebar.IndexedCommunication;
+import edu.jhu.rebar.NewInitializer;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.config.RebarConfiguration;
 import edu.jhu.rebar.util.FileUtil;
@@ -38,7 +39,7 @@ import edu.jhu.rebar.util.FileUtil;
  */
 public class FileCorpusFactory implements CorpusFactory {
 
-	public class FileCorpusFactoryInitializer {
+	public class FileCorpusFactoryInitializer implements NewInitializer {
 		private final String name;
 		private final Path corpusPath;
 		private final Path commsPath;
@@ -105,6 +106,12 @@ public class FileCorpusFactory implements CorpusFactory {
             }
 	    }
 		
+		@Override
+		public String getCorpusName() {
+		    return this.name;
+		}
+		
+		@Override
 		public void ingest(Communication comm) throws RebarException {
 		    String guid = comm.getGuid().getCommunicationId();
             boolean newComm = commIdSet.add(guid);
@@ -126,7 +133,8 @@ public class FileCorpusFactory implements CorpusFactory {
             }
 		}
 		
-        public FileBackedCorpus seal() throws RebarException {
+		@Override
+        public FileBackedCorpus initialize() throws RebarException {
             try {
                 for (String id : this.commIdSet) {
                 PreparedStatement ps = conn
@@ -140,6 +148,20 @@ public class FileCorpusFactory implements CorpusFactory {
                 corporaList.add(this.name);
                 return new FileBackedCorpus(this.corpusPath, 
                         this.commIdSet, this.conn);
+            } catch (SQLException e) {
+                throw new RebarException(e);
+            }
+        }
+
+        @Override
+        public boolean communicationExists(String commId) throws RebarException {
+            return this.commIdSet.contains(commId);
+        }
+
+        @Override
+        public void close() throws RebarException {
+            try {
+                this.conn.close();
             } catch (SQLException e) {
                 throw new RebarException(e);
             }
@@ -189,22 +211,26 @@ public class FileCorpusFactory implements CorpusFactory {
         }
     }
     
+    public FileCorpusFactoryInitializer createCorpusInitializer(String corpusName) throws RebarException {
+        if (this.corpusExists(corpusName))
+            throw new RebarException("Corpus " + corpusName + " already exists. Call getCorpus() instead.");
+        FileCorpusFactoryInitializer init = 
+                new FileCorpusFactoryInitializer(corpusName);
+        return init;
+    }
     
-    
-	public FileBackedCorpus initializeCorpus(String corpusName,
+	public FileBackedCorpus initializeAndSealCorpus(String corpusName,
 			Iterator<Communication> commIdIter) throws RebarException {
-		if (this.corpusExists(corpusName))
-			throw new RebarException("Corpus " + corpusName + " already exists. Call getCorpus() instead.");
 		FileCorpusFactoryInitializer init = 
-		        new FileCorpusFactoryInitializer(corpusName);
+		        this.createCorpusInitializer(corpusName);
 		init.ingest(commIdIter);
-		FileBackedCorpus fbc = init.seal();
+		FileBackedCorpus fbc = init.initialize();
 		return fbc;
 	}
 	
-	public FileBackedCorpus initializeCorpus(String corpusName,
+	public FileBackedCorpus initializeAndSealCorpus(String corpusName,
             Collection<Communication> commColl) throws RebarException {
-        return this.initializeCorpus(corpusName, commColl.iterator());
+        return this.initializeAndSealCorpus(corpusName, commColl.iterator());
     }
     
     private Connection getConnection(String corpusName) throws RebarException {
