@@ -22,15 +22,13 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
 import edu.jhu.hlt.concrete.io.ProtocolBufferWriter;
 import edu.jhu.rebar.Corpus;
 import edu.jhu.rebar.CorpusFactory;
 import edu.jhu.rebar.RebarException;
+import edu.jhu.rebar.config.RebarConfiguration;
 import edu.jhu.rebar.util.FileUtil;
 
 /**
@@ -136,10 +134,7 @@ public class FileCorpusFactory implements CorpusFactory {
 		}
 	}
 	
-    private static final Logger logger = LoggerFactory.getLogger(FileCorpusFactory.class);
-
     private final Path pathOnDisk;
-    //private final File[] corpora;
     Set<String> corporaList;
 
     /**
@@ -147,8 +142,7 @@ public class FileCorpusFactory implements CorpusFactory {
      * 
      */
     public FileCorpusFactory() throws RebarException {
-        //this(Paths.get("/export", "common", "rebar"));
-        this(Paths.get("target"));
+        this(RebarConfiguration.getFileCorpusDirectory());
     }
 
     /**
@@ -157,7 +151,7 @@ public class FileCorpusFactory implements CorpusFactory {
      * @throws RebarException
      */
     public FileCorpusFactory(String... params) throws RebarException {
-        this(Paths.get("target/file_corpus_factory_test"));
+        this(Paths.get(params[0]));
     }
 
     /**
@@ -170,7 +164,6 @@ public class FileCorpusFactory implements CorpusFactory {
         this.corporaList = new TreeSet<>();
         try {
             if (!Files.exists(pathOnDisk)) {
-                logger.debug("Creating path: " + this.pathOnDisk.toString());
                 Files.createDirectories(pathOnDisk);
                 this.corporaList = new TreeSet<>();
             } else {
