@@ -11,6 +11,8 @@ package edu.jhu.rebar.config;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -82,5 +84,13 @@ public final class RebarConfiguration {
 
     public static boolean getTwitterTokenizerRw() {
         return Boolean.parseBoolean(props.getProperty("TwitterTokenizer.rw"));
+    }
+    
+    public static Path getFileCorpusDirectory() {
+        return Paths.get(props.getProperty("fileCorpusDirectory"));
+    }
+    
+    public static Path getTestFileCorpusDirectory() {
+        return Paths.get("target/file-corpora-test");
     }
 }

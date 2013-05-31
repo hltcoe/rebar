@@ -12,7 +12,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 
 import org.junit.After;
@@ -26,12 +25,12 @@ import edu.jhu.hlt.concrete.ConcreteException;
 import edu.jhu.hlt.concrete.io.ProtocolBufferReader;
 import edu.jhu.hlt.concrete.util.ProtoFactory;
 import edu.jhu.rebar.RebarException;
+import edu.jhu.rebar.config.RebarConfiguration;
 import edu.jhu.rebar.util.FileUtil;
 
 public class FileCorpusFactoryTest {
 
     FileCorpusFactory fcf;
-    final String pathString = "target/file_corpus_factory_test";
 
     ProtoFactory pf = new ProtoFactory();
     CommunicationGUID guidOne = pf.generateMockCommGuid();
@@ -44,12 +43,14 @@ public class FileCorpusFactoryTest {
 
     @Before
     public void setUp() throws Exception {
-        fcf = new FileCorpusFactory(Paths.get(pathString));
+        fcf = new FileCorpusFactory(RebarConfiguration
+                .getTestFileCorpusDirectory());
     }
 
     @After
     public void tearDown() throws Exception {
-        FileUtil.deleteFolderAndSubfolders(Paths.get(pathString));
+        FileUtil.deleteFolderAndSubfolders(RebarConfiguration
+                .getTestFileCorpusDirectory());
     }
 
     @Test
@@ -73,7 +74,8 @@ public class FileCorpusFactoryTest {
         assertTrue(fbc.getCommIdSet().contains(guidOne.getCommunicationId()));
         assertTrue(fbc.getCommIdSet().contains(guidTwo.getCommunicationId()));
 
-        Path commPath = Paths.get(pathString).resolve("bar")
+        Path commPath = RebarConfiguration.getTestFileCorpusDirectory()
+                .resolve("bar")
                 .resolve("communications");
 
         assertTrue(Files.exists(commPath.resolve(guidOne.getCommunicationId()

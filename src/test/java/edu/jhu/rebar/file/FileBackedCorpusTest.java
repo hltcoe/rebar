@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -40,15 +39,12 @@ import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.IndexedSentence;
 import edu.jhu.rebar.IndexedTokenization;
 import edu.jhu.rebar.IndexedTokenization.TokenSequence;
+import edu.jhu.rebar.config.RebarConfiguration;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 
 public class FileBackedCorpusTest {
 
-    private static final Logger logger = LoggerFactory
-            .getLogger(FileBackedCorpusTest.class);
-
-    final String pathString = "target/file_backed_corpus_test/";
     final String corpusName = "testCorpus";
 
     ProtoFactory pf = new ProtoFactory();
@@ -87,7 +83,8 @@ public class FileBackedCorpusTest {
 
     @Before
     public void setUp() throws Exception {
-        this.fcf = new FileCorpusFactory(Paths.get(pathString));
+        this.fcf = new FileCorpusFactory(RebarConfiguration
+                .getTestFileCorpusDirectory());
 
         List<Communication> commList = new ArrayList<>(2);
         commList.add(commOne);
@@ -194,18 +191,6 @@ public class FileBackedCorpusTest {
         Stage s = stages.first();
         
         assertTrue(this.assertStageComparisons(s));
-    }
-    
-    @Test
-    public void testLoadCommunicationsStage() throws RebarException {
-        Stage testStage = this.fbc.makeStage(this.testStageName, 
-                            this.testStageVersion, 
-                            this.noDependencySet, 
-                            this.testStageDesc, true);
-        
-        final Corpus.Reader testReader = this.fbc.makeReader(testStage);
-        final Iterator<IndexedCommunication> readIter = 
-                testReader.loadCommunications();
     }
     
     @Test(expected = RebarException.class)
