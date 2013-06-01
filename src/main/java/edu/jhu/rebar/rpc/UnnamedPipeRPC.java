@@ -48,6 +48,7 @@ import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.StageOwnership;
 //import edu.jhu.hlt.concrete.rpc.*;
 //import edu.jhu.hlt.concrete.rpc.ConcreteRpc.RPCResponse;
+import edu.jhu.rebar.file.FileCorpusFactory;
 
 /**
  * Remote Procedure Call (RPC) server that uses unnamed pipes (aka stdin and
@@ -83,7 +84,7 @@ class UnnamedPipeRPC {
 
     public UnnamedPipeRPC() {
         try {
-            this.cf = RebarBackends.ACCUMULO.getCorpusFactory();
+            this.cf = new FileCorpusFactory();
         } catch (RebarException re) {
             throw new RuntimeException(re);
         }
