@@ -651,7 +651,10 @@ class UnnamedPipeRPC {
     private RPCResponse handleCorpusReaderLoadCommunications(ConcreteRpc.CorpusReader.LoadCommunications request) throws RebarException {
         final Corpus.Reader self = corpusReaders.get(request.getSelf().getId());
         final Collection<String> comIds = parseComIdCollection(self.getCorpus(), request.getComIds());
-        final Iterator<IndexedCommunication> iter = self.loadCommunications(comIds);
+        
+        // TODO: really need to impl comId sets
+        
+        final Iterator<IndexedCommunication> iter = self.loadCommunications();
         final long id = assignId(iter, communicationIterators);
         return RPCResponse.newBuilder().setCommunicationIterator(buildRpcCommunicationIterator(request.getSelf(), id)).build();
     }
