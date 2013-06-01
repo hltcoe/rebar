@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.hlt.concrete.Concrete;
 import edu.jhu.hlt.concrete.Concrete.Communication;
@@ -40,6 +41,10 @@ public class TwitterCommunicationsIngester {
     
     private static final DateTimeFormatter tweetDateFormat = 
             DateTimeFormat.forPattern("EEE MMM dd HH:mm:ss Z YYYY");
+    
+    // TweetInfo stage
+    private static final FieldDescriptor TWEET_INFO_FIELD = Concrete.Communication
+            .getDescriptor().findFieldByName("tweet_info");
     
     private int tweetsAdded = 0;
     
@@ -85,7 +90,7 @@ public class TwitterCommunicationsIngester {
                 logger.trace("Tweet " + docid + " had a malformed date. Skipping date creation.");
             }
         }
-        
+        comBuilder.setField(TWEET_INFO_FIELD, tweet);
         Communication comm = comBuilder.build();
         this.init.ingest(comm);
         this.tweetsAdded++;
@@ -125,6 +130,10 @@ public class TwitterCommunicationsIngester {
         } catch (IOException e) {
             throw new RebarException(e);
         }
+    }
+    
+    public void close() throws RebarException {
+        this.init.close();
     }
 
     /**

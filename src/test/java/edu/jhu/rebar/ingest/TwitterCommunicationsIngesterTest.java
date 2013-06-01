@@ -3,9 +3,10 @@
  */
 package edu.jhu.rebar.ingest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.util.Iterator;
 
 import org.junit.After;
 import org.junit.Before;
@@ -13,7 +14,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.jhu.hlt.concrete.Concrete.TweetInfo;
 import edu.jhu.rebar.Corpus;
+import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.NewInitializer;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.config.RebarConfiguration;
@@ -68,5 +71,12 @@ public class TwitterCommunicationsIngesterTest {
         
         Corpus fc = this.fbc.getCorpus(corpusName);
         assertEquals(ingester.getTweetsAdded(), fc.getNumCommunications());
+        Corpus.Reader r = fc.makeReader();
+        Iterator<IndexedCommunication> icIter = r.loadCommunications();
+        while (icIter.hasNext()) {
+            IndexedCommunication ic = icIter.next();
+            TweetInfo ti = ic.getProto().getTweetInfo();
+            logger.info("Got text: " + ti.getText());
+        }
     }
 }

@@ -16,8 +16,6 @@ import java.util.TreeSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
@@ -85,6 +83,8 @@ public class FileBackedCorpusTest {
     public void setUp() throws Exception {
         this.fcf = new FileCorpusFactory(RebarConfiguration
                 .getTestFileCorpusDirectory());
+        if (this.fcf.corpusExists(corpusName))
+            this.fcf.deleteCorpus(corpusName);
 
         List<Communication> commList = new ArrayList<>(2);
         commList.add(commOne);
@@ -106,8 +106,9 @@ public class FileBackedCorpusTest {
 
     @After
     public void tearDown() throws Exception {
+        if (this.fcf.corpusExists(corpusName))
+            this.fcf.deleteCorpus(corpusName);
         this.fbc.close();
-        this.fcf.deleteCorpus(corpusName);
     }
 
     @Test
@@ -222,7 +223,7 @@ public class FileBackedCorpusTest {
                 this.tokStageVersion, 
                 this.noDependencySet, 
                 this.tokStageDesc, true);
-        final Corpus.Reader testReader = this.fbc.makeReader(testStage);
+        final Corpus.Reader testReader = this.fbc.makeReader();
         final Corpus.Writer testWriter = this.fbc.makeWriter(testStage);
         final Iterator<IndexedCommunication> readIter = 
                 testReader.loadCommunications();
@@ -242,7 +243,8 @@ public class FileBackedCorpusTest {
         this.addTokenization();
         
         ArrayList<Stage> dependencies = new ArrayList<Stage>();
-        dependencies.add(this.fbc.getStage(this.tokStageName, this.tokStageVersion));
+        Stage tokDep = this.fbc.getStage(this.tokStageName, this.tokStageVersion);
+        dependencies.add(tokDep);
         
         final FieldDescriptor lidField = Concrete.Communication
                 .getDescriptor()
@@ -252,12 +254,17 @@ public class FileBackedCorpusTest {
                 this.lidStageVersion, 
                 new TreeSet<>(dependencies),
                 this.lidStageDesc, true);
-        final Corpus.Reader testReader = this.fbc.makeReader(lidStage);
+        final Corpus.Reader testReader = this.fbc.makeReader(tokDep);
         final Corpus.Writer testWriter = this.fbc.makeWriter(lidStage);
         final Iterator<IndexedCommunication> readIter = 
                 testReader.loadCommunications();
         while (readIter.hasNext()) {
             IndexedCommunication com = readIter.next();
+            Communication c = com.getProto();
+            if (c.getSectionSegmentationCount() == 0) {
+                throw new RuntimeException("Error in Reader code");
+            }
+            
             Concrete.LanguageIdentification.Builder lidBuilder = Concrete.LanguageIdentification.newBuilder();
             Concrete.LanguageIdentification.LanguageProb.Builder lp = Concrete.LanguageIdentification.LanguageProb.newBuilder();
             lp.setProbability(1.0f);
@@ -277,11 +284,22 @@ public class FileBackedCorpusTest {
     public void testCreateStageAppendTokenization () throws RebarException {
         this.addTokenization();
         
+        Corpus.Reader rawReader = this.fbc.makeReader();
+        assertEquals(0, rawReader.getInputStages().size());
+        Iterator<IndexedCommunication> iter = rawReader.loadCommunications();
+        while (iter.hasNext()) {
+            IndexedCommunication ic = iter.next();
+            Communication c = ic.getProto();
+            assertEquals(0, c.getSectionSegmentationCount());
+        }
+        
+        rawReader.close();
+        
         Stage retStage = this.fbc.getStage(this.tokStageName, this.tokStageVersion);
         Corpus.Reader reader = this.fbc.makeReader(retStage);
         assertTrue(reader.getInputStages().contains(retStage));
         
-        Iterator<IndexedCommunication> iter = reader.loadCommunications();
+        iter = reader.loadCommunications();
         while (iter.hasNext()) {
             IndexedCommunication ic = iter.next();
             
@@ -310,6 +328,12 @@ public class FileBackedCorpusTest {
         Stage lidStage = this.fbc.getStage(this.lidStageName, this.lidStageVersion);
         Corpus.Reader reader = this.fbc.makeReader(lidStage);
         assertTrue(reader.getInputStages().contains(lidStage));
+        
+        Set<Stage> deps = lidStage.getDependencies();
+        assertEquals(1, deps.size());
+        Stage dep = deps.iterator().next();
+        assertEquals(this.tokStageName, dep.getStageName());
+        assertEquals(this.tokStageVersion, dep.getStageVersion());
         
         Iterator<IndexedCommunication> iter = reader.loadCommunications();
         while (iter.hasNext()) {

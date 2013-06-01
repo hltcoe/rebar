@@ -9,50 +9,40 @@ package edu.jhu.rebar.ingest;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Scanner;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.hlt.concrete.Concrete;
-import edu.jhu.hlt.concrete.Concrete.Communication;
-import edu.jhu.hlt.concrete.util.IdUtil;
+import edu.jhu.hlt.concrete.Concrete.KnowledgeGraph;
+import edu.jhu.hlt.concrete.Concrete.SectionSegmentation;
+import edu.jhu.hlt.concrete.Concrete.Tokenization;
+import edu.jhu.hlt.concrete.Concrete.TweetInfo;
+import edu.jhu.hlt.tift.ConcreteSectionSegmentation;
+import edu.jhu.hlt.tift.Tokenizer;
 import edu.jhu.rebar.Corpus;
-import edu.jhu.rebar.CorpusFactory;
 import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.IndexedEdge;
 import edu.jhu.rebar.IndexedKnowledgeGraph;
-import edu.jhu.rebar.IndexedSection;
 import edu.jhu.rebar.IndexedVertex;
 import edu.jhu.rebar.NewInitializer;
-import edu.jhu.rebar.ProtoIndex;
-import edu.jhu.rebar.RebarBackends;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
 import edu.jhu.rebar.file.FileCorpusFactory;
-import edu.jhu.rebar.util.FileUtil;
 
 /** 
- * Processing class for reading a twitter corpus from a set of files,
- * and writing the result to a Corpus.
+ * Processing class for reading a twitter {@link Corpus},
+ * and writing the result to corpus {@link Stage}s. Includes a 
+ * {@link Tokenization} and an initial {@link KnowledgeGraph}.
  *
  * Adds the following Stages:
- *   root -- contains guid, text, date
- *   tweet_info -- contains all tweet info
- *   default_section_segmentation -- contains a single section spanning the entire tweet
- *   default_sentence_segmentation -- contains a single sentence spanning the entire tweet
+ *   tokenization -- tokenization based on the twitter {@link Tokenizer}
  *   com_graph -- initial communication graph, containing vertices for the
  *      communication, the twitter account, and the sender.
  */
@@ -61,42 +51,24 @@ public class TwitterCorpusIngester {
     private static final Logger logger = LoggerFactory
             .getLogger(TwitterCorpusIngester.class);    
 
-    private static final Set<Long> dupeIds = new HashSet<>();
-
     private final Corpus corpus;
 
-    private final Concrete.AnnotationMetadata annotationMetadata;
     private final Concrete.AttributeMetadata attribMetadata;
-
-    // TweetInfo stage
-    private final FieldDescriptor TWEET_INFO_FIELD = Concrete.Communication
-            .getDescriptor().findFieldByName("tweet_info");
-    private final String TWEET_INFO_STAGE_NAME = "tweet_info";
-    private final String TWEET_INFO_STAGE_VERSION = "1.0";
-    private final String TWEET_INFO_STAGE_DESCRIPTION = "Information about this tweet that is provided by the standard Twitter JSON API.";
-    private final Stage tweetInfoStage;
-    private final Corpus.Writer tweetInfoWriter;
-
-    // Section Segmentation Stage
-    private final String SEC_SEG_STAGE_NAME = "default_section_segmentation";
-    private final String SEC_SEG_STAGE_VERSION = "1.0";
-    private final String SEC_SEG_STAGE_DESCRIPTION = "A segmentation consisting of a single section, spanning the entire tweet.";
-    private final Stage secSegStage;
-    private final Corpus.Writer secSegWriter;
-
-    // Section Segmentation Stage
-    private final String SENT_SEG_STAGE_NAME = "default_sentence_segmentation";
-    private final String SENT_SEG_STAGE_VERSION = "1.0";
-    private final String SENT_SEG_STAGE_DESCRIPTION = "A segmentation consisting of a single sentence, spanning the entire tweet.";
-    private final Stage sentSegStage;
-    private final Corpus.Writer sentSegWriter;
+    
+    // Tokenization stage
+    public static final String TOKENIZATION_STAGE_NAME = "twitter_tokenization";
+    public static String TOKENIZATION_STAGE_VERSION = "1.0";
+    public static final String TOKENIZATION_STAGE_DESCRIPTION = 
+            "Tokenization from the Twitter Tokenizer.";
+    private final Stage tokenizationStage;
+    private final Corpus.Writer tokenizationWriter;
 
     // InitialGraph stage
     private final FieldDescriptor GRAPH_EDGE_FIELD = Concrete.KnowledgeGraph
             .getDescriptor().findFieldByName("vertex");
-    private final String INITIAL_GRAPH_STAGE_NAME = "com_graph";
-    private final String INITIAL_GRAPH_STAGE_VERSION = "1.0";
-    private final String INITIAL_GRAPH_STAGE_DESCRIPTION = "An initial communication graph, containing three vertices: one for the "
+    public static final String INITIAL_GRAPH_STAGE_NAME = "com_graph";
+    public static final String INITIAL_GRAPH_STAGE_VERSION = "1.0";
+    public static final String INITIAL_GRAPH_STAGE_DESCRIPTION = "An initial communication graph, containing three vertices: one for the "
             + "tweet (Communiation), one for the sender (Person), and one for the "
             + "twitter account used to send the tweet (ComChannel).";
     private final Stage initialGraphStage;
@@ -105,52 +77,34 @@ public class TwitterCorpusIngester {
     int tweetsAdded = 0;
     int dupes = 0;
 
-    public TwitterCorpusIngester(NewInitializer init) throws RebarException {
+    public TwitterCorpusIngester(Corpus corpus) throws RebarException {
         Set<Stage> noDependencies = new TreeSet<Stage>();
-        this.corpus = null;
-        // For writing the root communication objects:
-        // this.initializer = corpus.makeInitializer();
-        // Stage writer for tweet information (from twitter api)
-        if (!this.corpus.hasStage(TWEET_INFO_STAGE_NAME, TWEET_INFO_STAGE_VERSION)) {
-            this.tweetInfoStage = corpus.makeStage(TWEET_INFO_STAGE_NAME, TWEET_INFO_STAGE_VERSION, noDependencies,
-                    TWEET_INFO_STAGE_DESCRIPTION, false);
-        } else {
-            this.tweetInfoStage = this.corpus.getStage(TWEET_INFO_STAGE_NAME, TWEET_INFO_STAGE_VERSION);
-        }
-        this.tweetInfoWriter = corpus.makeWriter(this.tweetInfoStage);
-        // Stage writer for section segmentation
-        if (!this.corpus.hasStage(SEC_SEG_STAGE_NAME, SEC_SEG_STAGE_VERSION)) {
-            this.secSegStage = corpus
-                    .makeStage(SEC_SEG_STAGE_NAME, SEC_SEG_STAGE_VERSION, noDependencies, SEC_SEG_STAGE_DESCRIPTION, false);
-        } else {
-            this.secSegStage = this.corpus.getStage(SEC_SEG_STAGE_NAME, SEC_SEG_STAGE_VERSION);
-        }
-        this.secSegWriter = corpus.makeWriter(this.secSegStage);
+        this.corpus = corpus;
+
         // Stage writer for sentence segmentation
-        if (!this.corpus.hasStage(SENT_SEG_STAGE_NAME, SENT_SEG_STAGE_VERSION)) {
-            Set<Stage> sentSegDeps = new TreeSet<Stage>();
-            sentSegDeps.add(this.secSegStage);
-            this.sentSegStage = corpus.makeStage(SENT_SEG_STAGE_NAME, SENT_SEG_STAGE_VERSION, sentSegDeps, SENT_SEG_STAGE_DESCRIPTION,
-                    false);
+        if (!this.corpus.hasStage(TOKENIZATION_STAGE_NAME, TOKENIZATION_STAGE_VERSION)) {
+            this.tokenizationStage = corpus.makeStage(TOKENIZATION_STAGE_NAME, 
+                    TOKENIZATION_STAGE_VERSION, noDependencies, 
+                    TOKENIZATION_STAGE_DESCRIPTION, false);
         } else {
-            this.sentSegStage = this.corpus.getStage(SENT_SEG_STAGE_NAME, SENT_SEG_STAGE_VERSION);
+            this.tokenizationStage = this.corpus.getStage(TOKENIZATION_STAGE_NAME, 
+                    TOKENIZATION_STAGE_VERSION);
         }
-        this.sentSegWriter = corpus.makeWriter(this.sentSegStage);
+        this.tokenizationWriter = corpus.makeWriter(this.tokenizationStage);
         // Stage writer for initial knowledge graph
         if (!this.corpus.hasStage(INITIAL_GRAPH_STAGE_NAME, INITIAL_GRAPH_STAGE_VERSION)) {
-            this.initialGraphStage = corpus.makeStage(INITIAL_GRAPH_STAGE_NAME, INITIAL_GRAPH_STAGE_VERSION, noDependencies,
+            this.initialGraphStage = corpus.makeStage(INITIAL_GRAPH_STAGE_NAME, 
+                    INITIAL_GRAPH_STAGE_VERSION, noDependencies,
                     INITIAL_GRAPH_STAGE_DESCRIPTION, false);
         } else {
             this.initialGraphStage = this.corpus.getStage(INITIAL_GRAPH_STAGE_NAME, INITIAL_GRAPH_STAGE_VERSION);
         }
         this.initialGraphWriter = corpus.makeWriter(this.initialGraphStage);
         // Metadata
-        this.attribMetadata = Concrete.AttributeMetadata.newBuilder().setTool("jhu.hltcoe.rebar2.ingest.TwitterCorpusIngester")
-                .setConfidence(1.0f).build();
-        this.annotationMetadata = Concrete.AnnotationMetadata.newBuilder()
+        this.attribMetadata = Concrete.AttributeMetadata.newBuilder()
                 .setTool("edu.jhu.rebar.ingest.TwitterCorpusIngester")
-        // .setTimestamp()
-                .build();
+                .setConfidence(1.0f).build();
+
         // Sanity checks
         if (COM_GUID == null)
             throw new RebarException("COM_GUID attribute not found");
@@ -166,48 +120,18 @@ public class TwitterCorpusIngester {
             throw new RebarException("COMS_SENT attribute not found");
     }
 
-    void close() throws RebarException {
-        logger.info("Closing writers");
-        this.tweetInfoWriter.close();
-        this.secSegWriter.close();
-        this.sentSegWriter.close();
+    public void close() throws RebarException {
+        this.tokenizationWriter.close();
         this.initialGraphWriter.close();
-        logger.info("Marking stages as public");
-        corpus.markStagePublic(tweetInfoStage);
-        corpus.markStagePublic(secSegStage);
-        corpus.markStagePublic(sentSegStage);
-        corpus.markStagePublic(initialGraphStage);
-    }
-
-    private static final DateTimeFormatter tweetDateFormat = DateTimeFormat.forPattern("EEE MMM dd HH:mm:ss Z YYYY");
-
-    private void addTweetInfo(IndexedCommunication com, Concrete.TweetInfo tweet) throws RebarException {
-        com.setField(TWEET_INFO_FIELD, tweet);
-        tweetInfoWriter.saveCommunication(com);
     }
 
     private void addSectionSegmentation(IndexedCommunication com) throws RebarException {
         String text = com.getText();
-        // Wrap it in a simple segmentation.
-        Concrete.TextSpan textSpan = Concrete.TextSpan.newBuilder().setStart(0).setEnd(text.length()).build();
-        Concrete.SectionSegmentation.Builder segmentation = Concrete.SectionSegmentation.newBuilder();
-        segmentation.setUuid(IdUtil.generateUUID()).setMetadata(annotationMetadata).addSectionBuilder() // start
-                                                                                                        // new
-                                                                                                        // sub-builder
-                .setUuid(IdUtil.generateUUID()).setTextSpan(textSpan);
-        com.addSectionSegmentation(segmentation.build());
-        secSegWriter.saveCommunication(com);
-    }
-
-    private void addSentenceSegmentation(IndexedCommunication com) throws RebarException {
-        for (IndexedSection sec : com.getSections()) {
-            Concrete.SentenceSegmentation.Builder segmentation = Concrete.SentenceSegmentation.newBuilder();
-            segmentation.setUuid(IdUtil.generateUUID()).setMetadata(annotationMetadata).addSentenceBuilder() 
-            // start new sub-builder
-                    .setTextSpan(sec.getTextSpan()).setUuid(IdUtil.generateUUID());
-            sec.addSentenceSegmentation(segmentation.build());
-        }
-        sentSegWriter.saveCommunication(com);
+        SectionSegmentation ss = 
+                ConcreteSectionSegmentation
+                .generateSectionSegmentation(Tokenizer.TWITTER,  text);
+        com.addSectionSegmentation(ss);
+        tokenizationWriter.saveCommunication(com);
     }
 
     // Constants
@@ -221,9 +145,9 @@ public class TwitterCorpusIngester {
     private final static FieldDescriptor USES = DIRECTED_ATTRIBUTES_DESCRIPTOR.findFieldByName("uses");
     private final static FieldDescriptor COMS_SENT = DIRECTED_ATTRIBUTES_DESCRIPTOR.findFieldByName("num_coms_sent");
 
-    private void addInitialGraph(IndexedCommunication com, Concrete.TweetInfo tweet) throws RebarException {
+    private void addInitialGraph(IndexedCommunication com) throws RebarException {
         IndexedKnowledgeGraph graph = com.getKnowledgeGraph();
-
+        TweetInfo tweet = com.getProto().getTweetInfo();
         // Create three vertices: one for the tweet, one for the
         // person who sent it, and one for the account that was used
         // to send it.
@@ -254,87 +178,26 @@ public class TwitterCorpusIngester {
         initialGraphWriter.saveCommunication(com);
     }
 
-    private void ingestTweet(Concrete.TweetInfo tweet) throws RebarException {
-        long tweetId = tweet.getId();
-        logger.debug("Tweet id: " + tweetId);
-
-        if (dupeIds.contains(tweetId)) {
-            logger.debug(tweetId + ": In our tweet ID set.");
-            this.dupes++;
-            return;
-        }
-
-        // Use the tweet id as the document id.
-        String docid = new Long(tweetId).toString();
-        Concrete.CommunicationGUID guid = Concrete.CommunicationGUID.newBuilder()
-                .setCommunicationId(docid)
-                .setCorpusName(corpus.getName())
-                .build();
-        // Create an empty knowledge graph and assign it a uuid.
-        Concrete.KnowledgeGraph graph = Concrete.KnowledgeGraph.newBuilder()
-                .setUuid(IdUtil.generateUUID())
-                .build();
-        // Create the basic communication with the tweet text
-        Concrete.Communication.Builder comBuilder = Concrete.Communication.newBuilder()
-                .setUuid(IdUtil.generateUUID())
-                .setGuid(guid)
-                .setText(tweet.getText())
-                .setKind(Concrete.Communication.Kind.TWEET)
-                .setKnowledgeGraph(graph);
-        // Add the start time/date, if we have it.
-        if (tweet.hasCreatedAt()) {
-            try {
-                DateTime dateTime = tweetDateFormat.parseDateTime(tweet.getCreatedAt());
-                comBuilder.setStartTime(dateTime.getMillis() / 1000);
-            } catch (IllegalArgumentException iae) {
-                logger.trace("Tweet " + docid + " had a malformed date. Skipping date creation.");
-            }
+    public void addTokenizationStage() throws RebarException {
+        Corpus.Reader commReader = this.corpus.makeReader();
+        Iterator<IndexedCommunication> icIter = commReader.loadCommunications();
+        while (icIter.hasNext()) {
+            IndexedCommunication ic = icIter.next();
+            addSectionSegmentation(ic);
         }
         
-        Communication comm = comBuilder.build();
-        IndexedCommunication ic = new IndexedCommunication(comm, 
-                new ProtoIndex(comm), null);
-        
-        addTweetInfo(ic, tweet);
-        addSectionSegmentation(ic);
-        addSentenceSegmentation(ic);
-        addInitialGraph(ic, tweet);
-        dupeIds.add(tweetId);
-        this.tweetsAdded++;
+        commReader.close();
     }
-
-    public void ingestFile(File filename) throws RebarException, IOException, FileNotFoundException {
-        InputStream is = FileUtil.getInputStream(filename);
-        Scanner sc = new Scanner(is, "UTF-8");
-        logger.info("Ingesting " + filename + "...");
-        long lineno = 0;
-        while (sc.hasNextLine()) {
-            try {
-                String line = sc.nextLine();
-                lineno++;
-                Concrete.TweetInfo tweet = TweetInfoJsonReader.parseJson(line);
-                if (tweet.hasText())
-                    ingestTweet(tweet);
-
-                if (lineno % 10000 == 0)
-                    logger.info("On line: " + lineno);
-            } catch (JsonParseException jpe) {
-                logger.error("Couldn't parse this json: line " + lineno + ": " + jpe.getMessage());
-            } catch (JsonMappingException jme) {
-                logger.error("Couldn't parse this json: line " + lineno + ": " + jme.getMessage());
-            }
+    
+    public void addGraphStage() throws RebarException {
+        Corpus.Reader commReader = this.corpus.makeReader();
+        Iterator<IndexedCommunication> icIter = commReader.loadCommunications();
+        while (icIter.hasNext()) {
+            IndexedCommunication ic = icIter.next();
+            addInitialGraph(ic);
         }
-
-        sc.close();
-        is.close();
-    }
-
-    public int getDupes() {
-        return this.dupes;
-    }
-
-    public int getTweetsAdded() {
-        return this.tweetsAdded;
+        
+        commReader.close();
     }
 
     public static void main(String[] args) throws RebarException, IOException, FileNotFoundException {
@@ -359,13 +222,20 @@ public class TwitterCorpusIngester {
         //Corpus corpus = cf.makeCorpus(corpusName);
         
         logger.info("Ingesting twitter files...");
-        TwitterCorpusIngester ingester = new TwitterCorpusIngester(init);
+        TwitterCommunicationsIngester ingester = 
+                new TwitterCommunicationsIngester(init);
         for (int i = 1; i < args.length; i++) {
             ingester.ingestFile(new File(args[i]));
         }
-        ingester.close();
+        
+        ingester.finishIngest();
         logger.info("Tweets ingested: " + ingester.getTweetsAdded());
-        logger.info("Dupes: " + ingester.getDupes());
         init.close();
+        
+        Corpus c = cf.getCorpus(corpusName);
+        TwitterCorpusIngester tci = new TwitterCorpusIngester(c);
+        tci.addTokenizationStage();
+        tci.addGraphStage();
+        tci.close();
     }
 }

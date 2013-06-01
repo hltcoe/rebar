@@ -230,20 +230,20 @@ public class FileBackedCorpus implements Corpus {
         private final Path commPath;
         private final Set<Stage> stagesToLoad;
         private final Connection conn;
-        private final NavigableMap<Integer, Stage> stagesToRead;
+        private final SortedSet<Integer> stageIdsToGet;
 
-        public FileCorpusReader() {
+        public FileCorpusReader() throws RebarException {
             this(new TreeSet<Stage>());
         }
         
-        public FileCorpusReader(Set<Stage> stagesToLoad) {
+        public FileCorpusReader(Set<Stage> stagesToLoad) throws RebarException {
             this.commPath = FileBackedCorpus.this.commsPath;
             this.stagesToLoad = stagesToLoad;
             this.conn = FileBackedCorpus.this.conn;
-            this.stagesToRead = new TreeMap<>();
-            stagesToRead.put(0, null); // root cell.
-            for (Stage stage : this.stagesToLoad)
-                addStageDependencies(stage);
+            this.stageIdsToGet = new TreeSet<>();
+            for (Stage stage : this.stagesToLoad) 
+                this.stageIdsToGet.add(stage.getStageId());
+            this.addStageDependencies();
         }
         
         /**
@@ -251,13 +251,24 @@ public class FileBackedCorpus implements Corpus {
          * 
          * @param stage
          * @param ids
+         * @throws RebarException 
          */
-        private void addStageDependencies(Stage stage) {
-            if (!this.stagesToRead.containsKey(stage.getStageId())) {
-                this.stagesToRead.put(stage.getStageId(), stage);
-                for (Stage dep : stage.getDependencies())
-                    addStageDependencies(dep);
+        private void addStageDependencies() throws RebarException {
+            Set<Integer> dependentIdSet = new TreeSet<>();
+            /*
+             * We need to get every single stage is that is depended upon
+             * the stages that were input manually (those passed in via
+             * the parameters). 
+             * 
+             * Example: If we're passed in stage 3, which depends upon
+             * stage 2, we need to get stage 2 as well. 
+             */
+            for (Integer id : this.stageIdsToGet) {
+                List<Integer> dependencies = FileBackedCorpus.this.queryDependencyIds(id);
+                dependentIdSet.addAll(dependencies);
             }
+            
+            this.stageIdsToGet.addAll(dependentIdSet);
         }
 
         @Override
@@ -284,118 +295,32 @@ public class FileBackedCorpus implements Corpus {
             }
         }
         
-        /**
-         * Returns null if nothing changed, or the new value if we merged
-         * something in.
-         */
-        private Message mergeStages(
-                Message msg,
-                Map<ProtoIndex.ModificationTarget, List<StageOutput>> stageValues)
-                throws RebarException {
-            Message.Builder builder = null;
-
-            // Get the modification target for this message.
-            final ProtoIndex.ModificationTarget target;
-            Concrete.UUID uuid = IdUtil.getUUIDOrNull(msg); // uuid may be null.
-            if (uuid != null)
-                target = new ProtoIndex.ModificationTarget(uuid);
-            else if (msg instanceof Concrete.Edge) {
-                target = new ProtoIndex.ModificationTarget(
-                        ((Concrete.Edge) msg).getEdgeId());
-            } else
-                target = null;
-            // System.err.println("Merging, target="+target);
-            // Get any values we should merge into this target, and merge them.
-            List<StageOutput> valuesToMerge = stageValues.remove(target);
-            if (valuesToMerge != null) {
-                try {
-                    // Merge in the new values.
-                    for (StageOutput stageOutput : valuesToMerge) {
-                        if (builder == null)
-                            builder = msg.toBuilder();
-                        
-                            builder.mergeFrom(stageOutput.mod);
-                        
-                    }
-                } catch (InvalidProtocolBufferException e) {
-                    throw new RebarException(e);
-                }
-                // If we're done with everything, then return immediately.
-                if (stageValues.isEmpty())
-                    return builder.build();
-                // If the stage we just merged in is depended on by other
-                // stages, then we need to rebuild the message before we
-                // traverse it... Currently we don't keep that info, so
-                // for now, just always do it.
-                if (true) {
-                    msg = builder.build();
-                    builder = null;
-                }
-            }
-
-            // Recurse to subfields
-            for (Map.Entry<FieldDescriptor, Object> field : msg.getAllFields()
-                    .entrySet()) {
-                FieldDescriptor fd = field.getKey();
-                if (fd.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-                    if (fd.isRepeated()) {
-                        @SuppressWarnings("unchecked")
-                        List<Message> children = (List<Message>) field
-                                .getValue();
-                        for (int i = 0; i < children.size(); i++) {
-                            Message child = children.get(i);
-                            Message mergedChild = mergeStages(child,
-                                    stageValues);
-                            if (mergedChild != null) {
-                                if (builder == null)
-                                    builder = msg.toBuilder();
-                                builder.setRepeatedField(fd, i, mergedChild);
-                                if (stageValues.isEmpty())
-                                    return builder.build();
-                            }
-                        }
-                    } else {
-                        Message child = (Message) field.getValue();
-                        
-                        Message mergedChild = mergeStages(child, stageValues);
-                        if (mergedChild != null) {
-                            if (builder == null)
-                                builder = msg.toBuilder();
-                            builder.setField(fd, mergedChild);
-                            if (stageValues.isEmpty())
-                                return builder.build();
-                        }
-                    }
-                }
-            }
-
-            if (builder != null)
-                return builder.build();
-            else if (valuesToMerge != null)
-                return msg;
-            else
-                return null;
-        }
-        
-        private List<StageOutput> queryStages(String commId) throws RebarException {
+        private SortedSet<StageOutput> queryStages(String commId) throws RebarException {
             try {
-                List<StageOutput> soList = new ArrayList<>();
+                SortedSet<StageOutput> soSet = new TreeSet<>();
+                // If we don't have stage outputs to get, just return. 
+                if (this.stageIdsToGet.size() == 0)
+                    return soSet;
+                
                 String sql = "SELECT stage_id, target, mods FROM stage_mods WHERE " +
                 		"comm_id = ?";
                 PreparedStatement ps = this.conn.prepareStatement(sql);
                 ps.setString(1, commId);
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
-                    int stageId = rs.getInt(1);
+                    int queriedStageId = rs.getInt(1);
+                    // if this ID isn't in our set, we just skip it. 
+                    if (!this.stageIdsToGet.contains(queriedStageId))
+                        continue;
                     ModificationTarget mt = new ModificationTarget(rs.getBytes(2));
                     byte[] value = rs.getBytes(3);
                     
-                    StageOutput so = new StageOutput(stageId, mt, value);
-                    soList.add(so);
+                    StageOutput so = new StageOutput(queriedStageId, mt, value);
+                    soSet.add(so);
                 }
-                ps.close();
                 
-                return soList;
+                ps.close();
+                return soSet;
             } catch (SQLException e) {
                 throw new RebarException(e);
             }
@@ -405,9 +330,9 @@ public class FileBackedCorpus implements Corpus {
                 throws RebarException {
             try {
                 String commId = original.getGuid().getCommunicationId();
-                List<StageOutput> soList = this.queryStages(commId);
+                SortedSet<StageOutput> soSet = this.queryStages(commId);
                 Communication.Builder mergedComm = original.toBuilder();
-                for (StageOutput so : soList) 
+                for (StageOutput so : soSet) 
                     mergedComm = mergedComm.mergeFrom(so.mod);
                 
                 Communication commToUse = mergedComm.build();
@@ -537,17 +462,11 @@ public class FileBackedCorpus implements Corpus {
         private Stage stage;
         private String tableName;
         private Connection conn;
-//        private Kryo kryo;
         
         public FileCorpusWriter (Stage stage) throws RebarException {
-            try {
-                this.stage = stage;
-                this.conn = FileBackedCorpus.this.conn;
-                this.tableName = stage.getStageName() + "_" + stage.getStageVersion();
-            } finally {
-                
-            }
-            
+            this.stage = stage;
+            this.conn = FileBackedCorpus.this.conn;
+            this.tableName = stage.getStageName() + "_" + stage.getStageVersion();
         }
         
         @Override
@@ -587,11 +506,7 @@ public class FileBackedCorpus implements Corpus {
 
         @Override
         public void close() throws RebarException {
-            try {
-                this.conn = null;
-            } finally {
-                
-            }
+            this.conn = null;
         }
 
         @Override

@@ -9,7 +9,7 @@ import edu.jhu.rebar.ProtoIndex.ModificationTarget;
  * @author max
  *
  */
-public class StageOutput {
+public class StageOutput implements Comparable<StageOutput> {
 
     public final int stageId;
     public final ModificationTarget mt;
@@ -19,5 +19,10 @@ public class StageOutput {
         this.stageId = stageId;
         this.mt = mt;
         this.mod = mod;
+    }
+
+    @Override
+    public int compareTo(StageOutput o) {
+        return new Integer(stageId).compareTo(o.stageId);
     }
 }
