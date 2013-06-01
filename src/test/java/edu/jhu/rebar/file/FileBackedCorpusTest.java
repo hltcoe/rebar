@@ -213,6 +213,21 @@ public class FileBackedCorpusTest {
         assertTrue(this.assertStageComparisons(s));
     }
     
+    @Test
+    public void testQueryStageNameVersionNewFactory() throws RebarException {
+        this.fbc.makeStage(this.testStageName, 
+                this.testStageVersion, 
+                this.noDependencySet, 
+                this.testStageDesc, true);
+        
+        Corpus fbc = this.fcf.getCorpus(this.corpusName);
+        Stage s = fbc.getStage(this.testStageName, this.testStageVersion);
+        
+        assertTrue(this.assertStageComparisons(s));
+        
+        fbc.close();
+    }
+    
     private void addTokenization() throws RebarException {
         // Find "section segmentation" protobuf Message class. 
         final FieldDescriptor ssField = Concrete.Communication
@@ -319,6 +334,51 @@ public class FileBackedCorpusTest {
                     fail("Misplaced tokenization: " + commId + " doesn't exist.");
             }
         }
+    }
+    
+    @Test
+    public void testCreateStageAppendTokenizationNewCorpus () throws RebarException {
+        this.addTokenization();
+        
+        Corpus newReaderCorpus = this.fcf.getCorpus(this.corpusName);
+        
+        Corpus.Reader rawReader = newReaderCorpus.makeReader();
+        assertEquals(0, rawReader.getInputStages().size());
+        Iterator<IndexedCommunication> iter = rawReader.loadCommunications();
+        while (iter.hasNext()) {
+            IndexedCommunication ic = iter.next();
+            Communication c = ic.getProto();
+            assertEquals(0, c.getSectionSegmentationCount());
+        }
+        
+        rawReader.close();
+        
+        Stage retStage = newReaderCorpus.getStage(this.tokStageName, this.tokStageVersion);
+        Corpus.Reader reader = newReaderCorpus.makeReader(retStage);
+        assertTrue(reader.getInputStages().contains(retStage));
+        
+        iter = reader.loadCommunications();
+        while (iter.hasNext()) {
+            IndexedCommunication ic = iter.next();
+            
+            IndexedSentence is = ic.getSentences().get(0);
+            IndexedTokenization it = is.getTokenization();
+            TokenSequence ts = it.getBestTokenSequence();
+            Iterator<Token> tokenIter = ts.iterator();
+            String commId = ic.getCommunicationId();
+            
+            while (tokenIter.hasNext()) {
+                Token tok = tokenIter.next();
+                if (commId.equals(guidOne.getCommunicationId()))
+                    assertTrue(this.tokensCommOne.contains(tok.getText()));
+                else if (commId.equals(guidTwo.getCommunicationId()))
+                    assertTrue(this.tokensCommTwo.contains(tok.getText()));
+                else
+                    fail("Misplaced tokenization: " + commId + " doesn't exist.");
+            }
+        }
+        
+        newReaderCorpus.close();
     }
     
     @Test

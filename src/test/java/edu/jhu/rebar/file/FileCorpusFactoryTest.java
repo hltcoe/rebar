@@ -57,7 +57,7 @@ public class FileCorpusFactoryTest {
 
     @Test
     public void testNoCorporaAfterInit() throws RebarException {
-        assertEquals(0, this.fcf.corporaList.size());
+        assertEquals(0, this.fcf.listCorpora().size());
     }
 
     @Test

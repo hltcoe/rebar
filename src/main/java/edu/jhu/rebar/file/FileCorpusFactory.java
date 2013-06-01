@@ -169,7 +169,7 @@ public class FileCorpusFactory implements CorpusFactory {
 	}
 	
     private final Path pathOnDisk;
-    Set<String> corporaList;
+    private Set<String> corporaList;
 
     /**
      * @throws RebarException
@@ -280,7 +280,7 @@ public class FileCorpusFactory implements CorpusFactory {
 
     @Override
     public Set<String> listCorpora() throws RebarException {
-        return Collections.unmodifiableSet(this.corporaList);
+        return new TreeSet<>(this.corporaList);
     }
 
     @Override
