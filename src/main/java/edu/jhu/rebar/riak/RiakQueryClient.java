@@ -120,10 +120,15 @@ public class RiakQueryClient {
      * @throws RebarException 
      */
     public static void main(String[] args) throws RiakException, RebarException {
+        if (args.length != 1) {
+            logger.info("Usage: RiakQueryClient <fraction-of-data-to-get-and-measure-time>");
+            System.exit(1);
+        }
+            
         RiakQueryClient qc = new RiakQueryClient();
         StopWatch watch = new StopWatch();
         watch.start();
-        List<Vertex> vList = qc.sampleVertices(.1);
+        List<Vertex> vList = qc.sampleVertices(Double.parseDouble(args[0]));
         watch.suspend();
         logger.info("Took " + watch.toString() + " time to get " + vList.size() + " vertices.");
         qc.close();
