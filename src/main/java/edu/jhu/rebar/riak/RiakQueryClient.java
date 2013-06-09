@@ -94,6 +94,8 @@ public class RiakQueryClient {
             throw new RebarException("Can't get less than 0% of the data.");
         
         try {
+	    if (this.keyList == null)
+		this.getTacKb09Ids();
             Bucket b = this.client.fetchBucket(RiakConfiguration.getVertexBucketName()).execute();
             int numToGet = (int)(this.keyList.size() * fraction);
             for (int i = 0; i < numToGet; i++) {
