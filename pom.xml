@@ -4,7 +4,7 @@
 
   <groupId>edu.jhu.hlt.rebar</groupId>
   <artifactId>rebar</artifactId>
-  <version>1.0.3-SNAPSHOT</version>
+  <version>1.0.3</version>
   <packaging>jar</packaging>
 
   <name>Rebar</name>
