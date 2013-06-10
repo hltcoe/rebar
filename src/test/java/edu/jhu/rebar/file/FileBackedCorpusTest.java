@@ -16,8 +16,6 @@ import java.util.TreeSet;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
@@ -39,9 +37,9 @@ import edu.jhu.rebar.IndexedCommunication;
 import edu.jhu.rebar.IndexedSentence;
 import edu.jhu.rebar.IndexedTokenization;
 import edu.jhu.rebar.IndexedTokenization.TokenSequence;
-import edu.jhu.rebar.config.RebarConfiguration;
 import edu.jhu.rebar.RebarException;
 import edu.jhu.rebar.Stage;
+import edu.jhu.rebar.config.RebarConfiguration;
 
 public class FileBackedCorpusTest {
 

@@ -6,13 +6,9 @@ package edu.jhu.rebar.riak;
 import java.util.TreeSet;
 
 import com.basho.riak.client.IRiakObject;
-import com.basho.riak.client.builders.RiakObjectBuilder;
 import com.basho.riak.client.cap.VClock;
 import com.basho.riak.client.convert.ConversionException;
 import com.basho.riak.client.convert.Converter;
-import com.basho.riak.client.convert.KeyUtil;
-import com.basho.riak.client.convert.NoKeySpecifedException;
-import com.basho.riak.client.http.util.Constants;
 import com.esotericsoftware.kryo.Kryo;
 
 
