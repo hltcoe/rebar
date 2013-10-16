@@ -15,30 +15,30 @@ package edu.jhu.hlt.rebar;
  */
 public class RebarException extends Exception {
 
-    /**
-     * Eclipse-generated
-     */
-    private static final long serialVersionUID = 168024806017512250L;
+  /**
+   * Eclipse-generated
+   */
+  private static final long serialVersionUID = 168024806017512250L;
 
-    /**
-     * @param message
-     */
-    public RebarException(String message) {
-        super(message);
-    }
+  /**
+   * @param message
+   */
+  public RebarException(String message) {
+    super(message);
+  }
 
-    /**
-     * @param cause
-     */
-    public RebarException(Throwable cause) {
-        super(cause);
-    }
+  /**
+   * @param cause
+   */
+  public RebarException(Throwable cause) {
+    super(cause);
+  }
 
-    /**
-     * @param message
-     * @param cause
-     */
-    public RebarException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  /**
+   * @param message
+   * @param cause
+   */
+  public RebarException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

@@ -46,300 +46,269 @@ import edu.jhu.hlt.tift.Tokenizer;
 
 public class FileBackedCorpusTest {
 
-    final String corpusName = "testCorpus";
+  final String corpusName = "testCorpus";
 
-    ProtoFactory pf = new ProtoFactory();
-    CommunicationGUID guidOne = pf.generateMockCommGuid();
+  ProtoFactory pf = new ProtoFactory();
+  CommunicationGUID guidOne = pf.generateMockCommGuid();
 
-    Communication commOne = Communication
-            .newBuilder(ProtoFactory.generateCommunication(guidOne))
-            .setText("Sample test text for testing")
-            .build();
-    List<String> tokensCommOne = new ArrayList<>();
-    List<String> tokensCommTwo = new ArrayList<>();
+  Communication commOne = Communication.newBuilder(ProtoFactory.generateCommunication(guidOne)).setText("Sample test text for testing").build();
+  List<String> tokensCommOne = new ArrayList<>();
+  List<String> tokensCommTwo = new ArrayList<>();
 
-    CommunicationGUID guidTwo = pf.generateMockCommGuid();
-    Communication commTwo = Communication
-            .newBuilder(ProtoFactory.generateCommunication(guidTwo))
-            .setText("This is test text")
-            .build();
+  CommunicationGUID guidTwo = pf.generateMockCommGuid();
+  Communication commTwo = Communication.newBuilder(ProtoFactory.generateCommunication(guidTwo)).setText("This is test text").build();
 
-    FileBackedCorpus fbc;
-    FileCorpusFactory fcf;
-    
-    private Set<Stage> noDependencySet = new TreeSet<>();
-    
-    private String testStageName = "test_stage";
-    private String testStageVersion = "v1";
-    private String testStageDesc = "test desc";
-    
-    private String tokStageName = "tok_stage";
-    private String tokStageVersion = "v1";
-    private String tokStageDesc = "Test Tokenization";
+  FileBackedCorpus fbc;
+  FileCorpusFactory fcf;
 
-    private String lidStageName = "lid_stage";
-    private String lidStageVersion = "v1";
-    private String lidStageDesc = "Test LID";
+  private Set<Stage> noDependencySet = new TreeSet<>();
 
-    @Before
-    public void setUp() throws Exception {
-        this.fcf = new FileCorpusFactory(RebarConfiguration
-                .getTestFileCorpusDirectory());
+  private String testStageName = "test_stage";
+  private String testStageVersion = "v1";
+  private String testStageDesc = "test desc";
 
-        List<Communication> commList = new ArrayList<>(2);
-        commList.add(commOne);
-        commList.add(commTwo);
+  private String tokStageName = "tok_stage";
+  private String tokStageVersion = "v1";
+  private String tokStageDesc = "Test Tokenization";
 
-        this.fbc = this.fcf.initializeCorpus(corpusName, commList.iterator());
-        
-        tokensCommOne.add("Sample");
-        tokensCommOne.add("test");
-        tokensCommOne.add("text");
-        tokensCommOne.add("for");
-        tokensCommOne.add("testing");
-        
-        tokensCommTwo.add("This");
-        tokensCommTwo.add("is");
-        tokensCommTwo.add("test");
-        tokensCommTwo.add("text");
+  private String lidStageName = "lid_stage";
+  private String lidStageVersion = "v1";
+  private String lidStageDesc = "Test LID";
+
+  @Before
+  public void setUp() throws Exception {
+    this.fcf = new FileCorpusFactory(RebarConfiguration.getTestFileCorpusDirectory());
+
+    List<Communication> commList = new ArrayList<>(2);
+    commList.add(commOne);
+    commList.add(commTwo);
+
+    this.fbc = this.fcf.initializeCorpus(corpusName, commList.iterator());
+
+    tokensCommOne.add("Sample");
+    tokensCommOne.add("test");
+    tokensCommOne.add("text");
+    tokensCommOne.add("for");
+    tokensCommOne.add("testing");
+
+    tokensCommTwo.add("This");
+    tokensCommTwo.add("is");
+    tokensCommTwo.add("test");
+    tokensCommTwo.add("text");
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    this.fbc.close();
+    this.fcf.deleteCorpus(corpusName);
+  }
+
+  @Test
+  public void testGetNumCommunications() throws RebarException {
+    assertEquals(2, this.fbc.getNumCommunications());
+  }
+
+  @Test
+  public void testLoadCommunicationString() throws RebarException {
+    Reader r = this.fbc.makeReader();
+    String guidOneString = guidOne.getCommunicationId();
+    IndexedCommunication ic = r.loadCommunication(guidOneString);
+    assertEquals(commOne.getUuid(), ic.getProto().getUuid());
+    assertEquals(guidOneString, ic.getCommunicationId());
+    assertEquals("testCorpus", ic.getCorpusName());
+  }
+
+  @Test(expected = RebarException.class)
+  public void testLoadCommunicationStringNotExist() throws RebarException {
+    Reader r = this.fbc.makeReader();
+    String guidOneString = guidOne.getCommunicationId();
+    r.loadCommunication(guidOneString + "50953-135ff");
+  }
+
+  @Test(expected = RebarException.class)
+  public void testLoadCommunicationIteratorNotExist() throws RebarException {
+    Reader r = this.fbc.makeReader();
+    String invalidCommId = "foobarqux351351";
+    Collection<String> iColl = new ArrayList<>(1);
+    iColl.add(invalidCommId);
+    r.loadCommunications(iColl);
+  }
+
+  @Test
+  public void testLoadCommunicationIteratorSubset() throws RebarException {
+    Reader r = this.fbc.makeReader();
+    Collection<String> iColl = new ArrayList<>(1);
+    iColl.add(guidOne.getCommunicationId());
+    Iterator<IndexedCommunication> icIter = r.loadCommunications(iColl);
+    IndexedCommunication ic = icIter.next();
+
+    assertEquals(guidOne.getCommunicationId(), ic.getCommunicationId());
+    assertFalse(icIter.hasNext());
+  }
+
+  @Test
+  public void testLoadCommunicationIteratorAll() throws RebarException {
+    Reader r = this.fbc.makeReader();
+    Iterator<IndexedCommunication> icIter = r.loadCommunications();
+    List<IndexedCommunication> commList = new ArrayList<>();
+    while (icIter.hasNext())
+      commList.add(icIter.next());
+
+    assertEquals(2, commList.size());
+  }
+
+  @Test
+  public void testNoStagesAfterInit() throws RebarException {
+    SortedSet<Stage> stages = this.fbc.getStages();
+    assertEquals(0, stages.size());
+  }
+
+  private boolean assertStageComparisons(Stage s) {
+    return this.testStageName.equals(s.getStageName()) && this.testStageVersion.equals(s.getStageVersion()) && this.noDependencySet.equals(s.getDependencies())
+        && this.testStageDesc.equals(s.getDescription());
+  }
+
+  @Test
+  public void testAddStage() throws RebarException {
+    this.fbc.makeStage(this.testStageName, this.testStageVersion, this.noDependencySet, this.testStageDesc, true);
+
+    SortedSet<Stage> stages = this.fbc.getStages();
+    assertEquals(1, stages.size());
+
+    Stage s = stages.first();
+
+    assertTrue(this.assertStageComparisons(s));
+  }
+
+  @Test(expected = RebarException.class)
+  public void testLoadCommunicationsStageNotExists() throws RebarException {
+    Stage s = new FileStage("foo", "v1", 1, this.fbc.getPath(), this.noDependencySet, "test stage", true);
+    this.fbc.makeReader(s);
+  }
+
+  @Test
+  public void testQueryStageNameVersion() throws RebarException {
+    this.fbc.makeStage(this.testStageName, this.testStageVersion, this.noDependencySet, this.testStageDesc, true);
+
+    Stage s = this.fbc.getStage(this.testStageName, this.testStageVersion);
+
+    assertTrue(this.assertStageComparisons(s));
+  }
+
+  private void addTokenization() throws RebarException {
+    // Find "section segmentation" protobuf Message class.
+    final FieldDescriptor ssField = Concrete.Communication.getDescriptor().findFieldByName("section_segmentation");
+
+    final Stage testStage = this.fbc.makeStage(this.tokStageName, this.tokStageVersion, this.noDependencySet, this.tokStageDesc, true);
+    final Corpus.Reader testReader = this.fbc.makeReader(testStage);
+    final Corpus.Writer testWriter = this.fbc.makeWriter(testStage);
+    final Iterator<IndexedCommunication> readIter = testReader.loadCommunications();
+    while (readIter.hasNext()) {
+      IndexedCommunication com = readIter.next();
+      SectionSegmentation ssToAppend = ConcreteSectionSegmentation.generateSectionSegmentation(Tokenizer.TWITTER, com.getText());
+      com.addField(ssField, ssToAppend);
+      testWriter.saveCommunication(com);
     }
 
-    @After
-    public void tearDown() throws Exception {
-        this.fbc.close();
-        this.fcf.deleteCorpus(corpusName);
+    testWriter.close();
+    testReader.close();
+  }
+
+  private void addLanguageIdDependsTokenization() throws RebarException {
+    this.addTokenization();
+
+    ArrayList<Stage> dependencies = new ArrayList<Stage>();
+    dependencies.add(this.fbc.getStage(this.tokStageName, this.tokStageVersion));
+
+    final FieldDescriptor lidField = Concrete.Communication.getDescriptor().findFieldByName("language_id");
+
+    final Stage lidStage = this.fbc.makeStage(this.lidStageName, this.lidStageVersion, new TreeSet<>(dependencies), this.lidStageDesc, true);
+    final Corpus.Reader testReader = this.fbc.makeReader(lidStage);
+    final Corpus.Writer testWriter = this.fbc.makeWriter(lidStage);
+    final Iterator<IndexedCommunication> readIter = testReader.loadCommunications();
+    while (readIter.hasNext()) {
+      IndexedCommunication com = readIter.next();
+      Concrete.LanguageIdentification.Builder lidBuilder = Concrete.LanguageIdentification.newBuilder();
+      Concrete.LanguageIdentification.LanguageProb.Builder lp = Concrete.LanguageIdentification.LanguageProb.newBuilder();
+      lp.setProbability(1.0f);
+      lp.setLanguage("eng");
+      lidBuilder.addLanguage(lp);
+      lidBuilder.setUuid(IdUtil.generateUUID());
+      lidBuilder.getMetadataBuilder().setTool("my-lid");
+      com.addField(com.getProto(), lidField, lidBuilder.build());
+      testWriter.saveCommunication(com);
     }
 
-    @Test
-    public void testGetNumCommunications() throws RebarException {
-        assertEquals(2, this.fbc.getNumCommunications());
-    }
+    testWriter.close();
+    testReader.close();
+  }
 
-    @Test
-    public void testLoadCommunicationString() throws RebarException {
-        Reader r = this.fbc.makeReader();
-        String guidOneString = guidOne.getCommunicationId();
-        IndexedCommunication ic = r.loadCommunication(guidOneString);
-        assertEquals(commOne.getUuid(), ic.getProto().getUuid());
-        assertEquals(guidOneString, ic.getCommunicationId());
-        assertEquals("testCorpus", ic.getCorpusName());
-    }
+  @Test
+  public void testCreateStageAppendTokenization() throws RebarException {
+    this.addTokenization();
 
-    @Test(expected = RebarException.class)
-    public void testLoadCommunicationStringNotExist() throws RebarException {
-        Reader r = this.fbc.makeReader();
-        String guidOneString = guidOne.getCommunicationId();
-        r.loadCommunication(guidOneString + "50953-135ff");
-    }
+    Stage retStage = this.fbc.getStage(this.tokStageName, this.tokStageVersion);
+    Corpus.Reader reader = this.fbc.makeReader(retStage);
+    assertTrue(reader.getInputStages().contains(retStage));
 
-    @Test(expected = RebarException.class)
-    public void testLoadCommunicationIteratorNotExist() throws RebarException {
-        Reader r = this.fbc.makeReader();
-        String invalidCommId = "foobarqux351351";
-        Collection<String> iColl = new ArrayList<>(1);
-        iColl.add(invalidCommId);
-        r.loadCommunications(iColl);
-    }
+    Iterator<IndexedCommunication> iter = reader.loadCommunications();
+    while (iter.hasNext()) {
+      IndexedCommunication ic = iter.next();
 
-    @Test
-    public void testLoadCommunicationIteratorSubset() throws RebarException {
-        Reader r = this.fbc.makeReader();
-        Collection<String> iColl = new ArrayList<>(1);
-        iColl.add(guidOne.getCommunicationId());
-        Iterator<IndexedCommunication> icIter = r.loadCommunications(iColl);
-        IndexedCommunication ic = icIter.next();
+      IndexedSentence is = ic.getSentences().get(0);
+      IndexedTokenization it = is.getTokenization();
+      TokenSequence ts = it.getBestTokenSequence();
+      Iterator<Token> tokenIter = ts.iterator();
+      String commId = ic.getCommunicationId();
 
-        assertEquals(guidOne.getCommunicationId(), ic.getCommunicationId());
-        assertFalse(icIter.hasNext());
+      while (tokenIter.hasNext()) {
+        Token tok = tokenIter.next();
+        if (commId.equals(guidOne.getCommunicationId()))
+          assertTrue(this.tokensCommOne.contains(tok.getText()));
+        else if (commId.equals(guidTwo.getCommunicationId()))
+          assertTrue(this.tokensCommTwo.contains(tok.getText()));
+        else
+          fail("Misplaced tokenization: " + commId + " doesn't exist.");
+      }
     }
+  }
 
-    @Test
-    public void testLoadCommunicationIteratorAll() throws RebarException {
-        Reader r = this.fbc.makeReader();
-        Iterator<IndexedCommunication> icIter = r.loadCommunications();
-        List<IndexedCommunication> commList = new ArrayList<>();
-        while (icIter.hasNext())
-            commList.add(icIter.next());
+  @Test
+  public void testCreateStageAppendTokenizationLid() throws RebarException {
+    this.addLanguageIdDependsTokenization();
 
-        assertEquals(2, commList.size());
-    }
-    
-    @Test
-    public void testNoStagesAfterInit() throws RebarException {
-        SortedSet<Stage> stages = this.fbc.getStages();
-        assertEquals(0, stages.size());
-    }
-    
-    private boolean assertStageComparisons(Stage s) {
-        return
-                this.testStageName.equals(s.getStageName()) &&
-                this.testStageVersion.equals(s.getStageVersion()) &&
-                this.noDependencySet.equals(s.getDependencies()) && 
-                this.testStageDesc.equals(s.getDescription());
-    }
-    
-    @Test
-    public void testAddStage() throws RebarException {
-        this.fbc.makeStage(this.testStageName, 
-                            this.testStageVersion, 
-                            this.noDependencySet, 
-                            this.testStageDesc, true);
-        
-        SortedSet<Stage> stages = this.fbc.getStages();
-        assertEquals(1, stages.size());
-        
-        Stage s = stages.first();
-        
-        assertTrue(this.assertStageComparisons(s));
-    }
-    
-    @Test(expected = RebarException.class)
-    public void testLoadCommunicationsStageNotExists() throws RebarException {
-        Stage s = new FileStage("foo", "v1", 1, this.fbc.getPath(),
-                this.noDependencySet, "test stage", true);
-        this.fbc.makeReader(s);
-    }
-    
-    @Test
-    public void testQueryStageNameVersion() throws RebarException {
-        this.fbc.makeStage(this.testStageName, 
-                this.testStageVersion, 
-                this.noDependencySet, 
-                this.testStageDesc, true);
-        
-        Stage s = this.fbc.getStage(this.testStageName, this.testStageVersion);
-        
-        assertTrue(this.assertStageComparisons(s));
-    }
-    
-    private void addTokenization() throws RebarException {
-        // Find "section segmentation" protobuf Message class. 
-        final FieldDescriptor ssField = Concrete.Communication
-                .getDescriptor()
-                .findFieldByName("section_segmentation");
+    Stage lidStage = this.fbc.getStage(this.lidStageName, this.lidStageVersion);
+    Corpus.Reader reader = this.fbc.makeReader(lidStage);
+    assertTrue(reader.getInputStages().contains(lidStage));
 
-        final Stage testStage = this.fbc.makeStage(this.tokStageName, 
-                this.tokStageVersion, 
-                this.noDependencySet, 
-                this.tokStageDesc, true);
-        final Corpus.Reader testReader = this.fbc.makeReader(testStage);
-        final Corpus.Writer testWriter = this.fbc.makeWriter(testStage);
-        final Iterator<IndexedCommunication> readIter = 
-                testReader.loadCommunications();
-        while (readIter.hasNext()) {
-            IndexedCommunication com = readIter.next();
-            SectionSegmentation ssToAppend = ConcreteSectionSegmentation
-                    .generateSectionSegmentation(Tokenizer.TWITTER, com.getText());
-            com.addField(ssField, ssToAppend);
-            testWriter.saveCommunication(com);
+    Iterator<IndexedCommunication> iter = reader.loadCommunications();
+    while (iter.hasNext()) {
+      IndexedCommunication ic = iter.next();
+      IndexedSentence is = ic.getSentences().get(0);
+      IndexedTokenization it = is.getTokenization();
+      TokenSequence ts = it.getBestTokenSequence();
+      Iterator<Token> tokenIter = ts.iterator();
+      String commId = ic.getCommunicationId();
+
+      List<LanguageIdentification> lidList = ic.getProto().getLanguageIdList();
+      assertEquals(1, lidList.size());
+      LanguageIdentification lid = lidList.get(0);
+      assertEquals(1, lid.getLanguageCount());
+      LanguageProb lp = lid.getLanguage(0);
+      assertEquals("eng", lp.getLanguage());
+
+      while (tokenIter.hasNext()) {
+        Token tok = tokenIter.next();
+        if (commId.equals(guidOne.getCommunicationId())) {
+          assertTrue(this.tokensCommOne.contains(tok.getText()));
+
+        } else if (commId.equals(guidTwo.getCommunicationId())) {
+          assertTrue(this.tokensCommTwo.contains(tok.getText()));
+
+        } else {
+          fail("Misplaced tokenization: " + commId + " doesn't exist.");
         }
-        
-        testWriter.close();
-        testReader.close();
+      }
     }
-    
-    private void addLanguageIdDependsTokenization() throws RebarException {
-        this.addTokenization();
-        
-        ArrayList<Stage> dependencies = new ArrayList<Stage>();
-        dependencies.add(this.fbc.getStage(this.tokStageName, this.tokStageVersion));
-        
-        final FieldDescriptor lidField = Concrete.Communication
-                .getDescriptor()
-                .findFieldByName("language_id");
-
-        final Stage lidStage = this.fbc.makeStage(this.lidStageName, 
-                this.lidStageVersion, 
-                new TreeSet<>(dependencies),
-                this.lidStageDesc, true);
-        final Corpus.Reader testReader = this.fbc.makeReader(lidStage);
-        final Corpus.Writer testWriter = this.fbc.makeWriter(lidStage);
-        final Iterator<IndexedCommunication> readIter = 
-                testReader.loadCommunications();
-        while (readIter.hasNext()) {
-            IndexedCommunication com = readIter.next();
-            Concrete.LanguageIdentification.Builder lidBuilder = Concrete.LanguageIdentification.newBuilder();
-            Concrete.LanguageIdentification.LanguageProb.Builder lp = Concrete.LanguageIdentification.LanguageProb.newBuilder();
-            lp.setProbability(1.0f);
-            lp.setLanguage("eng");
-            lidBuilder.addLanguage(lp);
-            lidBuilder.setUuid(IdUtil.generateUUID());
-            lidBuilder.getMetadataBuilder().setTool("my-lid");
-            com.addField(com.getProto(), lidField, lidBuilder.build());
-            testWriter.saveCommunication(com);
-        }
-        
-        testWriter.close();
-        testReader.close();
-    }
-    
-    @Test
-    public void testCreateStageAppendTokenization () throws RebarException {
-        this.addTokenization();
-        
-        Stage retStage = this.fbc.getStage(this.tokStageName, this.tokStageVersion);
-        Corpus.Reader reader = this.fbc.makeReader(retStage);
-        assertTrue(reader.getInputStages().contains(retStage));
-        
-        Iterator<IndexedCommunication> iter = reader.loadCommunications();
-        while (iter.hasNext()) {
-            IndexedCommunication ic = iter.next();
-            
-            IndexedSentence is = ic.getSentences().get(0);
-            IndexedTokenization it = is.getTokenization();
-            TokenSequence ts = it.getBestTokenSequence();
-            Iterator<Token> tokenIter = ts.iterator();
-            String commId = ic.getCommunicationId();
-            
-            while (tokenIter.hasNext()) {
-                Token tok = tokenIter.next();
-                if (commId.equals(guidOne.getCommunicationId()))
-                    assertTrue(this.tokensCommOne.contains(tok.getText()));
-                else if (commId.equals(guidTwo.getCommunicationId()))
-                    assertTrue(this.tokensCommTwo.contains(tok.getText()));
-                else
-                    fail("Misplaced tokenization: " + commId + " doesn't exist.");
-            }
-        }
-    }
-    
-    @Test
-    public void testCreateStageAppendTokenizationLid () throws RebarException {
-        this.addLanguageIdDependsTokenization();
-        
-        Stage lidStage = this.fbc.getStage(this.lidStageName, this.lidStageVersion);
-        Corpus.Reader reader = this.fbc.makeReader(lidStage);
-        assertTrue(reader.getInputStages().contains(lidStage));
-        
-        Iterator<IndexedCommunication> iter = reader.loadCommunications();
-        while (iter.hasNext()) {
-            IndexedCommunication ic = iter.next();
-            IndexedSentence is = ic.getSentences().get(0);
-            IndexedTokenization it = is.getTokenization();
-            TokenSequence ts = it.getBestTokenSequence();
-            Iterator<Token> tokenIter = ts.iterator();
-            String commId = ic.getCommunicationId();
-            
-            List<LanguageIdentification> lidList = 
-                    ic.getProto().getLanguageIdList();
-            assertEquals(1, lidList.size());
-            LanguageIdentification lid = lidList.get(0);
-            assertEquals(1, lid.getLanguageCount());
-            LanguageProb lp = lid.getLanguage(0);
-            assertEquals("eng", lp.getLanguage());
-            
-            while (tokenIter.hasNext()) {
-                Token tok = tokenIter.next();
-                if (commId.equals(guidOne.getCommunicationId())) {
-                    assertTrue(this.tokensCommOne.contains(tok.getText()));
-                    
-                } else if (commId.equals(guidTwo.getCommunicationId())) {
-                    assertTrue(this.tokensCommTwo.contains(tok.getText()));
-                    
-                } else {
-                    fail("Misplaced tokenization: " + commId + " doesn't exist.");
-                }
-            }
-        }
-    }
+  }
 }

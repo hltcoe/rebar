@@ -33,49 +33,40 @@ import edu.jhu.hlt.tift.Tokenizer;
  */
 public class ProtoIndexTest {
 
-    ProtoIndex pi;
-    ProtoFactory pf = new ProtoFactory();
-    CommunicationGUID guidOne = pf.generateMockCommGuid();
-    Communication commOne = Communication
-            .newBuilder(ProtoFactory.generateCommunication(guidOne))
-            .setText("Sample test text for testing").build();
+  ProtoIndex pi;
+  ProtoFactory pf = new ProtoFactory();
+  CommunicationGUID guidOne = pf.generateMockCommGuid();
+  Communication commOne = Communication.newBuilder(ProtoFactory.generateCommunication(guidOne)).setText("Sample test text for testing").build();
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() throws Exception {
-        this.pi = new ProtoIndex(commOne);
+  /**
+   * @throws java.lang.Exception
+   */
+  @Before
+  public void setUp() throws Exception {
+    this.pi = new ProtoIndex(commOne);
+  }
+
+  /**
+   * @throws java.lang.Exception
+   */
+  @After
+  public void tearDown() throws Exception {
+  }
+
+  @Test
+  public void testAddSectionSegmentation() throws RebarException, InvalidProtocolBufferException {
+    FieldDescriptor ssField = Concrete.Communication.getDescriptor().findFieldByName("section_segmentation");
+    SectionSegmentation ssToAppend = ConcreteSectionSegmentation.generateSectionSegmentation(Tokenizer.TWITTER, commOne.getText());
+    this.pi.addField(this.pi.getRoot(), ssField, ssToAppend);
+
+    Map<ModificationTarget, byte[]> modMap = this.pi.getUnsavedModifications();
+    for (Entry<ModificationTarget, byte[]> entry : modMap.entrySet()) {
+      ModificationTarget mt = entry.getKey();
+      assertEquals(commOne.getUuid(), mt.uuid);
+      byte[] mods = entry.getValue();
+      Communication mergedComm = commOne.toBuilder().mergeFrom(mods).build();
+      assertEquals(commOne.toBuilder().addSectionSegmentation(ssToAppend).build(), mergedComm);
     }
-
-    /**
-     * @throws java.lang.Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-    }
-
-    @Test
-    public void testAddSectionSegmentation() throws RebarException,
-            InvalidProtocolBufferException {
-        FieldDescriptor ssField = Concrete.Communication.getDescriptor()
-                .findFieldByName("section_segmentation");
-        SectionSegmentation ssToAppend = ConcreteSectionSegmentation
-                .generateSectionSegmentation(Tokenizer.TWITTER,
-                        commOne.getText());
-        this.pi.addField(this.pi.getRoot(), ssField, ssToAppend);
-
-        Map<ModificationTarget, byte[]> modMap = this.pi
-                .getUnsavedModifications();
-        for (Entry<ModificationTarget, byte[]> entry : modMap.entrySet()) {
-            ModificationTarget mt = entry.getKey();
-            assertEquals(commOne.getUuid(), mt.uuid);
-            byte[] mods = entry.getValue();
-            Communication mergedComm = commOne.toBuilder().mergeFrom(mods)
-                    .build();
-            assertEquals(commOne.toBuilder().addSectionSegmentation(ssToAppend)
-                    .build(), mergedComm);
-        }
-    }
+  }
 
 }

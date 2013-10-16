@@ -14,43 +14,58 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.jhu.hlt.concrete.Twitter;
 
-/** 
- * Class used to read in a JSON Twitter Url record and convert it to
- * a rebar protobuf object (Twitter.TwitterEntities.URL).  The input JSON record
- * should use the standard twitter API, as defined at:
- *
+/**
+ * Class used to read in a JSON Twitter Url record and convert it to a rebar protobuf object (Twitter.TwitterEntities.URL). The input JSON record should use the
+ * standard twitter API, as defined at:
+ * 
  * https://dev.twitter.com/docs/platform-objects/entities
  */
 class TwitterUrlJsonReader {
-	// Public interface
-	public static Twitter.TwitterEntities.URL parseJson(String json) throws java.io.IOException {
-		if (mapper==null) mapper = new ObjectMapper();
-                mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		return mapper.readValue(json, TwitterUrlJsonReader.class).toProto();
-	}
+  // Public interface
+  public static Twitter.TwitterEntities.URL parseJson(String json) throws java.io.IOException {
+    if (mapper == null)
+      mapper = new ObjectMapper();
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    return mapper.readValue(json, TwitterUrlJsonReader.class).toProto();
+  }
 
-	// Private implementation details
-	private static ObjectMapper mapper = null;
-	private Twitter.TwitterEntities.URL.Builder builder;
-	TwitterUrlJsonReader() {
-		builder = Twitter.TwitterEntities.URL.newBuilder(); }
-	Twitter.TwitterEntities.URL toProto() {
-		return builder.build(); }
+  // Private implementation details
+  private static ObjectMapper mapper = null;
+  private Twitter.TwitterEntities.URL.Builder builder;
 
-	// Converters: one property for each expected json field.
-  	@JsonProperty("indices") public void setIndices(List<Integer> indices) {
-          if (indices != null && indices.size() > 0) {
-            builder.setStartOffset(indices.get(0));
-            builder.setEndOffset(indices.get(1));
-          }
-        }
-	@JsonProperty("expanded_url") public void setExpandedUrl(String expandedUrl) {
-          if (expandedUrl != null) builder.setExpandedUrl(expandedUrl); }
-	@JsonProperty("url") public void setUrl(String url) {
-          if (url != null) builder.setUrl(url); }
-  	@JsonProperty("display_url") public void setDisplayUrl(String displayUrl) {
-          if (displayUrl != null) builder.setDisplayUrl(displayUrl); }
+  TwitterUrlJsonReader() {
+    builder = Twitter.TwitterEntities.URL.newBuilder();
+  }
 
+  Twitter.TwitterEntities.URL toProto() {
+    return builder.build();
+  }
 
+  // Converters: one property for each expected json field.
+  @JsonProperty("indices")
+  public void setIndices(List<Integer> indices) {
+    if (indices != null && indices.size() > 0) {
+      builder.setStartOffset(indices.get(0));
+      builder.setEndOffset(indices.get(1));
+    }
+  }
+
+  @JsonProperty("expanded_url")
+  public void setExpandedUrl(String expandedUrl) {
+    if (expandedUrl != null)
+      builder.setExpandedUrl(expandedUrl);
+  }
+
+  @JsonProperty("url")
+  public void setUrl(String url) {
+    if (url != null)
+      builder.setUrl(url);
+  }
+
+  @JsonProperty("display_url")
+  public void setDisplayUrl(String displayUrl) {
+    if (displayUrl != null)
+      builder.setDisplayUrl(displayUrl);
+  }
 
 }

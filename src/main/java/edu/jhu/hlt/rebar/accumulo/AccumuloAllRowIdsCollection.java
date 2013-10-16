@@ -4,7 +4,6 @@
  * See LICENSE in the project root directory.
  */
 
-
 package edu.jhu.hlt.rebar.accumulo;
 
 import java.util.AbstractCollection;
@@ -23,58 +22,56 @@ import org.apache.hadoop.io.Text;
 
 import edu.jhu.hlt.rebar.RebarException;
 
-/** A collection backed by the set of all row identifiers in 
- * a specified accumulo table.  This is used to special-case
- * the task of reading all items from a corpus or knowledge
- * graph. */
-abstract public class AccumuloAllRowIdsCollection<Identifier>
-	extends AbstractCollection<Identifier>
-	implements Collection<Identifier> 
-{
-	// Hook for subclass:
-	abstract protected Identifier rowIdToId(Text row);
+/**
+ * A collection backed by the set of all row identifiers in a specified accumulo table. This is used to special-case the task of reading all items from a corpus
+ * or knowledge graph.
+ */
+abstract public class AccumuloAllRowIdsCollection<Identifier> extends AbstractCollection<Identifier> implements Collection<Identifier> {
+  // Hook for subclass:
+  abstract protected Identifier rowIdToId(Text row);
 
-	// Private variables:
-	private final AccumuloConnector accumuloConnector;
-	private final String tableName;
-	private Collection<Identifier> identifiers = null;
-	
-	public AccumuloAllRowIdsCollection(AccumuloConnector accumuloConnector, String tableName) {
-		this.accumuloConnector = accumuloConnector;
-		this.tableName = tableName;
-	}
+  // Private variables:
+  private final AccumuloConnector accumuloConnector;
+  private final String tableName;
+  private Collection<Identifier> identifiers = null;
 
-	public Iterator<Identifier> iterator() {
-		if (identifiers == null)
-			identifiers = scanIdentifiers();
-		return identifiers.iterator();
-	}
+  public AccumuloAllRowIdsCollection(AccumuloConnector accumuloConnector, String tableName) {
+    this.accumuloConnector = accumuloConnector;
+    this.tableName = tableName;
+  }
 
-	public int size() {
-		if (identifiers == null)
-			identifiers = scanIdentifiers();
-		return identifiers.size();
-	}
+  @Override
+  public Iterator<Identifier> iterator() {
+    if (identifiers == null)
+      identifiers = scanIdentifiers();
+    return identifiers.iterator();
+  }
 
-	private Collection<Identifier> scanIdentifiers() {
-		try {
-			identifiers = new HashSet<Identifier>();
-			final Scanner scanner = accumuloConnector.createScanner(tableName);
-			scanner.setRange(new Range());
-			// [xx] the FirstEntryInRowIterator is broken in Accumulo 1.4 (it throws
-			// a NullPointerException because a private variable does not get 
-			// initialized in the constructor).  So leave this one out for now:
-			//IteratorSetting is = new IteratorSetting(1000, //"first_entry",
-			//                                         FirstEntryInRowIterator.class);
-			scanner.addScanIterator(new IteratorSetting(1001, "key_only",
-			SortedKeyIterator.class));
-			final Iterator<Map.Entry<Key, Value>> iterator = scanner.iterator();
-			while (iterator.hasNext()) {
-				identifiers.add(rowIdToId(iterator.next().getKey().getRow()));
-			}
-			return identifiers;
-		} catch (RebarException e) {
-			throw new RuntimeException(e);
-		}
-	}
+  @Override
+  public int size() {
+    if (identifiers == null)
+      identifiers = scanIdentifiers();
+    return identifiers.size();
+  }
+
+  private Collection<Identifier> scanIdentifiers() {
+    try {
+      identifiers = new HashSet<Identifier>();
+      final Scanner scanner = accumuloConnector.createScanner(tableName);
+      scanner.setRange(new Range());
+      // [xx] the FirstEntryInRowIterator is broken in Accumulo 1.4 (it throws
+      // a NullPointerException because a private variable does not get
+      // initialized in the constructor). So leave this one out for now:
+      // IteratorSetting is = new IteratorSetting(1000, //"first_entry",
+      // FirstEntryInRowIterator.class);
+      scanner.addScanIterator(new IteratorSetting(1001, "key_only", SortedKeyIterator.class));
+      final Iterator<Map.Entry<Key, Value>> iterator = scanner.iterator();
+      while (iterator.hasNext()) {
+        identifiers.add(rowIdToId(iterator.next().getKey().getRow()));
+      }
+      return identifiers;
+    } catch (RebarException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

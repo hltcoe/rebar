@@ -138,8 +138,6 @@ public class AccumuloBackedCorpus extends AccumuloBackedStagedDataCollection imp
   // Reader
   // ======================================================================
 
-
-
   /**
    * Private subclass of AccumuloProtoReader that is used to read communications from protobuf.
    */
@@ -148,18 +146,22 @@ public class AccumuloBackedCorpus extends AccumuloBackedStagedDataCollection imp
       super(accumuloConnector, comsTableName, stages);
     }
 
+    @Override
     protected Concrete.Communication.Builder getRootBuilder(String comId) {
       return Concrete.Communication.newBuilder();
     }
 
+    @Override
     protected IndexedCommunication wrap(String comId, Concrete.Communication comm, Map<Key, Value> row, StageOwnership stageOwnership) throws RebarException {
       return new IndexedCommunication(comm, new ProtoIndex(comm), stageOwnership);
     }
 
+    @Override
     protected Text toRowId(String identifier) {
       return new Text(identifier);
     }
 
+    @Override
     protected String toIdentifier(Text rowId) {
       return rowId.toString();
     }
@@ -232,7 +234,7 @@ public class AccumuloBackedCorpus extends AccumuloBackedStagedDataCollection imp
         throw new RebarException("Duplicate communication!");
       // Build the indexed communication (this will be our return value).
       IndexedCommunication com = new IndexedCommunication(communication, new ProtoIndex(communication), null);
-      
+
       // Write the communication.
       write(rowId, AccumuloBackedCorpus.ROOT_CF, AccumuloBackedCorpus.EMPTY_CQ, new Value(communication.toByteArray()));
       summaryTable.incrementCount(getName(), "com");
@@ -298,10 +300,12 @@ public class AccumuloBackedCorpus extends AccumuloBackedStagedDataCollection imp
       super(accumuloConnector, tableName);
     }
 
+    @Override
     protected Text idToRowId(String id) {
       return new Text(id);
     }
 
+    @Override
     protected String rowIdToId(Text id) {
       return id.toString();
     }
@@ -312,21 +316,25 @@ public class AccumuloBackedCorpus extends AccumuloBackedStagedDataCollection imp
       super(accumuloConnector, tableName);
     }
 
+    @Override
     protected String rowIdToId(Text row) {
       return row.toString();
     }
   }
 
+  @Override
   public Collection<String> readComIdSet(File filename) throws RebarException {
     return FileUtil.getStringListFromFile(filename);
   }
 
+  @Override
   public void registerComIdSet(String name, Collection<String> idSet) throws RebarException {
     if (name.equalsIgnoreCase("all"))
       throw new RebarException("The name 'all' is reserved and can not be redefined.");
     comIdSetTable.registerIdSet(name, idSet);
   }
 
+  @Override
   public Collection<String> lookupComIdSet(String name) throws RebarException {
     if (name.equalsIgnoreCase("all")) {
       return new AllComRowIds(accumuloConnector, comsTableName);
@@ -335,6 +343,7 @@ public class AccumuloBackedCorpus extends AccumuloBackedStagedDataCollection imp
     }
   }
 
+  @Override
   public Collection<String> getComIdSetNames() throws RebarException {
     return comIdSetTable.getSubsetNames();
   }

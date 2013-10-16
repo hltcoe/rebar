@@ -4,7 +4,6 @@
  * See LICENSE in the project root directory.
  */
 
-
 package edu.jhu.hlt.rebar.accumulo;
 
 import java.util.ArrayList;
@@ -25,13 +24,11 @@ import org.apache.hadoop.io.Text;
 
 import edu.jhu.hlt.rebar.RebarException;
 
-/** An interface to a "summary table" for a graph or corpus, which
- * keeps track of overall information about the graph/corpus.
+/**
+ * An interface to a "summary table" for a graph or corpus, which keeps track of overall information about the graph/corpus.
  * 
- * Rows in this table are names of corpora or graphs.  The accumulo
- * table that backs each AccumuloSummaryTable can contain the
- * following cells:
- *
+ * Rows in this table are names of corpora or graphs. The accumulo table that backs each AccumuloSummaryTable can contain the following cells:
+ * 
  * <pre>
  *   RowId         ColFam     ColQual     Value
  * -------------- --------- ----------- ---------
@@ -40,120 +37,110 @@ import edu.jhu.hlt.rebar.RebarException;
  * </pre>
  */
 
-/*package-private*/ 
+/* package-private */
 class AccumuloSummaryTable {
-	// ======================================================================
-	// Constants
-	// ======================================================================
+  // ======================================================================
+  // Constants
+  // ======================================================================
 
-	private final static Text COUNT_CF = new Text("count");
-	private final static Value VALUE_ONE = new Value(new VarLenEncoder().encode(1l));
+  private final static Text COUNT_CF = new Text("count");
+  private final static Value VALUE_ONE = new Value(new VarLenEncoder().encode(1l));
 
-	// ======================================================================
-	// Private Variables
-	// ======================================================================
-	private final String tableName;
-	private final AccumuloConnector accumuloConnector;
-	private BatchWriter writer = null;
+  // ======================================================================
+  // Private Variables
+  // ======================================================================
+  private final String tableName;
+  private final AccumuloConnector accumuloConnector;
+  private BatchWriter writer = null;
 
-	public AccumuloSummaryTable(AccumuloConnector accumuloConnector, String tablePrefix) 
-		throws RebarException 
-	{
-		this.tableName = tablePrefix+"info";
-		this.accumuloConnector = accumuloConnector;
-		if (!accumuloConnector.tableExists(tableName)) {
-			accumuloConnector.createTable(tableName);
-			setupCombiner();
-		}
-	}
+  public AccumuloSummaryTable(AccumuloConnector accumuloConnector, String tablePrefix) throws RebarException {
+    this.tableName = tablePrefix + "info";
+    this.accumuloConnector = accumuloConnector;
+    if (!accumuloConnector.tableExists(tableName)) {
+      accumuloConnector.createTable(tableName);
+      setupCombiner();
+    }
+  }
 
-	public void flush() throws RebarException { 
-		if (writer != null) {
-			try {
-				writer.flush(); 
-			} catch (MutationsRejectedException e) {
-				throw new RebarException(e);
-			}
-		}
-	}
+  public void flush() throws RebarException {
+    if (writer != null) {
+      try {
+        writer.flush();
+      } catch (MutationsRejectedException e) {
+        throw new RebarException(e);
+      }
+    }
+  }
 
-	public void close() throws RebarException { 
-		if (writer != null) {
-			try {
-				writer.close(); 
-			} catch (MutationsRejectedException e) {
-				throw new RebarException(e);
-			}
-		}
-	}
+  public void close() throws RebarException {
+    if (writer != null) {
+      try {
+        writer.close();
+      } catch (MutationsRejectedException e) {
+        throw new RebarException(e);
+      }
+    }
+  }
 
-	// Note: priority must be less than 20 (since that's the
-	// priority of the verisoning iterator.)
-	private static final int COMBINER_PRIORITY = 10;
+  // Note: priority must be less than 20 (since that's the
+  // priority of the verisoning iterator.)
+  private static final int COMBINER_PRIORITY = 10;
 
-	private void setupCombiner() throws RebarException {
-		// Add a summing combiner to all columns where family="count"
-		IteratorSetting combiner = new IteratorSetting(COMBINER_PRIORITY, SummingCombiner.class);
-		combiner.addOption("columns", COUNT_CF.toString());
-		combiner.addOption("type", "VARLEN");
-		accumuloConnector.attachIterator(this.tableName, combiner);
-	}
+  private void setupCombiner() throws RebarException {
+    // Add a summing combiner to all columns where family="count"
+    IteratorSetting combiner = new IteratorSetting(COMBINER_PRIORITY, SummingCombiner.class);
+    combiner.addOption("columns", COUNT_CF.toString());
+    combiner.addOption("type", "VARLEN");
+    accumuloConnector.attachIterator(this.tableName, combiner);
+  }
 
-	public long getCount(String collectionName, String itemType) 
-		throws RebarException 
-	{
-		Scanner scanner = accumuloConnector.createScanner(tableName);
-		scanner.setRange(new Range(new Text(collectionName)));
-		scanner.fetchColumnFamily(COUNT_CF);
-		Text cq = new Text(itemType);
-		for (Map.Entry<Key, Value> entry: scanner) {
-			if (entry.getKey().compareColumnQualifier(cq) == 0)
-				return new VarLenEncoder().decode(entry.getValue().get());
-		}
-		return -1;
-	}
+  public long getCount(String collectionName, String itemType) throws RebarException {
+    Scanner scanner = accumuloConnector.createScanner(tableName);
+    scanner.setRange(new Range(new Text(collectionName)));
+    scanner.fetchColumnFamily(COUNT_CF);
+    Text cq = new Text(itemType);
+    for (Map.Entry<Key, Value> entry : scanner) {
+      if (entry.getKey().compareColumnQualifier(cq) == 0)
+        return new VarLenEncoder().decode(entry.getValue().get());
+    }
+    return -1;
+  }
 
-	public void deleteEntry(String collectionName) throws RebarException {
-		// Reset all counts. (Note that just deleting the row is not
-		// always sufficient for this -- but I'm not sure why.  This
-		// might be affected by COMBINER_PRIORITY?)
-		Scanner scanner = accumuloConnector.createScanner(tableName);
-		scanner.setRange(new Range(new Text(collectionName)));
-		scanner.fetchColumnFamily(COUNT_CF);
-		List<String> itemTypes = new ArrayList<String>();
-		for (Map.Entry<Key, Value> entry: scanner)
-			itemTypes.add(entry.getKey().getColumnQualifier().toString());
-		for (String itemType: itemTypes)
-			resetCount(collectionName, itemType);
-		// Now delete the row.
-		accumuloConnector.deleteRow(tableName, new Text(collectionName));
-	}
+  public void deleteEntry(String collectionName) throws RebarException {
+    // Reset all counts. (Note that just deleting the row is not
+    // always sufficient for this -- but I'm not sure why. This
+    // might be affected by COMBINER_PRIORITY?)
+    Scanner scanner = accumuloConnector.createScanner(tableName);
+    scanner.setRange(new Range(new Text(collectionName)));
+    scanner.fetchColumnFamily(COUNT_CF);
+    List<String> itemTypes = new ArrayList<String>();
+    for (Map.Entry<Key, Value> entry : scanner)
+      itemTypes.add(entry.getKey().getColumnQualifier().toString());
+    for (String itemType : itemTypes)
+      resetCount(collectionName, itemType);
+    // Now delete the row.
+    accumuloConnector.deleteRow(tableName, new Text(collectionName));
+  }
 
-	public void resetCount(String collectionName, String itemType)
-		throws RebarException 
-	{
-		long count = getCount(collectionName, itemType);
-		Value negCount = new Value(new VarLenEncoder().encode(-count));
-		incrementCount(collectionName, itemType, negCount);
-	}
+  public void resetCount(String collectionName, String itemType) throws RebarException {
+    long count = getCount(collectionName, itemType);
+    Value negCount = new Value(new VarLenEncoder().encode(-count));
+    incrementCount(collectionName, itemType, negCount);
+  }
 
-	public void incrementCount(String collectionName, String itemType) 
-		throws RebarException 
-	{
-		incrementCount(collectionName, itemType, VALUE_ONE);
-	}
+  public void incrementCount(String collectionName, String itemType) throws RebarException {
+    incrementCount(collectionName, itemType, VALUE_ONE);
+  }
 
-	private void incrementCount(String collectionName, String itemType, Value value) 
-		throws RebarException 
-	{
-		if (writer == null)
-			writer = accumuloConnector.createBatchWriter(tableName);
-		Mutation m = new Mutation(new Text(collectionName));
-		m.put(COUNT_CF, new Text(itemType), value);
-		try {
-			writer.addMutation(m);
-		} catch (MutationsRejectedException e) {
-			throw new RebarException(e);
-		}
-	}
+  private void incrementCount(String collectionName, String itemType, Value value) throws RebarException {
+    if (writer == null)
+      writer = accumuloConnector.createBatchWriter(tableName);
+    Mutation m = new Mutation(new Text(collectionName));
+    m.put(COUNT_CF, new Text(itemType), value);
+    try {
+      writer.addMutation(m);
+    } catch (MutationsRejectedException e) {
+      throw new RebarException(e);
+    }
+  }
 }
