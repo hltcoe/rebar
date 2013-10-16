@@ -254,8 +254,8 @@ public class FileBackedCorpus implements Corpus {
 
       try {
         File commFile = pathToComm.toFile();
-        ProtocolBufferReader pbr = new ProtocolBufferReader(new FileInputStream(commFile), Communication.class);
-        Communication comm = (Communication) pbr.next();
+        ProtocolBufferReader<Communication> pbr = new ProtocolBufferReader<Communication>(new FileInputStream(commFile), Communication.class);
+        Communication comm = pbr.next();
         pbr.close();
 
         Communication commToUse = this.assembleComm(comm);

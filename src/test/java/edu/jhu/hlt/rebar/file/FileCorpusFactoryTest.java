@@ -72,15 +72,15 @@ public class FileCorpusFactoryTest {
     assertTrue(Files.exists(commPath.resolve(guidTwo.getCommunicationId() + ".pb")));
 
     File iCommOne = commPath.resolve(guidOne.getCommunicationId() + ".pb").toFile();
-    ProtocolBufferReader pbr = new ProtocolBufferReader(new FileInputStream(iCommOne), Communication.class);
-    Communication icOne = (Communication) pbr.next();
+    ProtocolBufferReader<Communication> pbr = new ProtocolBufferReader<Communication>(new FileInputStream(iCommOne), Communication.class);
+    Communication icOne = pbr.next();
     assertEquals(commOne.getUuid(), icOne.getUuid());
     assertEquals("bar", icOne.getGuid().getCorpusName());
     pbr.close();
 
     File iCommTwo = commPath.resolve(guidTwo.getCommunicationId() + ".pb").toFile();
-    pbr = new ProtocolBufferReader(new FileInputStream(iCommTwo), Communication.class);
-    Communication icTwo = (Communication) pbr.next();
+    pbr = new ProtocolBufferReader<Communication>(new FileInputStream(iCommTwo), Communication.class);
+    Communication icTwo = pbr.next();
     assertEquals(commTwo.getUuid(), icTwo.getUuid());
     assertEquals("bar", icTwo.getGuid().getCorpusName());
     pbr.close();

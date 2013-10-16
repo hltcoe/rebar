@@ -31,7 +31,6 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 
-import edu.jhu.hlt.concrete.Concrete;
 import edu.jhu.hlt.concrete.rpc.ConcreteRpc;
 import edu.jhu.hlt.concrete.rpc.ConcreteRpc.RPCRequest;
 import edu.jhu.hlt.concrete.rpc.ConcreteRpc.RPCResponse;
@@ -67,7 +66,6 @@ class UnnamedPipeRPC {
   private final Map<Long, Iterator<IndexedCommunication>> communicationIterators;
 
   private final Map<Long, Collection<String>> comIdSets;
-  private final Map<Long, Collection<Concrete.UUID>> vertexIdSets;
 
   public UnnamedPipeRPC() {
     try {
@@ -84,7 +82,6 @@ class UnnamedPipeRPC {
     communicationIterators = new HashMap<Long, Iterator<IndexedCommunication>>();
 
     comIdSets = new HashMap<Long, Collection<String>>();
-    vertexIdSets = new HashMap<Long, Collection<Concrete.UUID>>();
   }
 
   private void close() throws RebarException {
@@ -538,11 +535,6 @@ class UnnamedPipeRPC {
   private RPCResponse handleComIdSetEnumerate(ConcreteRpc.ComIdSet.Enumerate request) throws RebarException {
     Collection<String> self = comIdSets.get(request.getSelf().getId());
     return RPCResponse.newBuilder().addAllComId(self).build();
-  }
-
-  private RPCResponse handleVertexIdSetEnumerate(ConcreteRpc.VertexIdSet.Enumerate request) throws RebarException {
-    Collection<Concrete.UUID> self = vertexIdSets.get(request.getSelf().getId());
-    return RPCResponse.newBuilder().addAllVertexId(self).build();
   }
 
   // ////////////////////////////////////////////////////////////////////
