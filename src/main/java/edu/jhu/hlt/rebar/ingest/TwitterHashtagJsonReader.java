@@ -12,17 +12,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.Twitter;
 
-/** Class used to read in a JSON Twitter Hashtag record and convert it to
- * a rebar protobuf object (Concrete.TwitterEntities.HashTag).  The input JSON record
+/** 
+ * Class used to read in a JSON Twitter Hashtag record and convert it to
+ * a rebar protobuf object (Twitter.TwitterEntities.HashTag).  The input JSON record
  * should use the standard twitter API, as defined at:
  *
  * https://dev.twitter.com/docs/platform-objects/entities
  */
 class TwitterHashtagJsonReader {
 	// Public interface
-	public static Concrete.TwitterEntities.HashTag parseJson(String json) throws java.io.IOException {
+	public static Twitter.TwitterEntities.HashTag parseJson(String json) throws java.io.IOException {
 		if (mapper==null) mapper = new ObjectMapper();
                 mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		return mapper.readValue(json, TwitterHashtagJsonReader.class).toProto();
@@ -30,10 +31,10 @@ class TwitterHashtagJsonReader {
 
 	// Private implementation details
 	private static ObjectMapper mapper = null;
-	private Concrete.TwitterEntities.HashTag.Builder builder;
+	private Twitter.TwitterEntities.HashTag.Builder builder;
 	TwitterHashtagJsonReader() {
-		builder = Concrete.TwitterEntities.HashTag.newBuilder(); }
-	Concrete.TwitterEntities.HashTag toProto() {
+		builder = Twitter.TwitterEntities.HashTag.newBuilder(); }
+	Twitter.TwitterEntities.HashTag toProto() {
 		return builder.build(); }
 
 	// Converters: one property for each expected json field.

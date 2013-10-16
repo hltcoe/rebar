@@ -10,10 +10,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.Twitter;
 
-/** Class used to read in a JSON Twitter Place record and convert it to
- * a rebar protobuf object (Concrete.TwitterPlace).  The input JSON record
+/** 
+ * Class used to read in a JSON Twitter Place record and convert it to
+ * a rebar protobuf object (Twitter.TwitterPlace).  The input JSON record
  * should use the standard twitter API, as defined at:
  *
  * https://dev.twitter.com/docs/platform-objects/places
@@ -31,7 +32,7 @@ import edu.jhu.hlt.concrete.Concrete;
 */
 class TwitterPlaceJsonReader {
 	// Public interface
-	public static Concrete.TwitterPlace parseJson(String json) throws java.io.IOException {
+	public static Twitter.TwitterPlace parseJson(String json) throws java.io.IOException {
 		if (mapper==null) mapper = new ObjectMapper();
                 mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		return mapper.readValue(json, TwitterPlaceJsonReader.class).toProto();
@@ -39,10 +40,10 @@ class TwitterPlaceJsonReader {
 
 	// Private implementation details
 	private static ObjectMapper mapper = null;
-	private Concrete.TwitterPlace.Builder builder;
+	private Twitter.TwitterPlace.Builder builder;
 	TwitterPlaceJsonReader() {
-		builder = Concrete.TwitterPlace.newBuilder(); }
-	Concrete.TwitterPlace toProto() {
+		builder = Twitter.TwitterPlace.newBuilder(); }
+	Twitter.TwitterPlace toProto() {
 		return builder.build(); }
 
 	// Converters: one property for each expected json field.

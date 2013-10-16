@@ -18,7 +18,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import edu.jhu.hlt.concrete.Concrete;
 import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
-import edu.jhu.hlt.concrete.Concrete.KnowledgeGraph;
+
 import edu.jhu.hlt.concrete.Concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.util.ProtoFactory;
 import edu.jhu.hlt.rebar.ProtoIndex;
@@ -36,7 +36,6 @@ public class ProtoIndexTest {
     ProtoIndex pi;
     ProtoFactory pf = new ProtoFactory();
     CommunicationGUID guidOne = pf.generateMockCommGuid();
-    KnowledgeGraph kg = pf.generateMockKnowledgeGraph();
     Communication commOne = Communication
             .newBuilder(ProtoFactory.generateCommunication(guidOne, kg))
             .setText("Sample test text for testing").build();

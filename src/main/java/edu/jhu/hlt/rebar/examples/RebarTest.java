@@ -124,7 +124,7 @@ public class RebarTest {
             Concrete.CommunicationGUID guid = Concrete.CommunicationGUID.newBuilder().setCommunicationId(docid)
                     .setCorpusName(corpus.getName()).build();
             Concrete.Communication com = Concrete.Communication.newBuilder().setText(text).setUuid(IdUtil.generateUUID()).setGuid(guid)
-                    .setKnowledgeGraph(Concrete.KnowledgeGraph.newBuilder().setUuid(IdUtil.generateUUID()).build()).build();
+                    .build();
             initializer.addCommunication(com);
         }
         initializer.close();

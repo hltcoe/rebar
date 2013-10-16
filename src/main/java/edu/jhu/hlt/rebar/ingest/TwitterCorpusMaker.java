@@ -40,7 +40,6 @@ public class TwitterCorpusMaker {
     private final Corpus corpus;
     private final Corpus.Initializer initializer;
     private final Concrete.AnnotationMetadata annotationMetadata;
-    private final Concrete.AttributeMetadata attribMetadata;
 
     // TweetInfo stage
     private final FieldDescriptor TWEET_INFO_FIELD = Concrete.Communication.getDescriptor().findFieldByName("tweet_info");
@@ -60,15 +59,6 @@ public class TwitterCorpusMaker {
     private final String SENT_SEG_STAGE_VERSION = "1.0";
     private final String SENT_SEG_STAGE_DESCRIPTION = "A segmentation consisting of a single sentence, spanning the entire tweet.";
     private final Stage sentSegStage;
-
-    // InitialGraph stage
-    private final FieldDescriptor GRAPH_EDGE_FIELD = Concrete.KnowledgeGraph.getDescriptor().findFieldByName("vertex");
-    private final String INITIAL_GRAPH_STAGE_NAME = "com_graph";
-    private final String INITIAL_GRAPH_STAGE_VERSION = "1.0";
-    private final String INITIAL_GRAPH_STAGE_DESCRIPTION = "An initial communication graph, containing three vertices: one for the "
-            + "tweet (Communiation), one for the sender (Person), and one for the "
-            + "twitter account used to send the tweet (ComChannel).";
-    private final Stage initialGraphStage;
 
     private boolean duplicatesDetected = false;
 
@@ -103,17 +93,7 @@ public class TwitterCorpusMaker {
             this.sentSegStage = this.corpus.getStage(SENT_SEG_STAGE_NAME, SENT_SEG_STAGE_VERSION);
         }
 
-        // Stage for initial knowledge graph
-        if (!this.corpus.hasStage(INITIAL_GRAPH_STAGE_NAME, INITIAL_GRAPH_STAGE_VERSION)) {
-            this.initialGraphStage = corpus.makeStage(INITIAL_GRAPH_STAGE_NAME, INITIAL_GRAPH_STAGE_VERSION, noDependencies,
-                    INITIAL_GRAPH_STAGE_DESCRIPTION, false);
-        } else {
-            this.initialGraphStage = this.corpus.getStage(INITIAL_GRAPH_STAGE_NAME, INITIAL_GRAPH_STAGE_VERSION);
-        }
-
         // Metadata
-        this.attribMetadata = Concrete.AttributeMetadata.newBuilder().setTool("jhu.hltcoe.rebar2.ingest.TwitterCorpusIngester")
-                .setConfidence(1.0f).build();
         this.annotationMetadata = Concrete.AnnotationMetadata.newBuilder().setTool("jhu.hltcoe.rebar2.ingest.TwitterCorpusIngester")
         // .setTimestamp()
                 .build();
@@ -126,7 +106,6 @@ public class TwitterCorpusMaker {
         corpus.markStagePublic(tweetInfoStage);
         corpus.markStagePublic(secSegStage);
         corpus.markStagePublic(sentSegStage);
-        corpus.markStagePublic(initialGraphStage);
     }
 
     public static void main(String[] args) throws RebarException, IOException, FileNotFoundException {

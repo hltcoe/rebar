@@ -4,25 +4,26 @@
  * See LICENSE in the project root directory.
  */
 
-
 package edu.jhu.hlt.rebar.ingest;
+
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.Twitter;
 
-/** Class used to read in a JSON Twitter Url record and convert it to
- * a rebar protobuf object (Concrete.TwitterEntities.URL).  The input JSON record
+/** 
+ * Class used to read in a JSON Twitter Url record and convert it to
+ * a rebar protobuf object (Twitter.TwitterEntities.URL).  The input JSON record
  * should use the standard twitter API, as defined at:
  *
  * https://dev.twitter.com/docs/platform-objects/entities
  */
 class TwitterUrlJsonReader {
 	// Public interface
-	public static Concrete.TwitterEntities.URL parseJson(String json) throws java.io.IOException {
+	public static Twitter.TwitterEntities.URL parseJson(String json) throws java.io.IOException {
 		if (mapper==null) mapper = new ObjectMapper();
                 mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		return mapper.readValue(json, TwitterUrlJsonReader.class).toProto();
@@ -30,10 +31,10 @@ class TwitterUrlJsonReader {
 
 	// Private implementation details
 	private static ObjectMapper mapper = null;
-	private Concrete.TwitterEntities.URL.Builder builder;
+	private Twitter.TwitterEntities.URL.Builder builder;
 	TwitterUrlJsonReader() {
-		builder = Concrete.TwitterEntities.URL.newBuilder(); }
-	Concrete.TwitterEntities.URL toProto() {
+		builder = Twitter.TwitterEntities.URL.newBuilder(); }
+	Twitter.TwitterEntities.URL toProto() {
 		return builder.build(); }
 
 	// Converters: one property for each expected json field.

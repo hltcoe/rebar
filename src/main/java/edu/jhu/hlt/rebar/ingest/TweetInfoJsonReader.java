@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.Twitter;
 
 /**
  * Class used to read in a JSON Tweet record and convert it to a rebar protobuf
@@ -32,7 +33,7 @@ public class TweetInfoJsonReader {
      * System.out.println("Unknown value: "+key); }
      */
     // Public interface
-    public static Concrete.TweetInfo parseJson(String json) throws JsonParseException, JsonMappingException, IOException {
+    public static Twitter.TweetInfo parseJson(String json) throws JsonParseException, JsonMappingException, IOException {
         if (mapper == null)
             mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -41,13 +42,13 @@ public class TweetInfoJsonReader {
 
     // Private implementation details
     private static ObjectMapper mapper = null;
-    private Concrete.TweetInfo.Builder builder;
+    private Twitter.TweetInfo.Builder builder;
 
     TweetInfoJsonReader() {
-        builder = Concrete.TweetInfo.newBuilder();
+        builder = Twitter.TweetInfo.newBuilder();
     }
 
-    Concrete.TweetInfo toProto() {
+    Twitter.TweetInfo toProto() {
         return builder.build();
     }
 

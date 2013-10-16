@@ -27,6 +27,7 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.Twitter;
 import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.hlt.rebar.Corpus;
 import edu.jhu.hlt.rebar.CorpusFactory;
@@ -62,7 +63,6 @@ public class TwitterCorpusIngester {
     private final Corpus corpus;
     private final Corpus.Initializer initializer;
     private final Concrete.AnnotationMetadata annotationMetadata;
-    private final Concrete.AttributeMetadata attribMetadata;
 
     // TweetInfo stage
     private final FieldDescriptor TWEET_INFO_FIELD = Concrete.Communication.getDescriptor().findFieldByName("tweet_info");
@@ -85,16 +85,6 @@ public class TwitterCorpusIngester {
     private final String SENT_SEG_STAGE_DESCRIPTION = "A segmentation consisting of a single sentence, spanning the entire tweet.";
     private final Stage sentSegStage;
     private final Corpus.Writer sentSegWriter;
-
-    // InitialGraph stage
-    private final FieldDescriptor GRAPH_EDGE_FIELD = Concrete.KnowledgeGraph.getDescriptor().findFieldByName("vertex");
-    private final String INITIAL_GRAPH_STAGE_NAME = "com_graph";
-    private final String INITIAL_GRAPH_STAGE_VERSION = "1.0";
-    private final String INITIAL_GRAPH_STAGE_DESCRIPTION = "An initial communication graph, containing three vertices: one for the "
-            + "tweet (Communiation), one for the sender (Person), and one for the "
-            + "twitter account used to send the tweet (ComChannel).";
-    private final Stage initialGraphStage;
-    private final Corpus.Writer initialGraphWriter;
 
     int tweetsAdded = 0;
     int dupes = 0;
@@ -130,33 +120,10 @@ public class TwitterCorpusIngester {
             this.sentSegStage = this.corpus.getStage(SENT_SEG_STAGE_NAME, SENT_SEG_STAGE_VERSION);
         }
         this.sentSegWriter = corpus.makeWriter(this.sentSegStage);
-        // Stage writer for initial knowledge graph
-        if (!this.corpus.hasStage(INITIAL_GRAPH_STAGE_NAME, INITIAL_GRAPH_STAGE_VERSION)) {
-            this.initialGraphStage = corpus.makeStage(INITIAL_GRAPH_STAGE_NAME, INITIAL_GRAPH_STAGE_VERSION, noDependencies,
-                    INITIAL_GRAPH_STAGE_DESCRIPTION, false);
-        } else {
-            this.initialGraphStage = this.corpus.getStage(INITIAL_GRAPH_STAGE_NAME, INITIAL_GRAPH_STAGE_VERSION);
-        }
-        this.initialGraphWriter = corpus.makeWriter(this.initialGraphStage);
-        // Metadata
-        this.attribMetadata = Concrete.AttributeMetadata.newBuilder().setTool("jhu.hltcoe.rebar2.ingest.TwitterCorpusIngester")
-                .setConfidence(1.0f).build();
+
         this.annotationMetadata = Concrete.AnnotationMetadata.newBuilder().setTool("jhu.hltcoe.rebar2.ingest.TwitterCorpusIngester")
         // .setTimestamp()
                 .build();
-        // Sanity checks
-        if (COM_GUID == null)
-            throw new RebarException("COM_GUID attribute not found");
-        if (TWITTER_ID == null)
-            throw new RebarException("TWITTER_ID attribute not found");
-        if (TWITTER_HANDLE == null)
-            throw new RebarException("TWITTER_HANDLE attribute not found");
-        if (IS_SENDER == null)
-            throw new RebarException("IS_SENDER attribute not found");
-        if (USES == null)
-            throw new RebarException("USES attribute not found");
-        if (COMS_SENT == null)
-            throw new RebarException("COMS_SENT attribute not found");
     }
 
     void close() throws RebarException {
@@ -165,26 +132,23 @@ public class TwitterCorpusIngester {
         this.tweetInfoWriter.close();
         this.secSegWriter.close();
         this.sentSegWriter.close();
-        this.initialGraphWriter.close();
         logger.info("Marking stages as public");
         corpus.markStagePublic(tweetInfoStage);
         corpus.markStagePublic(secSegStage);
         corpus.markStagePublic(sentSegStage);
-        corpus.markStagePublic(initialGraphStage);
     }
 
     private static final DateTimeFormatter tweetDateFormat = DateTimeFormat.forPattern("EEE MMM dd HH:mm:ss Z YYYY");
 
-    private IndexedCommunication addRoot(Concrete.TweetInfo tweet) throws RebarException {
+    private IndexedCommunication addRoot(Twitter.TweetInfo tweet) throws RebarException {
         // Use the tweet id as the document id.
         String docid = new Long(tweet.getId()).toString();
         Concrete.CommunicationGUID guid = Concrete.CommunicationGUID.newBuilder().setCommunicationId(docid).setCorpusName(corpus.getName())
                 .build();
-        // Create an empty knowledge graph and assign it a uuid.
-        Concrete.KnowledgeGraph graph = Concrete.KnowledgeGraph.newBuilder().setUuid(IdUtil.generateUUID()).build();
+
         // Create the basic communication with the tweet text
         Concrete.Communication.Builder comBuilder = Concrete.Communication.newBuilder().setUuid(IdUtil.generateUUID()).setGuid(guid)
-                .setText(tweet.getText()).setKind(Concrete.Communication.Kind.TWEET).setKnowledgeGraph(graph);
+                .setText(tweet.getText()).setKind(Concrete.Communication.Kind.TWEET);
         // Add the start time/date, if we have it.
         if (tweet.hasCreatedAt()) {
             try {
@@ -198,7 +162,7 @@ public class TwitterCorpusIngester {
         return initializer.addCommunication(comBuilder.build());
     }
 
-    private void addTweetInfo(IndexedCommunication com, Concrete.TweetInfo tweet) throws RebarException {
+    private void addTweetInfo(IndexedCommunication com, Twitter.TweetInfo tweet) throws RebarException {
         com.setField(TWEET_INFO_FIELD, tweet);
         tweetInfoWriter.saveCommunication(com);
     }
@@ -228,51 +192,7 @@ public class TwitterCorpusIngester {
         sentSegWriter.saveCommunication(com);
     }
 
-    // Constants
-    private final static Descriptor VERTEX_DESCRIPTOR = Concrete.Vertex.getDescriptor();
-    private final static FieldDescriptor VERTEX_KIND = VERTEX_DESCRIPTOR.findFieldByName("kind");
-    private final static FieldDescriptor COM_GUID = VERTEX_DESCRIPTOR.findFieldByName("communication_guid");
-    private final static FieldDescriptor TWITTER_ID = VERTEX_DESCRIPTOR.findFieldByName("twitter_id");
-    private final static FieldDescriptor TWITTER_HANDLE = VERTEX_DESCRIPTOR.findFieldByName("twitter_handle");
-    private final static Descriptor DIRECTED_ATTRIBUTES_DESCRIPTOR = Concrete.DirectedAttributes.getDescriptor();
-    private final static FieldDescriptor IS_SENDER = DIRECTED_ATTRIBUTES_DESCRIPTOR.findFieldByName("is_sender");
-    private final static FieldDescriptor USES = DIRECTED_ATTRIBUTES_DESCRIPTOR.findFieldByName("uses");
-    private final static FieldDescriptor COMS_SENT = DIRECTED_ATTRIBUTES_DESCRIPTOR.findFieldByName("num_coms_sent");
-
-    private void addInitialGraph(IndexedCommunication com, Concrete.TweetInfo tweet) throws RebarException {
-        IndexedKnowledgeGraph graph = com.getKnowledgeGraph();
-
-        // Create three vertices: one for the tweet, one for the
-        // person who sent it, and one for the account that was used
-        // to send it.
-        IndexedVertex senderVertex = graph.addVertex();
-        senderVertex.addAttribute(VERTEX_KIND, Concrete.Vertex.Kind.PERSON, attribMetadata);
-        IndexedVertex tweetVertex = graph.addVertex();
-        tweetVertex.addAttribute(VERTEX_KIND, Concrete.Vertex.Kind.COMMUNICATION, attribMetadata);
-        tweetVertex.addAttribute(COM_GUID, com.getGuid(), attribMetadata);
-        IndexedVertex accountVertex = graph.addVertex();
-        accountVertex.addAttribute(VERTEX_KIND, Concrete.Vertex.Kind.COM_CHANNEL, attribMetadata);
-        accountVertex.addAttribute(TWITTER_ID, tweet.getUser().getId(), attribMetadata);
-        accountVertex.addAttribute(TWITTER_HANDLE, tweet.getUser().getScreenName(), attribMetadata);
-
-        // Edge between the sender and the message that they sent.
-        IndexedEdge senderTweetEdge = graph.getEdge(senderVertex, tweetVertex);
-        senderTweetEdge.addDirectedAttribute(senderVertex, IS_SENDER, tweetVertex, true, attribMetadata);
-
-        // Edge between the sender and the account they used.
-        IndexedEdge senderAccountEdge = graph.getEdge(senderVertex, accountVertex);
-        senderAccountEdge.addDirectedAttribute(senderVertex, USES, accountVertex, true, attribMetadata);
-        senderAccountEdge.addDirectedAttribute(senderVertex, COMS_SENT, accountVertex, 1, attribMetadata);
-
-        // Edge between the message and the account used to send it.
-        IndexedEdge accountTweetEdge = graph.getEdge(accountVertex, tweetVertex);
-        accountTweetEdge.addDirectedAttribute(accountVertex, IS_SENDER, tweetVertex, true, attribMetadata);
-
-        // Save our changes.
-        initialGraphWriter.saveCommunication(com);
-    }
-
-    private void ingestTweet(Concrete.TweetInfo tweet) throws RebarException {
+    private void ingestTweet(Twitter.TweetInfo tweet) throws RebarException {
         long tweetId = tweet.getId();
         logger.debug("Tweet id: " + tweetId);
 
@@ -296,7 +216,7 @@ public class TwitterCorpusIngester {
         addTweetInfo(com, tweet);
         addSectionSegmentation(com);
         addSentenceSegmentation(com);
-        addInitialGraph(com, tweet);
+
         dupeIds.add(tweetId);
         this.tweetsAdded++;
     }
@@ -310,7 +230,7 @@ public class TwitterCorpusIngester {
             try {
                 String line = sc.nextLine();
                 lineno++;
-                Concrete.TweetInfo tweet = TweetInfoJsonReader.parseJson(line);
+                Twitter.TweetInfo tweet = TweetInfoJsonReader.parseJson(line);
                 if (tweet.hasText())
                     ingestTweet(tweet);
 
