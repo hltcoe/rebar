@@ -22,7 +22,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import edu.jhu.hlt.concrete.Concrete;
 import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
-import edu.jhu.hlt.concrete.Concrete.KnowledgeGraph;
+
 import edu.jhu.hlt.concrete.Concrete.LanguageIdentification;
 import edu.jhu.hlt.concrete.Concrete.LanguageIdentification.LanguageProb;
 import edu.jhu.hlt.concrete.Concrete.SectionSegmentation;
@@ -50,18 +50,17 @@ public class FileBackedCorpusTest {
 
     ProtoFactory pf = new ProtoFactory();
     CommunicationGUID guidOne = pf.generateMockCommGuid();
-    KnowledgeGraph kg = pf.generateMockKnowledgeGraph();
+
     Communication commOne = Communication
-            .newBuilder(ProtoFactory.generateCommunication(guidOne, kg))
+            .newBuilder(ProtoFactory.generateCommunication(guidOne))
             .setText("Sample test text for testing")
             .build();
     List<String> tokensCommOne = new ArrayList<>();
     List<String> tokensCommTwo = new ArrayList<>();
 
     CommunicationGUID guidTwo = pf.generateMockCommGuid();
-    KnowledgeGraph kgTwo = pf.generateMockKnowledgeGraph();
     Communication commTwo = Communication
-            .newBuilder(ProtoFactory.generateCommunication(guidTwo, kgTwo))
+            .newBuilder(ProtoFactory.generateCommunication(guidTwo))
             .setText("This is test text")
             .build();
 

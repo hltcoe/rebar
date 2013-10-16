@@ -16,7 +16,6 @@ package edu.jhu.hlt.rebar;
  */
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -25,7 +24,8 @@ import java.util.Map;
 import edu.jhu.hlt.concrete.Concrete;
 import edu.jhu.hlt.concrete.util.IdUtil;
 
-/** A wrapper for a Tokenization objects that makes them easier to
+/** 
+ * A wrapper for a Tokenization objects that makes them easier to
  * use.  In particular, this wrapper provides:
  *
  * - Automatic indexing of tokens by id
@@ -87,13 +87,13 @@ abstract public class IndexedTokenization extends IndexedProto<Concrete.Tokeniza
 	//======================================================================
 
 	public static Concrete.Token getToken(Concrete.TokenRef ref, ProtoIndex index) throws RebarException {
-		return build(ref.getTokenization(), index).getToken(ref.getTokenId());
+		return build(ref.getTokenizationId(), index).getToken(ref.getTokenIndex());
 	}
 
 	public static List<Concrete.Token> getTokens(Concrete.TokenRefSequence ref, ProtoIndex index) throws RebarException {
-		IndexedTokenization tokz = build(ref.getTokenization(), index);
-		List<Concrete.Token> result = new ArrayList<Concrete.Token>(ref.getTokenIdCount());
-		for (int tokid: ref.getTokenIdList())
+		IndexedTokenization tokz = build(ref.getTokenizationId(), index);
+		List<Concrete.Token> result = new ArrayList<Concrete.Token>(ref.getTokenIndexCount());
+		for (int tokid: ref.getTokenIndexList())
 			result.add(tokz.getToken(tokid));
 		return result;
 	}
@@ -145,7 +145,7 @@ abstract public class IndexedTokenization extends IndexedProto<Concrete.Tokeniza
 	 * undefined which one is returned. */
 	abstract public Concrete.Token getNextToken(int tokenId) throws RebarException;
 	public Concrete.Token getNextToken(Concrete.Token token) throws RebarException {
-		return getNextToken(token.getTokenId()); }
+		return getNextToken(token.getTokenIndex()); }
 
 	/** Return the token that precedes the specified token, or null if
 	 * no such token exists.  In the case of token lattices, return
@@ -154,7 +154,7 @@ abstract public class IndexedTokenization extends IndexedProto<Concrete.Tokeniza
 	 * undefined which one is returned. */
 	abstract public Concrete.Token getPrevToken(int tokenId) throws RebarException;
 	public Concrete.Token getPrevToken(Concrete.Token token) throws RebarException {
-		return getPrevToken(token.getTokenId()); }
+		return getPrevToken(token.getTokenIndex()); }
 
 	//======================================================================
 	// Token Lookup
@@ -261,7 +261,7 @@ abstract public class IndexedTokenization extends IndexedProto<Concrete.Tokeniza
 	{
 		HashMap<Integer,String> tagIndex = new HashMap<Integer,String>();
 		for (Concrete.TokenTagging.TaggedToken ttok: tagging.getTaggedTokenList())
-			tagIndex.put(ttok.getTokenId(), ttok.getTag());
+			tagIndex.put(ttok.getTokenIndex(), ttok.getTag());
 		tokenTagIndex.put(IdUtil.getUUID(tagging), tagIndex);
 		return tagIndex;
 	}

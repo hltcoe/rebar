@@ -37,7 +37,7 @@ public class ProtoIndexTest {
     ProtoFactory pf = new ProtoFactory();
     CommunicationGUID guidOne = pf.generateMockCommGuid();
     Communication commOne = Communication
-            .newBuilder(ProtoFactory.generateCommunication(guidOne, kg))
+            .newBuilder(ProtoFactory.generateCommunication(guidOne))
             .setText("Sample test text for testing").build();
 
     /**

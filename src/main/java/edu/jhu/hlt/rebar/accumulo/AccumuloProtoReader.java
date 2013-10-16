@@ -418,9 +418,7 @@ abstract class AccumuloProtoReader
 		Concrete.UUID uuid = IdUtil.getUUIDOrNull(msg); // uuid may be null.
 		if (uuid != null)
 			target = new ProtoIndex.ModificationTarget(uuid);
-		else if (msg instanceof Concrete.Edge) {
-			target = new ProtoIndex.ModificationTarget(((Concrete.Edge)msg).getEdgeId());
-		}
+		
 		else
 			target = null;
 		//System.err.println("Merging, target="+target);

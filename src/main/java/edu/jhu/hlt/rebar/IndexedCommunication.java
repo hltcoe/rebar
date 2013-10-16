@@ -23,7 +23,6 @@ package edu.jhu.hlt.rebar;
  */
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -144,14 +143,6 @@ public class IndexedCommunication extends IndexedProto<Concrete.Communication> {
 	}
 
 	//======================================================================
-	// Knowledge Graph
-	//======================================================================
-
-	public IndexedKnowledgeGraph getKnowledgeGraph() throws RebarException {
-		return IndexedKnowledgeGraph.build(getProto().getKnowledgeGraph(), getIndex());
-	}
-
-	//======================================================================
 	// Other Accessors
 	//======================================================================
 
@@ -172,71 +163,6 @@ public class IndexedCommunication extends IndexedProto<Concrete.Communication> {
 	}
 
 	//======================================================================
-	// Vertex Accessors
-	//======================================================================
-
-	/** Return the unique vertex in this communication's knowledge
-	 * graph that corresponds with the communication itself.  If there
-	 * is no such vertex (or if there are multiple such vertices) then
-	 * raise an exception. */
-	public IndexedVertex getCommunicationVertex() throws RebarException {
-		// cache this result?
-		return getKnowledgeGraph().getCommunicationVertex(getCommunicationId());
-	}
-
-	/** Return the unique PERSON vertex in this communication's
-	 * knowledge graph that is labeled as the sender of this
-	 * communication.  If there is no such vertex (or if there are
-	 * multiple such vertices) then raise an exception.  If you are
-	 * not sure how many senders a communication might have, then use
-	 * getSenderVertices() instead. */
-	public IndexedVertex getSenderPersonVertex() throws RebarException {
-		throw new RebarException("NOT IMPLEMENTED YET");
-	}
-
-	/** Return the set of PERSON vertices in this communication's
-	 * knowledge graph that are labeled as the senders of this
-	 * communication.  If you are sure that there will always be
-	 * exactly one sender, then you can use getSenderVertex()
-	 * instead.  */
-	public Collection<IndexedVertex> getSenderPersonVertices() throws RebarException {
-		throw new RebarException("NOT IMPLEMENTED YET");
-	}
-
-	/** Return the set of PERSON vertices in this communication's
-	 * knowledge graph that are labeled as the recipients of this
-	 * communication. */
-	public Collection<IndexedVertex> getRecipientPersonVertices() throws RebarException {
-		throw new RebarException("NOT IMPLEMENTED YET");
-	}
-
-	/** Return the unique COMM_CHANNEL vertex in this communication's
-	 * knowledge graph that is labeled as the sender of this
-	 * communication.  If there is no such vertex (or if there are
-	 * multiple such vertices) then raise an exception.  If you are
-	 * not sure how many senders a communication might have, then use
-	 * getSenderVertices() instead. */
-	public IndexedVertex getSenderComChannelVertex() throws RebarException {
-		throw new RebarException("NOT IMPLEMENTED YET");
-	}
-
-	/** Return the set of COMM_CHANNEL vertices in this communication's
-	 * knowledge graph that are labeled as the senders of this
-	 * communication.  If you are sure that there will always be
-	 * exactly one sender, then you can use getSenderVertex()
-	 * instead.  */
-	public Collection<IndexedVertex> getSenderComChannelVertices() throws RebarException {
-		throw new RebarException("NOT IMPLEMENTED YET");
-	}
-
-	/** Return the set of COMM_CHANNEL vertices in this communication's
-	 * knowledge graph that are labeled as the recipients of this
-	 * communication. */
-	public Collection<IndexedVertex> getRecipientComChannelVertices() throws RebarException {
-		throw new RebarException("NOT IMPLEMENTED YET");
-	}
-
-	//======================================================================
 	// Stage Ownership
 	//======================================================================
 
@@ -252,6 +178,7 @@ public class IndexedCommunication extends IndexedProto<Concrete.Communication> {
 	//======================================================================
 
 	public Concrete.Token getToken(Concrete.TokenRef ref) throws RebarException {
-		return IndexedTokenization.build(ref.getTokenization(), getIndex()).getToken(ref.getTokenId());
+		//return IndexedTokenization.build(ref.getTokenization(), getIndex()).getToken(ref.getTokenIndex());
+	  return IndexedTokenization.build(ref.getTokenizationId(), getIndex()).getToken(ref.getTokenIndex());
 	}
 }

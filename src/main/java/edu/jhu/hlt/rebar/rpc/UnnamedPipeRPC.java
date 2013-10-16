@@ -37,10 +37,7 @@ import edu.jhu.hlt.concrete.rpc.ConcreteRpc.RPCRequest;
 import edu.jhu.hlt.concrete.rpc.ConcreteRpc.RPCResponse;
 import edu.jhu.hlt.rebar.Corpus;
 import edu.jhu.hlt.rebar.CorpusFactory;
-import edu.jhu.hlt.rebar.Graph;
 import edu.jhu.hlt.rebar.IndexedCommunication;
-import edu.jhu.hlt.rebar.IndexedEdge;
-import edu.jhu.hlt.rebar.IndexedVertex;
 import edu.jhu.hlt.rebar.ProtoIndex;
 import edu.jhu.hlt.rebar.RebarBackends;
 import edu.jhu.hlt.rebar.RebarException;
@@ -69,15 +66,10 @@ class UnnamedPipeRPC {
     private final Map<Long, Corpus.Reader> corpusReaders;
     private final Map<Long, Corpus.DiffWriter> corpusDiffWriters;
     private final Map<Long, Iterator<IndexedCommunication>> communicationIterators;
-    private final Map<Long, Graph> graphs;
-    private final Map<Long, Graph.Initializer> graphInitializers;
-    private final Map<Long, Graph.Reader> graphReaders;
-    private final Map<Long, Graph.DiffWriter> graphDiffWriters;
-    private final Map<Long, Iterator<IndexedVertex>> vertexIterators;
-    private final Map<Long, Iterator<IndexedEdge>> edgeIterators;
+
+
     private final Map<Long, Collection<String>> comIdSets;
     private final Map<Long, Collection<Concrete.UUID>> vertexIdSets;
-    private final Map<Long, Collection<Concrete.EdgeId>> edgeIdSets;
 
     public UnnamedPipeRPC() {
         try {
@@ -92,15 +84,9 @@ class UnnamedPipeRPC {
         corpusReaders = new HashMap<Long, Corpus.Reader>();
         corpusDiffWriters = new HashMap<Long, Corpus.DiffWriter>();
         communicationIterators = new HashMap<Long, Iterator<IndexedCommunication>>();
-        graphs = new HashMap<Long, Graph>();
-        graphInitializers = new HashMap<Long, Graph.Initializer>();
-        graphReaders = new HashMap<Long, Graph.Reader>();
-        graphDiffWriters = new HashMap<Long, Graph.DiffWriter>();
-        vertexIterators = new HashMap<Long, Iterator<IndexedVertex>>();
-        edgeIterators = new HashMap<Long, Iterator<IndexedEdge>>();
+
         comIdSets = new HashMap<Long, Collection<String>>();
         vertexIdSets = new HashMap<Long, Collection<Concrete.UUID>>();
-        edgeIdSets = new HashMap<Long, Collection<Concrete.EdgeId>>();
     }
 
     private void close() throws RebarException {
@@ -111,24 +97,16 @@ class UnnamedPipeRPC {
             x.close();
         for (Corpus.DiffWriter x : corpusDiffWriters.values())
             x.close();
-        for (Graph.Initializer x : graphInitializers.values())
-            x.close();
-        for (Graph.Reader x : graphReaders.values())
-            x.close();
-        for (Graph.DiffWriter x : graphDiffWriters.values())
-            x.close();
+
         for (Corpus c : corpora.values())
             c.close();
-        for (Graph g : graphs.values())
-            g.close();
+        
         corpusInitializers.clear();
         corpusReaders.clear();
         corpusDiffWriters.clear();
-        graphInitializers.clear();
-        graphReaders.clear();
-        graphDiffWriters.clear();
+        
         corpora.clear();
-        graphs.clear();
+        
     }
 
     public void run() throws IOException, RebarException {
@@ -167,26 +145,17 @@ class UnnamedPipeRPC {
         // 1. Iterator access methods
         if (request.hasCommunicationIteratorNext())
             return handleCommunicationIteratorNext(request.getCommunicationIteratorNext());
-        else if (request.hasVertexIteratorNext())
-            return handleVertexIteratorNext(request.getVertexIteratorNext());
-        else if (request.hasEdgeIteratorNext())
-            return handleEdgeIteratorNext(request.getEdgeIteratorNext());
+        
 
         // 2. Iterator has-next methods
         else if (request.hasCommunicationIteratorHasNext())
             return handleCommunicationIteratorHasNext(request.getCommunicationIteratorHasNext());
-        else if (request.hasVertexIteratorHasNext())
-            return handleVertexIteratorHasNext(request.getVertexIteratorHasNext());
-        else if (request.hasEdgeIteratorHasNext())
-            return handleEdgeIteratorHasNext(request.getEdgeIteratorHasNext());
+        
 
         // 3. Write methods
         else if (request.hasCorpusDiffWriterWriteCommunicationDiff())
             return handleCorpusDiffWriterWriteCommunicationDiff(request.getCorpusDiffWriterWriteCommunicationDiff());
-        else if (request.hasGraphDiffWriterWriteVertexDiff())
-            return handleGraphDiffWriterWriteVertexDiff(request.getGraphDiffWriterWriteVertexDiff());
-        else if (request.hasGraphDiffWriterWriteEdgeDiff())
-            return handleGraphDiffWriterWriteEdgeDiff(request.getGraphDiffWriterWriteEdgeDiff());
+        
 
         // 4. Everything else
         else if (request.hasGetCorpus())
@@ -243,84 +212,13 @@ class UnnamedPipeRPC {
             return handleCorpusDiffWriterClose(request.getCorpusDiffWriterClose());
         else if (request.hasCorpusDiffWriterFlush())
             return handleCorpusDiffWriterFlush(request.getCorpusDiffWriterFlush());
-        // Graph Methods (Static)
-        else if (request.hasMakeGraph())
-            return handleMakeGraph(request.getMakeGraph());
-        else if (request.hasGetGraph())
-            return handleGetGraph(request.getGetGraph());
-        else if (request.hasDeleteGraph())
-            return handleDeleteGraph(request.getDeleteGraph());
-        else if (request.hasListGraphs())
-            return handleListGraphs(request.getListGraphs());
-        // Graph Methods
-        else if (request.hasGraphClose())
-            return handleGraphClose(request.getGraphClose());
-        else if (request.hasGraphGetStages())
-            return handleGraphGetStages(request.getGraphGetStages());
-        else if (request.hasGraphMakeStage())
-            return handleGraphMakeStage(request.getGraphMakeStage());
-        else if (request.hasGraphDeleteStage())
-            return handleGraphDeleteStage(request.getGraphDeleteStage());
-        else if (request.hasGraphMarkStagePublic())
-            return handleGraphMarkStagePublic(request.getGraphMarkStagePublic());
-        else if (request.hasGraphMakeInitializer())
-            return handleGraphMakeInitializer(request.getGraphMakeInitializer());
-        else if (request.hasGraphMakeReader())
-            return handleGraphMakeReader(request.getGraphMakeReader());
-        else if (request.hasGraphMakeDiffWriter())
-            return handleGraphMakeDiffWriter(request.getGraphMakeDiffWriter());
-        else if (request.hasGraphGetEdgesWithOneVertexIn())
-            return handleGraphGetEdgesWithOneVertexIn(request.getGraphGetEdgesWithOneVertexIn());
-        else if (request.hasGraphGetEdgesWithBothVerticesIn())
-            return handleGraphGetEdgesWithBothVerticesIn(request.getGraphGetEdgesWithBothVerticesIn());
-        else if (request.hasReadVertexIdSet())
-            return handleReadVertexIdSet(request.getReadVertexIdSet());
-        else if (request.hasLookupVertexIdSet())
-            return handleLookupVertexIdSet(request.getLookupVertexIdSet());
-        else if (request.hasRegisterVertexIdSet())
-            return handleRegisterVertexIdSet(request.getRegisterVertexIdSet());
-        else if (request.hasGetVertexIdSetNames())
-            return handleGetVertexIdSetNames(request.getGetVertexIdSetNames());
-        else if (request.hasReadEdgeIdSet())
-            return handleReadEdgeIdSet(request.getReadEdgeIdSet());
-        else if (request.hasLookupEdgeIdSet())
-            return handleLookupEdgeIdSet(request.getLookupEdgeIdSet());
-        else if (request.hasRegisterEdgeIdSet())
-            return handleRegisterEdgeIdSet(request.getRegisterEdgeIdSet());
-        else if (request.hasGetEdgeIdSetNames())
-            return handleGetEdgeIdSetNames(request.getGetEdgeIdSetNames());
-        else if (request.hasGraphGetNumVertices())
-            return handleGraphGetNumVertices(request.getGraphGetNumVertices());
-//        else if (request.hasGraphGetSize())
-//            return handleGraphGetSize(request.getGraphGetSize());
-        // Graph.Initializer Methods
-        else if (request.hasGraphInitializerClose())
-            return handleGraphInitializerClose(request.getGraphInitializerClose());
-        else if (request.hasGraphInitializerAddVertex())
-            return handleGraphInitializerAddVertex(request.getGraphInitializerAddVertex());
-        // Graph.Reader Methods
-        else if (request.hasGraphReaderClose())
-            return handleGraphReaderClose(request.getGraphReaderClose());
-        else if (request.hasGraphReaderLoadVertex())
-            return handleGraphReaderLoadVertex(request.getGraphReaderLoadVertex());
-        else if (request.hasGraphReaderLoadVertices())
-            return handleGraphReaderLoadVertices(request.getGraphReaderLoadVertices());
-        else if (request.hasGraphReaderLoadEdge())
-            return handleGraphReaderLoadEdge(request.getGraphReaderLoadEdge());
-        else if (request.hasGraphReaderLoadEdges())
-            return handleGraphReaderLoadEdges(request.getGraphReaderLoadEdges());
-        // Graph.DiffWriter Methods
-        else if (request.hasGraphDiffWriterClose())
-            return handleGraphDiffWriterClose(request.getGraphDiffWriterClose());
-        else if (request.hasGraphDiffWriterFlush())
-            return handleGraphDiffWriterFlush(request.getGraphDiffWriterFlush());
+        
+        
+        
         // IdSet Methods
         else if (request.hasComIdSetEnumerate())
             return handleComIdSetEnumerate(request.getComIdSetEnumerate());
-        else if (request.hasVertexIdSetEnumerate())
-            return handleVertexIdSetEnumerate(request.getVertexIdSetEnumerate());
-        else if (request.hasEdgeIdSetEnumerate())
-            return handleEdgeIdSetEnumerate(request.getEdgeIdSetEnumerate());
+        
         // Close
         else if (request.hasClose())
             return okResponse;
@@ -345,11 +243,7 @@ class UnnamedPipeRPC {
     private Map<ProtoIndex.ModificationTarget, byte[]> parseDiff(ConcreteRpc.ProtoDiff diff) {
         final Map<ProtoIndex.ModificationTarget, byte[]> result = new HashMap<ProtoIndex.ModificationTarget, byte[]>();
         for (ConcreteRpc.ProtoDiff.Entry entry : diff.getDiffList()) {
-            ProtoIndex.ModificationTarget target;
-            if (entry.hasUuid())
-                target = new ProtoIndex.ModificationTarget(entry.getUuid());
-            else
-                target = new ProtoIndex.ModificationTarget(entry.getEdgeId());
+            ProtoIndex.ModificationTarget target = new ProtoIndex.ModificationTarget(entry.getUuid());;
             result.put(target, entry.getProto().toByteArray());
         }
         return result;
@@ -364,25 +258,9 @@ class UnnamedPipeRPC {
             return comList.getComIdList();
     }
 
-    private Collection<Concrete.UUID> parseVertexIdCollection(Graph graph, ConcreteRpc.VertexIdCollection vertexList) throws RebarException {
-        if (vertexList.hasVertexIdSet())
-            return vertexIdSets.get(vertexList.hasVertexIdSet());
-        else if (vertexList.hasVertexIdSetName())
-            return graph.lookupVertexIdSet(vertexList.getVertexIdSetName());
-        else {
-            return vertexList.getVertexIdList();
-        }
-    }
 
-    private Collection<Concrete.EdgeId> parseEdgeIdCollection(Graph graph, ConcreteRpc.EdgeIdCollection edgeList) throws RebarException {
-        if (edgeList.hasEdgeIdSet())
-            return edgeIdSets.get(edgeList.hasEdgeIdSet());
-        else if (edgeList.hasEdgeIdSetName())
-            return graph.lookupEdgeIdSet(edgeList.getEdgeIdSetName());
-        else {
-            return edgeList.getEdgeIdList();
-        }
-    }
+
+
 
     // ////////////////////////////////////////////////////////////////////
     // Response Generator Helpers: Error Messages
@@ -418,42 +296,6 @@ class UnnamedPipeRPC {
 
     private ConcreteRpc.ComIdSet buildRpcComIdSet(ConcreteRpc.Corpus owner, long id) {
         return ConcreteRpc.ComIdSet.newBuilder().setId(id).build();
-    }
-
-    // ////////////////////////////////////////////////////////////////////
-    // Response Generator Helpers: Graph
-    // ////////////////////////////////////////////////////////////////////
-
-    private ConcreteRpc.Graph buildRpcGraph(long id) {
-        return ConcreteRpc.Graph.newBuilder().setId(id).build();
-    }
-
-    private ConcreteRpc.GraphInitializer buildRpcGraphInitializer(ConcreteRpc.Graph owner, long id) {
-        return ConcreteRpc.GraphInitializer.newBuilder().setId(id).build();
-    }
-
-    private ConcreteRpc.GraphReader buildRpcGraphReader(ConcreteRpc.Graph owner, long id) {
-        return ConcreteRpc.GraphReader.newBuilder().setId(id).build();
-    }
-
-    private ConcreteRpc.GraphDiffWriter buildRpcGraphDiffWriter(ConcreteRpc.Graph owner, long id) {
-        return ConcreteRpc.GraphDiffWriter.newBuilder().setId(id).build();
-    }
-
-    private ConcreteRpc.VertexIterator buildRpcVertexIterator(ConcreteRpc.GraphReader owner, long id) {
-        return ConcreteRpc.VertexIterator.newBuilder().setId(id).build();
-    }
-
-    private ConcreteRpc.EdgeIterator buildRpcEdgeIterator(ConcreteRpc.GraphReader owner, long id) {
-        return ConcreteRpc.EdgeIterator.newBuilder().setId(id).build();
-    }
-
-    private ConcreteRpc.VertexIdSet buildRpcVertexIdSet(ConcreteRpc.Graph owner, long id) {
-        return ConcreteRpc.VertexIdSet.newBuilder().setId(id).build();
-    }
-
-    private ConcreteRpc.EdgeIdSet buildRpcEdgeIdSet(ConcreteRpc.Graph owner, long id) {
-        return ConcreteRpc.EdgeIdSet.newBuilder().setId(id).build();
     }
 
     // ////////////////////////////////////////////////////////////////////
@@ -706,308 +548,6 @@ class UnnamedPipeRPC {
     }
 
     // ////////////////////////////////////////////////////////////////////
-    // Request Handlers: Graph
-    // ////////////////////////////////////////////////////////////////////
-
-    private RPCResponse handleGetGraph(ConcreteRpc.GetGraph request) throws RebarException {
-        long id = assignId(Graph.Factory.getGraph(request.getName()), graphs);
-        return RPCResponse.newBuilder().setGraph(buildRpcGraph(id)).build();
-    }
-
-    private RPCResponse handleMakeGraph(ConcreteRpc.MakeGraph request) throws RebarException {
-        long id = assignId(Graph.Factory.makeGraph(request.getName()), graphs);
-        return RPCResponse.newBuilder().setGraph(buildRpcGraph(id)).build();
-    }
-
-    private RPCResponse handleDeleteGraph(ConcreteRpc.DeleteGraph request) throws RebarException {
-        Graph.Factory.deleteGraph(request.getName());
-        return okResponse;
-    }
-
-    private RPCResponse handleListGraphs(ConcreteRpc.ListGraphs request) throws RebarException {
-        return RPCResponse.newBuilder().addAllGraphName(Graph.Factory.list()).build();
-    }
-
-    private RPCResponse handleGraphClose(ConcreteRpc.Graph.Close request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        self.close();
-        return okResponse;
-    }
-
-    private RPCResponse handleGraphGetStages(ConcreteRpc.Graph.GetStages request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        RPCResponse.Builder builder = RPCResponse.newBuilder();
-        for (Stage stage : self.getStages())
-            builder.addStage(buildRpcStage(stage));
-        return builder.build();
-    }
-
-    private RPCResponse handleGraphMakeStage(ConcreteRpc.Graph.MakeStage request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Set<Stage> dependencies = new TreeSet<Stage>();
-        for (int dep : request.getDependencyList())
-            dependencies.add(self.getStage(dep));
-        Stage newStage = self.makeStage(request.getStageName(), request.getStageVersion(), dependencies, request.getDescription(),
-                request.getDeleteIfExists());
-        return RPCResponse.newBuilder().addStage(buildRpcStage(newStage)).build();
-    }
-
-    private RPCResponse handleGraphDeleteStage(ConcreteRpc.Graph.DeleteStage request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        self.deleteStage(self.getStage(request.getStageId()));
-        return okResponse;
-    }
-
-    private RPCResponse handleGraphMarkStagePublic(ConcreteRpc.Graph.MarkStagePublic request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        self.markStagePublic(self.getStage(request.getStageId()));
-        return okResponse;
-    }
-
-    private RPCResponse handleGraphMakeInitializer(ConcreteRpc.Graph.MakeInitializer request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        long id = assignId(self.makeInitializer(), graphInitializers);
-        return RPCResponse.newBuilder().setGraphInitializer(buildRpcGraphInitializer(request.getSelf(), id)).build();
-    }
-
-    private RPCResponse handleGraphMakeReader(ConcreteRpc.Graph.MakeReader request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Collection<Stage> dependencies = new ArrayList<Stage>();
-        for (int dep : request.getDependencyList())
-            dependencies.add(self.getStage(dep));
-        boolean loadStageOwnership = request.getLoadStageOwnership();
-        long id = assignId(self.makeReader(dependencies, loadStageOwnership), graphReaders);
-        return RPCResponse.newBuilder().setGraphReader(buildRpcGraphReader(request.getSelf(), id)).build();
-    }
-
-    private RPCResponse handleGraphMakeDiffWriter(ConcreteRpc.Graph.MakeDiffWriter request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Stage stage = self.getStage(request.getStageId());
-        long id = assignId(self.makeDiffWriter(stage), graphDiffWriters);
-        return RPCResponse.newBuilder().setGraphDiffWriter(buildRpcGraphDiffWriter(request.getSelf(), id)).build();
-    }
-
-    private RPCResponse handleReadVertexIdSet(ConcreteRpc.Graph.ReadVertexIdSet request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Collection<Concrete.UUID> vertexIdSet = self.readVertexIdSet(new File(request.getFilename()));
-        long id = assignId(vertexIdSet, vertexIdSets);
-        return RPCResponse.newBuilder().setVertexIdSet(buildRpcVertexIdSet(request.getSelf(), id)).build();
-    }
-
-    private RPCResponse handleLookupVertexIdSet(ConcreteRpc.Graph.LookupVertexIdSet request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Collection<Concrete.UUID> vertexIdSet = self.lookupVertexIdSet(request.getName());
-        long id = assignId(vertexIdSet, vertexIdSets);
-        return RPCResponse.newBuilder().setVertexIdSet(buildRpcVertexIdSet(request.getSelf(), id)).build();
-    }
-
-    private RPCResponse handleRegisterVertexIdSet(ConcreteRpc.Graph.RegisterVertexIdSet request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Collection<Concrete.UUID> vertexIds = parseVertexIdCollection(self, request.getVertexIds());
-        self.registerVertexIdSet(request.getName(), vertexIds);
-        return okResponse;
-    }
-
-    private RPCResponse handleGetVertexIdSetNames(ConcreteRpc.Graph.GetVertexIdSetNames request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Collection<String> names = self.getVertexIdSetNames();
-        RPCResponse.Builder responseBuilder = RPCResponse.newBuilder();
-        for (String name : names)
-            responseBuilder.addIdSetName(name);
-        return responseBuilder.build();
-    }
-
-    private RPCResponse handleReadEdgeIdSet(ConcreteRpc.Graph.ReadEdgeIdSet request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Collection<Concrete.EdgeId> edgeIdSet = self.readEdgeIdSet(new File(request.getFilename()));
-        long id = assignId(edgeIdSet, edgeIdSets);
-        return RPCResponse.newBuilder().setEdgeIdSet(buildRpcEdgeIdSet(request.getSelf(), id)).build();
-    }
-
-    private RPCResponse handleLookupEdgeIdSet(ConcreteRpc.Graph.LookupEdgeIdSet request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Collection<Concrete.EdgeId> edgeIdSet = self.lookupEdgeIdSet(request.getName());
-        long id = assignId(edgeIdSet, edgeIdSets);
-        return RPCResponse.newBuilder().setEdgeIdSet(buildRpcEdgeIdSet(request.getSelf(), id)).build();
-    }
-
-    private RPCResponse handleRegisterEdgeIdSet(ConcreteRpc.Graph.RegisterEdgeIdSet request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Collection<Concrete.EdgeId> edgeIds = parseEdgeIdCollection(self, request.getEdgeIds());
-        self.registerEdgeIdSet(request.getName(), edgeIds);
-        return okResponse;
-    }
-
-    private RPCResponse handleGetEdgeIdSetNames(ConcreteRpc.Graph.GetEdgeIdSetNames request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Collection<String> names = self.getEdgeIdSetNames();
-        RPCResponse.Builder responseBuilder = RPCResponse.newBuilder();
-        for (String name : names)
-            responseBuilder.addIdSetName(name);
-        return responseBuilder.build();
-    }
-
-    private RPCResponse handleGraphGetEdgesWithOneVertexIn(ConcreteRpc.Graph.GetEdgesWithOneVertexIn request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Collection<Concrete.UUID> vertexIds = parseVertexIdCollection(self, request.getVertexIds());
-        Collection<Concrete.EdgeId> edgeIdSet = self.getEdgesWithOneVertexIn(vertexIds);
-        long id = assignId(edgeIdSet, edgeIdSets);
-        return RPCResponse.newBuilder().setEdgeIdSet(buildRpcEdgeIdSet(request.getSelf(), id)).build();
-    }
-
-    private RPCResponse handleGraphGetEdgesWithBothVerticesIn(ConcreteRpc.Graph.GetEdgesWithBothVerticesIn request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        Collection<Concrete.UUID> vertexIds = parseVertexIdCollection(self, request.getVertexIds());
-        Collection<Concrete.EdgeId> edgeIdSet = self.getEdgesWithBothVerticesIn(vertexIds);
-        long id = assignId(edgeIdSet, edgeIdSets);
-        return RPCResponse.newBuilder().setEdgeIdSet(buildRpcEdgeIdSet(request.getSelf(), id)).build();
-    }
-
-    private RPCResponse handleGraphGetNumVertices(ConcreteRpc.Graph.GetNumVertices request) throws RebarException {
-        Graph self = graphs.get(request.getSelf().getId());
-        long size = self.getNumVertices();
-        return RPCResponse.newBuilder().setSize(size).build();
-    }
-
-    // ////////////////////////////////////////////////////////////////////
-    // Request Handlers: Graph.Initializer
-    // ////////////////////////////////////////////////////////////////////
-
-    private RPCResponse handleGraphInitializerClose(ConcreteRpc.GraphInitializer.Close request) throws RebarException {
-        Graph.Initializer self = graphInitializers.get(request.getSelf().getId());
-        self.close();
-        return okResponse;
-    }
-
-    private RPCResponse handleGraphInitializerAddVertex(ConcreteRpc.GraphInitializer.AddVertex request) throws RebarException {
-        Graph.Initializer self = graphInitializers.get(request.getSelf().getId());
-        self.addVertex(request.getVertex());
-        return okResponse;
-    }
-
-//    private RPCResponse handleGraphGetSize(ConcreteRpc.Graph.GetSize request) throws RebarException {
-//        Graph self = graphs.get(request.getSelf().getId());
-//        long size = self.getSize();
-//        return RPCResponse.newBuilder().setSize(size).build();
-//    }
-
-    // ////////////////////////////////////////////////////////////////////
-    // Request Handlers: Graph.Reader
-    // ////////////////////////////////////////////////////////////////////
-
-    private RPCResponse handleGraphReaderClose(ConcreteRpc.GraphReader.Close request) throws RebarException {
-        Graph.Reader self = graphReaders.get(request.getSelf().getId());
-        self.close();
-        return okResponse;
-    }
-
-    private RPCResponse handleGraphReaderLoadVertex(ConcreteRpc.GraphReader.LoadVertex request) throws RebarException {
-        Graph.Reader self = graphReaders.get(request.getSelf().getId());
-        IndexedVertex vertex = self.loadVertex(request.getVertexId());
-        RPCResponse.Builder response = RPCResponse.newBuilder().addVertex(vertex.getProto());
-        addStageOwnership(vertex.getStageOwnership(), response);
-        return response.build();
-    }
-
-    private RPCResponse handleGraphReaderLoadVertices(ConcreteRpc.GraphReader.LoadVertices request) throws RebarException {
-        Graph.Reader self = graphReaders.get(request.getSelf().getId());
-        Collection<Concrete.UUID> vertexIds = parseVertexIdCollection(self.getGraph(), request.getVertexIds());
-        Iterator<IndexedVertex> iter = self.loadVertices(vertexIds);
-        long id = assignId(iter, vertexIterators);
-        return RPCResponse.newBuilder().setVertexIterator(buildRpcVertexIterator(request.getSelf(), id)).build();
-    }
-
-    private RPCResponse handleGraphReaderLoadEdge(ConcreteRpc.GraphReader.LoadEdge request) throws RebarException {
-        Graph.Reader self = graphReaders.get(request.getSelf().getId());
-        IndexedEdge edge = self.loadEdge(request.getEdgeId());
-        RPCResponse.Builder response = RPCResponse.newBuilder().addEdge(edge.getProto());
-        addStageOwnership(edge.getStageOwnership(), response);
-        return response.build();
-    }
-
-    private RPCResponse handleGraphReaderLoadEdges(ConcreteRpc.GraphReader.LoadEdges request) throws RebarException {
-        Graph.Reader self = graphReaders.get(request.getSelf().getId());
-        Collection<Concrete.EdgeId> edgeIds = parseEdgeIdCollection(self.getGraph(), request.getEdgeIds());
-        Iterator<IndexedEdge> iter = self.loadEdges(edgeIds);
-        long id = assignId(iter, edgeIterators);
-        return RPCResponse.newBuilder().setEdgeIterator(buildRpcEdgeIterator(request.getSelf(), id)).build();
-    }
-
-    // ////////////////////////////////////////////////////////////////////
-    // Request Handlers: Graph.DiffWriter
-    // ////////////////////////////////////////////////////////////////////
-
-    private RPCResponse handleGraphDiffWriterClose(ConcreteRpc.GraphDiffWriter.Close request) throws RebarException {
-        Graph.DiffWriter self = graphDiffWriters.get(request.getSelf().getId());
-        self.close();
-        return okResponse;
-    }
-
-    private RPCResponse handleGraphDiffWriterFlush(ConcreteRpc.GraphDiffWriter.Flush request) throws RebarException {
-        Graph.DiffWriter self = graphDiffWriters.get(request.getSelf().getId());
-        self.flush();
-        return okResponse;
-    }
-
-    private RPCResponse handleGraphDiffWriterWriteVertexDiff(ConcreteRpc.GraphDiffWriter.WriteVertexDiff request) throws RebarException {
-        Graph.DiffWriter self = graphDiffWriters.get(request.getSelf().getId());
-        self.saveVertexDiff(request.getVertexId(), parseDiff(request.getDiff()));
-        return okResponse;
-    }
-
-    private RPCResponse handleGraphDiffWriterWriteEdgeDiff(ConcreteRpc.GraphDiffWriter.WriteEdgeDiff request) throws RebarException {
-        Graph.DiffWriter self = graphDiffWriters.get(request.getSelf().getId());
-        self.saveEdgeDiff(request.getEdgeId(), parseDiff(request.getDiff()));
-        return okResponse;
-    }
-
-    // ////////////////////////////////////////////////////////////////////
-    // Request Handlers: Iterator<IndexedVertex>
-    // ////////////////////////////////////////////////////////////////////
-
-    private RPCResponse handleVertexIteratorHasNext(ConcreteRpc.VertexIterator.HasNext request) throws RebarException {
-        Iterator<IndexedVertex> self = vertexIterators.get(request.getSelf().getId());
-        return RPCResponse.newBuilder().setHasNext(self.hasNext()).build();
-    }
-
-    private RPCResponse handleVertexIteratorNext(ConcreteRpc.VertexIterator.Next request) throws RebarException {
-        Iterator<IndexedVertex> self = vertexIterators.get(request.getSelf().getId());
-        int maxValues = request.getMaxValues();
-        int bytes = 0;
-        RPCResponse.Builder response = RPCResponse.newBuilder();
-        while (self.hasNext() && (maxValues > 0) && (bytes < ITERATOR_BYTE_LIMIT)) {
-            IndexedVertex vertex = self.next();
-            response.addVertex(vertex.getProto());
-            addStageOwnership(vertex.getStageOwnership(), response);
-            bytes += vertex.getProto().getSerializedSize();
-        }
-        return response.build();
-    }
-
-    // ////////////////////////////////////////////////////////////////////
-    // Request Handlers: Iterator<IndexedEdge>
-    // ////////////////////////////////////////////////////////////////////
-
-    private RPCResponse handleEdgeIteratorHasNext(ConcreteRpc.EdgeIterator.HasNext request) throws RebarException {
-        Iterator<IndexedEdge> self = edgeIterators.get(request.getSelf().getId());
-        return RPCResponse.newBuilder().setHasNext(self.hasNext()).build();
-    }
-
-    private RPCResponse handleEdgeIteratorNext(ConcreteRpc.EdgeIterator.Next request) throws RebarException {
-        Iterator<IndexedEdge> self = edgeIterators.get(request.getSelf().getId());
-        int maxValues = request.getMaxValues();
-        int bytes = 0;
-        RPCResponse.Builder response = RPCResponse.newBuilder();
-        while (self.hasNext() && (maxValues > 0) && (bytes < ITERATOR_BYTE_LIMIT)) {
-            IndexedEdge edge = self.next();
-            response.addEdge(edge.getProto());
-            addStageOwnership(edge.getStageOwnership(), response);
-            bytes += edge.getProto().getSerializedSize();
-        }
-        return response.build();
-    }
-
-    // ////////////////////////////////////////////////////////////////////
     // Request Handlers: IdSets
     // ////////////////////////////////////////////////////////////////////
 
@@ -1021,10 +561,7 @@ class UnnamedPipeRPC {
         return RPCResponse.newBuilder().addAllVertexId(self).build();
     }
 
-    private RPCResponse handleEdgeIdSetEnumerate(ConcreteRpc.EdgeIdSet.Enumerate request) throws RebarException {
-        Collection<Concrete.EdgeId> self = edgeIdSets.get(request.getSelf().getId());
-        return RPCResponse.newBuilder().addAllEdgeId(self).build();
-    }
+    
 
     // ////////////////////////////////////////////////////////////////////
     // Command Line Interface

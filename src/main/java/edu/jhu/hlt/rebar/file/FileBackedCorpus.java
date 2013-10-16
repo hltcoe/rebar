@@ -44,9 +44,9 @@ import edu.jhu.hlt.concrete.util.ProtoFactory;
 import edu.jhu.hlt.rebar.Corpus;
 import edu.jhu.hlt.rebar.IndexedCommunication;
 import edu.jhu.hlt.rebar.ProtoIndex;
+import edu.jhu.hlt.rebar.ProtoIndex.ModificationTarget;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Stage;
-import edu.jhu.hlt.rebar.ProtoIndex.ModificationTarget;
 
 /**
  * @author max
@@ -299,10 +299,7 @@ public class FileBackedCorpus implements Corpus {
             Concrete.UUID uuid = IdUtil.getUUIDOrNull(msg); // uuid may be null.
             if (uuid != null)
                 target = new ProtoIndex.ModificationTarget(uuid);
-            else if (msg instanceof Concrete.Edge) {
-                target = new ProtoIndex.ModificationTarget(
-                        ((Concrete.Edge) msg).getEdgeId());
-            } else
+            else
                 target = null;
             // System.err.println("Merging, target="+target);
             // Get any values we should merge into this target, and merge them.

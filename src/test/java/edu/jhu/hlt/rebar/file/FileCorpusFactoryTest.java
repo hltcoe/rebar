@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileInputStream;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,14 +19,11 @@ import org.junit.Test;
 
 import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
-import edu.jhu.hlt.concrete.Concrete.KnowledgeGraph;
 import edu.jhu.hlt.concrete.ConcreteException;
 import edu.jhu.hlt.concrete.io.ProtocolBufferReader;
 import edu.jhu.hlt.concrete.util.ProtoFactory;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
-import edu.jhu.hlt.rebar.file.FileBackedCorpus;
-import edu.jhu.hlt.rebar.file.FileCorpusFactory;
 import edu.jhu.hlt.rebar.util.FileUtil;
 
 public class FileCorpusFactoryTest {
@@ -36,12 +32,10 @@ public class FileCorpusFactoryTest {
 
     ProtoFactory pf = new ProtoFactory();
     CommunicationGUID guidOne = pf.generateMockCommGuid();
-    KnowledgeGraph kg = pf.generateMockKnowledgeGraph();
-    Communication commOne = ProtoFactory.generateCommunication(guidOne, kg);
+    Communication commOne = ProtoFactory.generateCommunication(guidOne);
 
     CommunicationGUID guidTwo = pf.generateMockCommGuid();
-    KnowledgeGraph kgTwo = pf.generateMockKnowledgeGraph();
-    Communication commTwo = ProtoFactory.generateCommunication(guidTwo, kgTwo);
+    Communication commTwo = ProtoFactory.generateCommunication(guidTwo);
 
     @Before
     public void setUp() throws Exception {

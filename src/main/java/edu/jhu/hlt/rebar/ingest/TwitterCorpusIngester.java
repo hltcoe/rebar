@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.hlt.concrete.Concrete;
@@ -32,10 +31,7 @@ import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.hlt.rebar.Corpus;
 import edu.jhu.hlt.rebar.CorpusFactory;
 import edu.jhu.hlt.rebar.IndexedCommunication;
-import edu.jhu.hlt.rebar.IndexedEdge;
-import edu.jhu.hlt.rebar.IndexedKnowledgeGraph;
 import edu.jhu.hlt.rebar.IndexedSection;
-import edu.jhu.hlt.rebar.IndexedVertex;
 import edu.jhu.hlt.rebar.RebarBackends;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Stage;

@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.jhu.hlt.concrete.Concrete;
 import edu.jhu.hlt.concrete.Twitter;
 
 /**

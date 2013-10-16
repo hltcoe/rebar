@@ -236,8 +236,7 @@ public final class ProtoIndex {
         // contains a UUID, (2) any descendent contains a UUID, or (3)
         // it is one of a special list of edge-related types that
         // always get added even though they don't have UUIDs.
-        boolean addToParentIndex = ((msg instanceof Concrete.Edge)
-                || (msg instanceof Concrete.UndirectedAttributes) || (msg instanceof Concrete.DirectedAttributes));
+        boolean addToParentIndex = false;
         // Index each field in this message.
         for (Map.Entry<FieldDescriptor, Object> entry : msg.getAllFields()
                 .entrySet()) {
@@ -395,10 +394,6 @@ public final class ProtoIndex {
         if (uuid != null) {
             ModificationTarget mTarget = new ModificationTarget(uuid);
             recordModification(mTarget, field, fieldValue);
-        } else if (target instanceof Concrete.Edge) {
-            ModificationTarget mTarget = new ModificationTarget(
-                    ((Concrete.Edge) target).getEdgeId());
-            recordModification(mTarget, field, fieldValue);
         } else {
             // Build a new message with the same type as target, that
             // can be used to merge in the field value.
@@ -435,60 +430,36 @@ public final class ProtoIndex {
     /** A target for a modification. Can be a UUID or a normalized EdgeId. */
     public static class ModificationTarget {
         public final Concrete.UUID uuid;
-        public final Concrete.EdgeId edgeId;
 
         public ModificationTarget(Concrete.UUID uuid) {
             this.uuid = uuid;
-            this.edgeId = null;
-        }
-
-        public ModificationTarget(Concrete.EdgeId edgeId) {
-            this.edgeId = edgeId;
-            this.uuid = null;
         }
 
         public ModificationTarget(byte[] bytes) {
-            if (bytes.length == 16) {
-                this.uuid = ByteUtil.toUUID(bytes);
-                this.edgeId = null;
-            } else {
-                this.uuid = null;
-                this.edgeId = ByteUtil.toEdgeId(bytes);
-            }
+          this.uuid = ByteUtil.toUUID(bytes);
         }
 
         public byte[] toBytes() {
-            if (this.uuid != null)
-                return ByteUtil.fromUUID(this.uuid);
-            else
-                return ByteUtil.fromEdgeId(this.edgeId);
+          return ByteUtil.fromUUID(this.uuid);
         }
 
         @Override
         public boolean equals(Object o) {
             if (!(o instanceof ModificationTarget))
                 return false;
-            else if (uuid != null)
+            else 
                 return uuid.equals(((ModificationTarget) o).uuid);
-            else
-                return edgeId.equals(((ModificationTarget) o).edgeId);
+            
         }
 
         @Override
         public int hashCode() {
-            if (uuid != null)
-                return uuid.hashCode();
-            else
-                return edgeId.hashCode();
+          return uuid.hashCode();
         }
 
         @Override
         public String toString() {
-            if (uuid != null)
-                return IdUtil.uuidToString(uuid);
-            else
-                return (IdUtil.uuidToString(edgeId.getV1()) + ":" + IdUtil
-                        .uuidToString(edgeId.getV2()));
+          return IdUtil.uuidToString(uuid);
         }
     }
 

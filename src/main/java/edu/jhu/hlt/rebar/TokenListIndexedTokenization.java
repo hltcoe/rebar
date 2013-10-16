@@ -92,10 +92,10 @@ public class TokenListIndexedTokenization
 	private void buildTokenIdToPos() {
 		int max_tokid = 0;
 		for (Concrete.Token tok: protoObj.getTokenList())
-			max_tokid = Math.max(max_tokid, tok.getTokenId());
+			max_tokid = Math.max(max_tokid, tok.getTokenIndex());
 		tokenIdToPos = new int[max_tokid+1];
 		for (int i=0; i<protoObj.getTokenCount(); ++i) {
-			tokenIdToPos[i] = protoObj.getToken(i).getTokenId();
+			tokenIdToPos[i] = protoObj.getToken(i).getTokenIndex();
 		}
 	}
 
@@ -103,7 +103,7 @@ public class TokenListIndexedTokenization
 	protected Map<Integer, Concrete.Token> buildTokenIndex() {
 		Map<Integer, Concrete.Token> tokenIndex = new HashMap<Integer, Concrete.Token>();
 		for (Concrete.Token tok: protoObj.getTokenList())
-			tokenIndex.put(tok.getTokenId(), tok);
+			tokenIndex.put(tok.getTokenIndex(), tok);
 		return tokenIndex;
 	}
 

@@ -138,7 +138,7 @@ public class TokenLatticeIndexedTokenization
 		for (Arc arc: protoObj.getLattice().getArcList()) {
 			if (arc.hasToken()) {
 				final Concrete.Token tok = arc.getToken();
-				tokenIndex.put(tok.getTokenId(), tok);
+				tokenIndex.put(tok.getTokenIndex(), tok);
 			}
 		}
 		return tokenIndex;
@@ -198,9 +198,9 @@ public class TokenLatticeIndexedTokenization
 				incomingArcs.put(a.getDst(),new ArrayList<Arc>());
 			incomingArcs.get(a.getDst()).add(a);
 			if (a.hasToken())
-				if (tokenArcs.put(a.getToken().getTokenId(), a) != null)
+				if (tokenArcs.put(a.getToken().getTokenIndex(), a) != null)
 					throw new RebarException("Multiple tokens have the same id "+
-											 a.getToken().getTokenId());
+											 a.getToken().getTokenIndex());
 		}
 	}
 
