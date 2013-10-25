@@ -38,13 +38,13 @@ import com.google.protobuf.Message;
 import edu.jhu.hlt.concrete.Concrete;
 import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.ConcreteException;
+import edu.jhu.hlt.concrete.index.IndexedCommunication;
+import edu.jhu.hlt.concrete.index.ProtoIndex;
+import edu.jhu.hlt.concrete.index.ProtoIndex.ModificationTarget;
 import edu.jhu.hlt.concrete.io.ProtocolBufferReader;
 import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.hlt.concrete.util.ProtoFactory;
 import edu.jhu.hlt.rebar.Corpus;
-import edu.jhu.hlt.rebar.IndexedCommunication;
-import edu.jhu.hlt.rebar.ProtoIndex;
-import edu.jhu.hlt.rebar.ProtoIndex.ModificationTarget;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Stage;
 
@@ -259,7 +259,7 @@ public class FileBackedCorpus implements Corpus {
         pbr.close();
 
         Communication commToUse = this.assembleComm(comm);
-        IndexedCommunication ic = new IndexedCommunication(commToUse, new ProtoIndex(commToUse), null);
+        IndexedCommunication ic = new IndexedCommunication(commToUse, new ProtoIndex(commToUse));
         return ic;
       } catch (ConcreteException | IOException e) {
         throw new RebarException(e);
@@ -404,7 +404,7 @@ public class FileBackedCorpus implements Corpus {
           if (subset.contains(commId)) {
             Communication c = ProtoFactory.readCommunicationFromPath(nextPath);
             c = this.assembleComm(c);
-            IndexedCommunication ic = new IndexedCommunication(c, new ProtoIndex(c), null);
+            IndexedCommunication ic = new IndexedCommunication(c, new ProtoIndex(c));
             commSet.add(ic);
           }
         }

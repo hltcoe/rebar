@@ -3,7 +3,7 @@
  */
 package edu.jhu.hlt.rebar.file;
 
-import edu.jhu.hlt.rebar.ProtoIndex.ModificationTarget;
+import edu.jhu.hlt.concrete.index.ProtoIndex.ModificationTarget;
 
 /**
  * @author max

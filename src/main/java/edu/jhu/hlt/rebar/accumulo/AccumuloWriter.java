@@ -23,9 +23,9 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 
 import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.index.ProtoIndex;
 import edu.jhu.hlt.concrete.util.ByteUtil;
 import edu.jhu.hlt.concrete.util.IdUtil;
-import edu.jhu.hlt.rebar.ProtoIndex;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Stage;
 

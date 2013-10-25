@@ -21,13 +21,13 @@ import org.apache.hadoop.io.Text;
 import org.apache.log4j.Logger;
 
 import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.ConcreteException;
+import edu.jhu.hlt.concrete.index.IndexedCommunication;
+import edu.jhu.hlt.concrete.index.ProtoIndex;
 import edu.jhu.hlt.concrete.util.ByteUtil;
 import edu.jhu.hlt.rebar.Corpus;
-import edu.jhu.hlt.rebar.IndexedCommunication;
-import edu.jhu.hlt.rebar.ProtoIndex;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Stage;
-import edu.jhu.hlt.rebar.StageOwnership;
 import edu.jhu.hlt.rebar.util.FileUtil;
 
 /**
@@ -152,8 +152,12 @@ public class AccumuloBackedCorpus extends AccumuloBackedStagedDataCollection imp
     }
 
     @Override
-    protected IndexedCommunication wrap(String comId, Concrete.Communication comm, Map<Key, Value> row, StageOwnership stageOwnership) throws RebarException {
-      return new IndexedCommunication(comm, new ProtoIndex(comm), stageOwnership);
+    protected IndexedCommunication wrap(String comId, Concrete.Communication comm, Map<Key, Value> row) throws RebarException {
+      try {
+        return new IndexedCommunication(comm, new ProtoIndex(comm));
+      } catch (ConcreteException e) {
+        throw new RebarException(e);
+      }
     }
 
     @Override
@@ -232,13 +236,18 @@ public class AccumuloBackedCorpus extends AccumuloBackedStagedDataCollection imp
       LOGGER.debug("Row id: " + rowId);
       if (rowExists(rowId))
         throw new RebarException("Duplicate communication!");
-      // Build the indexed communication (this will be our return value).
-      IndexedCommunication com = new IndexedCommunication(communication, new ProtoIndex(communication), null);
+      try {
+        // Build the indexed communication (this will be our return
+        // value).
+        IndexedCommunication com = new IndexedCommunication(communication, new ProtoIndex(communication));
 
-      // Write the communication.
-      write(rowId, AccumuloBackedCorpus.ROOT_CF, AccumuloBackedCorpus.EMPTY_CQ, new Value(communication.toByteArray()));
-      summaryTable.incrementCount(getName(), "com");
-      return com;
+        // Write the communication.
+        write(rowId, AccumuloBackedCorpus.ROOT_CF, AccumuloBackedCorpus.EMPTY_CQ, new Value(communication.toByteArray()));
+        summaryTable.incrementCount(getName(), "com");
+        return com;
+      } catch (ConcreteException e) {
+        throw new RebarException(e);
+      }
     }
   }
 

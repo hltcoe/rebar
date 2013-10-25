@@ -16,10 +16,11 @@ import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.jhu.hlt.concrete.ConcreteException;
+import edu.jhu.hlt.concrete.index.IndexedCommunication;
+import edu.jhu.hlt.concrete.index.IndexedSentence;
 import edu.jhu.hlt.rebar.Corpus;
 import edu.jhu.hlt.rebar.CorpusFactory;
-import edu.jhu.hlt.rebar.IndexedCommunication;
-import edu.jhu.hlt.rebar.IndexedSentence;
 import edu.jhu.hlt.rebar.RebarBackends;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Stage;
@@ -67,16 +68,20 @@ public class TiftTokenizer {
    * save it; use a CorpusWriter to save it (or call tokenizeAllCommunications).
    */
   public void addTwitterTokenization(IndexedCommunication com) throws RebarException {
-    // Tokenize each sentence.
-    List<IndexedSentence> sentences = com.getSentences();
-    if (sentences.size() == 0) {
-      throw new RebarException("No sentences found in comm: " + com.getCommunicationId());
-    }
-    for (IndexedSentence sentence : sentences) {
-      int s = sentence.getTextSpan().getStart();
-      int e = sentence.getTextSpan().getEnd();
-      String text = com.getText().substring(s, e);
-      sentence.addTokenization(Tokenizer.TWITTER.tokenizeToConcrete(text, s));
+    try {
+      // Tokenize each sentence.
+      List<IndexedSentence> sentences = com.getSentences();
+      if (sentences.size() == 0) {
+        throw new RebarException("No sentences found in comm: " + com.getCommunicationId());
+      }
+      for (IndexedSentence sentence : sentences) {
+        int s = sentence.getTextSpan().getStart();
+        int e = sentence.getTextSpan().getEnd();
+        String text = com.getText().substring(s, e);
+        sentence.addTokenization(Tokenizer.TWITTER.tokenizeToConcrete(text, s));
+      }
+    } catch (ConcreteException e) {
+      throw new RebarException(e);
     }
   }
 

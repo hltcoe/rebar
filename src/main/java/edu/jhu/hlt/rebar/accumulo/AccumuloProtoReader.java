@@ -32,13 +32,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 
 import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.index.IndexedProto;
+import edu.jhu.hlt.concrete.index.ProtoIndex;
 import edu.jhu.hlt.concrete.util.ByteUtil;
 import edu.jhu.hlt.concrete.util.IdUtil;
-import edu.jhu.hlt.rebar.IndexedProto;
-import edu.jhu.hlt.rebar.ProtoIndex;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Stage;
-import edu.jhu.hlt.rebar.StageOwnership;
 
 /**
  * An iterator that reads protobuf objects from the Accumulo table. In particular, for each row, it reads a "root" protobuf object from a fixed column, and then
@@ -51,7 +50,7 @@ abstract class AccumuloProtoReader<ProtoObj extends Message, ProtoBuilder extend
   // (constructor)
   abstract protected ProtoBuilder getRootBuilder(Identifier rootId);
 
-  abstract protected Wrapper wrap(Identifier id, ProtoObj obj, Map<Key, Value> row, StageOwnership stageOwnership) throws RebarException;
+  abstract protected Wrapper wrap(Identifier id, ProtoObj obj, Map<Key, Value> row) throws RebarException;
 
   abstract protected Text toRowId(Identifier id);
 
@@ -305,16 +304,12 @@ abstract class AccumuloProtoReader<ProtoObj extends Message, ProtoBuilder extend
 
     ProtoObj root = getRoot(rootId, decodedRow);
 
-    // Allocate stage ownership map (if we're generating it)
-    StageOwnership stageOwnership = recordStageOwnership ? new StageOwnership() : null;
-
     // If that's all we have, then return it.
     Iterator<Map.Entry<Key, Value>> cellIter = decodedRow.entrySet().iterator();
     Map.Entry<Key, Value> cell = getNextStageCell(cellIter);
     if (cell == null) {
-      if (stageOwnership != null)
-        stageOwnership.freeze();
-      return wrap(rootId, root, decodedRow, stageOwnership);
+      
+      return wrap(rootId, root, decodedRow);
     }
 
     // Index the remaining messages by uuid.
@@ -332,16 +327,15 @@ abstract class AccumuloProtoReader<ProtoObj extends Message, ProtoBuilder extend
     }
 
     // Merge in stage outputs.
-    Message mergedRoot = mergeStages(root, stageValues, stageOwnership, null);
+    Message mergedRoot = mergeStages(root, stageValues);
     if (!stageValues.isEmpty()) {
       throw new RebarException(stageValues.size() + " stage output(s) not merged: " + stageValues.keySet());
     }
 
     @SuppressWarnings("unchecked")
     ProtoObj result = ((mergedRoot == null) ? root : (ProtoObj) (mergedRoot));
-    if (stageOwnership != null)
-      stageOwnership.freeze();
-    return wrap(rootId, result, decodedRow, stageOwnership);
+
+    return wrap(rootId, result, decodedRow);
   }
 
   /**
@@ -362,8 +356,7 @@ abstract class AccumuloProtoReader<ProtoObj extends Message, ProtoBuilder extend
    * 
    * Note: 'target' and 'stageOwnership' are "output" parameters, and are mutated by this method.
    */
-  private void mergeAndRecordStageOwnership(Message newFields, Stage outputStage, StageOwnership.FieldValuePointer fvp, Message.Builder target,
-      StageOwnership stageOwnership) throws RebarException, InvalidProtocolBufferException {
+  private void mergeAndRecordStageOwnership(Message newFields, Stage outputStage, Message.Builder target) throws RebarException, InvalidProtocolBufferException {
     // Add the fields one at a time, adding a StageOwnershipRecord for each value.
     for (Map.Entry<FieldDescriptor, Object> field : newFields.getAllFields().entrySet()) {
       FieldDescriptor fd = field.getKey();
@@ -374,7 +367,6 @@ abstract class AccumuloProtoReader<ProtoObj extends Message, ProtoBuilder extend
         List<Message> children = (List<Message>) field.getValue();
         for (int i = 0; i < children.size(); i++) {
           target.addRepeatedField(fd, children.get(i));
-          stageOwnership.put(new StageOwnership.FieldValuePointer(fvp, fd, i + origLen), outputStage);
         }
       } else if (target.hasField(fd)) {
         if (fd.getType() == FieldDescriptor.Type.MESSAGE) {
@@ -383,14 +375,13 @@ abstract class AccumuloProtoReader<ProtoObj extends Message, ProtoBuilder extend
             throw new RebarException("Stage " + outputStage + " set a non-repeated " + "field with a UUID that already has a value: " + fd.getFullName());
           // Merge field value.
           Message.Builder childTarget = ((Message) (target.getField(fd))).toBuilder();
-          mergeAndRecordStageOwnership(newChild, outputStage, new StageOwnership.FieldValuePointer(fvp, fd, 0), childTarget, stageOwnership);
+          mergeAndRecordStageOwnership(newChild, outputStage, childTarget);
           target.setField(fd, childTarget.build());
         } else {
           throw new RebarException("Stage " + outputStage + " set a non-repeated field " + "that already has a value: " + fd.getFullName());
         }
       } else {
         target.setField(fd, field.getValue());
-        stageOwnership.put(new StageOwnership.FieldValuePointer(fvp, fd, 0), outputStage);
       }
     }
   }
@@ -398,8 +389,7 @@ abstract class AccumuloProtoReader<ProtoObj extends Message, ProtoBuilder extend
   /**
    * Returns null if nothing changed, or the new value if we merged something in.
    */
-  private Message mergeStages(Message msg, Map<ProtoIndex.ModificationTarget, List<StageOutput>> stageValues, StageOwnership stageOwnership,
-      StageOwnership.FieldValuePointer fvp) throws RebarException {
+  private Message mergeStages(Message msg, Map<ProtoIndex.ModificationTarget, List<StageOutput>> stageValues) throws RebarException {
     Message.Builder builder = null;
 
     // Get the modification target for this message.
@@ -419,11 +409,9 @@ abstract class AccumuloProtoReader<ProtoObj extends Message, ProtoBuilder extend
         for (StageOutput stageOutput : valuesToMerge) {
           if (builder == null)
             builder = msg.toBuilder();
-          if (stageOwnership == null) {
-            builder.mergeFrom(stageOutput.protobufBytes);
-          } else {
+          else {
             Message newFields = msg.newBuilderForType().mergeFrom(stageOutput.protobufBytes).buildPartial();
-            mergeAndRecordStageOwnership(newFields, stageOutput.stage, fvp, builder, stageOwnership);
+            mergeAndRecordStageOwnership(newFields, stageOutput.stage, builder);
           }
         }
       } catch (InvalidProtocolBufferException e) {
@@ -451,8 +439,7 @@ abstract class AccumuloProtoReader<ProtoObj extends Message, ProtoBuilder extend
           List<Message> children = (List<Message>) field.getValue();
           for (int i = 0; i < children.size(); i++) {
             Message child = children.get(i);
-            StageOwnership.FieldValuePointer childFvp = (stageOwnership == null) ? null : new StageOwnership.FieldValuePointer(fvp, fd, i);
-            Message mergedChild = mergeStages(child, stageValues, stageOwnership, childFvp);
+            Message mergedChild = mergeStages(child, stageValues);
             if (mergedChild != null) {
               if (builder == null)
                 builder = msg.toBuilder();
@@ -463,8 +450,7 @@ abstract class AccumuloProtoReader<ProtoObj extends Message, ProtoBuilder extend
           }
         } else {
           Message child = (Message) field.getValue();
-          StageOwnership.FieldValuePointer childFvp = (stageOwnership == null) ? null : new StageOwnership.FieldValuePointer(fvp, fd, 0);
-          Message mergedChild = mergeStages(child, stageValues, stageOwnership, childFvp);
+          Message mergedChild = mergeStages(child, stageValues);
           if (mergedChild != null) {
             if (builder == null)
               builder = msg.toBuilder();

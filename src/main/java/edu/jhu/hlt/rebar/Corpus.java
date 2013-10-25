@@ -14,6 +14,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.index.IndexedCommunication;
+import edu.jhu.hlt.concrete.index.ProtoIndex;
 
 /**
  * Interface for reading and writing from a "REBAR Corpus". Each "REBAR Corpus" consists of a set of Communications.
@@ -60,7 +62,7 @@ public interface Corpus extends StagedDataCollection {
    * (This interface could also be used to add new Communications to an existing corpus, but this should be done with care, since any stages that have been run
    * will not contain output for these new Communications.)
    */
-  interface Initializer {
+  interface Initializer extends AutoCloseable {
     public IndexedCommunication addCommunication(Concrete.Communication comm) throws RebarException;
 
     public boolean communicationExists(String commId) throws RebarException;
@@ -80,7 +82,7 @@ public interface Corpus extends StagedDataCollection {
   /**
    * Interface for "corpus readers", which are used to read a communications from a corpus, including the output of a specified set of stages.
    */
-  interface Reader {
+  interface Reader extends AutoCloseable {
     /** Read a single communication */
     public IndexedCommunication loadCommunication(String comid) throws RebarException;
 
@@ -137,7 +139,7 @@ public interface Corpus extends StagedDataCollection {
   /**
    * Interface for "corpus writers," which are used to add the output of a processing stage to some or all of the communications in a corpus.
    */
-  interface Writer {
+  interface Writer extends AutoCloseable {
     /**
      * Save any changes that have been made to the given communication (or do nothing if no changes have been made). Changes can be made to an
      * IndexedCommunication using its addField() and SetField() methods, as well as various convenience methods (such as addTokenization()) that delegate to
@@ -162,7 +164,7 @@ public interface Corpus extends StagedDataCollection {
    * contained within a communication to serialized protobuf messages that should be merged into those objects. Since diffs are merged in, they can only be used
    * to make monotonic changes (i.e., add field values or set field values, not remove or modify them).
    */
-  interface DiffWriter {
+  interface DiffWriter extends AutoCloseable {
     public void saveCommunicationDiff(String comid, Map<ProtoIndex.ModificationTarget, byte[]> changes) throws RebarException;
 
     public void flush() throws RebarException;

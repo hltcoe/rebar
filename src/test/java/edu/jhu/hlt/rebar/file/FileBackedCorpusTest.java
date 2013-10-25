@@ -22,25 +22,22 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import edu.jhu.hlt.concrete.Concrete;
 import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
-
 import edu.jhu.hlt.concrete.Concrete.LanguageIdentification;
 import edu.jhu.hlt.concrete.Concrete.LanguageIdentification.LanguageProb;
 import edu.jhu.hlt.concrete.Concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.Concrete.Token;
+import edu.jhu.hlt.concrete.ConcreteException;
+import edu.jhu.hlt.concrete.index.IndexedCommunication;
+import edu.jhu.hlt.concrete.index.IndexedSentence;
+import edu.jhu.hlt.concrete.index.IndexedTokenization;
+import edu.jhu.hlt.concrete.index.IndexedTokenization.TokenSequence;
 import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.hlt.concrete.util.ProtoFactory;
 import edu.jhu.hlt.rebar.Corpus;
-import edu.jhu.hlt.rebar.IndexedCommunication;
-import edu.jhu.hlt.rebar.IndexedSentence;
-import edu.jhu.hlt.rebar.IndexedTokenization;
+import edu.jhu.hlt.rebar.Corpus.Reader;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Stage;
-import edu.jhu.hlt.rebar.Corpus.Reader;
-import edu.jhu.hlt.rebar.IndexedTokenization.TokenSequence;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
-import edu.jhu.hlt.rebar.file.FileBackedCorpus;
-import edu.jhu.hlt.rebar.file.FileCorpusFactory;
-import edu.jhu.hlt.rebar.file.FileStage;
 import edu.jhu.hlt.tift.ConcreteSectionSegmentation;
 import edu.jhu.hlt.tift.Tokenizer;
 
@@ -200,18 +197,20 @@ public class FileBackedCorpusTest {
     final FieldDescriptor ssField = Concrete.Communication.getDescriptor().findFieldByName("section_segmentation");
 
     final Stage testStage = this.fbc.makeStage(this.tokStageName, this.tokStageVersion, this.noDependencySet, this.tokStageDesc, true);
-    final Corpus.Reader testReader = this.fbc.makeReader(testStage);
-    final Corpus.Writer testWriter = this.fbc.makeWriter(testStage);
-    final Iterator<IndexedCommunication> readIter = testReader.loadCommunications();
-    while (readIter.hasNext()) {
-      IndexedCommunication com = readIter.next();
-      SectionSegmentation ssToAppend = ConcreteSectionSegmentation.generateSectionSegmentation(Tokenizer.TWITTER, com.getText());
-      com.addField(ssField, ssToAppend);
-      testWriter.saveCommunication(com);
-    }
 
-    testWriter.close();
-    testReader.close();
+    try (final Corpus.Reader testReader = this.fbc.makeReader(testStage); final Corpus.Writer testWriter = this.fbc.makeWriter(testStage);) {
+      final Iterator<IndexedCommunication> readIter = testReader.loadCommunications();
+      while (readIter.hasNext()) {
+        IndexedCommunication com = readIter.next();
+        SectionSegmentation ssToAppend = ConcreteSectionSegmentation.generateSectionSegmentation(Tokenizer.TWITTER, com.getText());
+        try {
+          com.addField(ssField, ssToAppend);
+          testWriter.saveCommunication(com);
+        } catch (ConcreteException e) {
+          throw new RebarException(e);
+        }
+      }
+    }
   }
 
   private void addLanguageIdDependsTokenization() throws RebarException {
@@ -223,24 +222,26 @@ public class FileBackedCorpusTest {
     final FieldDescriptor lidField = Concrete.Communication.getDescriptor().findFieldByName("language_id");
 
     final Stage lidStage = this.fbc.makeStage(this.lidStageName, this.lidStageVersion, new TreeSet<>(dependencies), this.lidStageDesc, true);
-    final Corpus.Reader testReader = this.fbc.makeReader(lidStage);
-    final Corpus.Writer testWriter = this.fbc.makeWriter(lidStage);
-    final Iterator<IndexedCommunication> readIter = testReader.loadCommunications();
-    while (readIter.hasNext()) {
-      IndexedCommunication com = readIter.next();
-      Concrete.LanguageIdentification.Builder lidBuilder = Concrete.LanguageIdentification.newBuilder();
-      Concrete.LanguageIdentification.LanguageProb.Builder lp = Concrete.LanguageIdentification.LanguageProb.newBuilder();
-      lp.setProbability(1.0f);
-      lp.setLanguage("eng");
-      lidBuilder.addLanguage(lp);
-      lidBuilder.setUuid(IdUtil.generateUUID());
-      lidBuilder.getMetadataBuilder().setTool("my-lid");
-      com.addField(com.getProto(), lidField, lidBuilder.build());
-      testWriter.saveCommunication(com);
-    }
 
-    testWriter.close();
-    testReader.close();
+    try (final Corpus.Reader testReader = this.fbc.makeReader(lidStage); final Corpus.Writer testWriter = this.fbc.makeWriter(lidStage);) {
+      final Iterator<IndexedCommunication> readIter = testReader.loadCommunications();
+      while (readIter.hasNext()) {
+        IndexedCommunication com = readIter.next();
+        Concrete.LanguageIdentification.Builder lidBuilder = Concrete.LanguageIdentification.newBuilder();
+        Concrete.LanguageIdentification.LanguageProb.Builder lp = Concrete.LanguageIdentification.LanguageProb.newBuilder();
+        lp.setProbability(1.0f);
+        lp.setLanguage("eng");
+        lidBuilder.addLanguage(lp);
+        lidBuilder.setUuid(IdUtil.generateUUID());
+        lidBuilder.getMetadataBuilder().setTool("my-lid");
+        try {
+          com.addField(com.getProto(), lidField, lidBuilder.build());
+          testWriter.saveCommunication(com);
+        } catch (ConcreteException e) {
+          throw new RebarException(e);
+        }
+      }
+    }
   }
 
   @Test
@@ -255,20 +256,24 @@ public class FileBackedCorpusTest {
     while (iter.hasNext()) {
       IndexedCommunication ic = iter.next();
 
-      IndexedSentence is = ic.getSentences().get(0);
-      IndexedTokenization it = is.getTokenization();
-      TokenSequence ts = it.getBestTokenSequence();
-      Iterator<Token> tokenIter = ts.iterator();
-      String commId = ic.getCommunicationId();
+      try {
+        IndexedSentence is = ic.getSentences().get(0);
+        IndexedTokenization it = is.getTokenization();
+        TokenSequence ts = it.getBestTokenSequence();
+        Iterator<Token> tokenIter = ts.iterator();
+        String commId = ic.getCommunicationId();
 
-      while (tokenIter.hasNext()) {
-        Token tok = tokenIter.next();
-        if (commId.equals(guidOne.getCommunicationId()))
-          assertTrue(this.tokensCommOne.contains(tok.getText()));
-        else if (commId.equals(guidTwo.getCommunicationId()))
-          assertTrue(this.tokensCommTwo.contains(tok.getText()));
-        else
-          fail("Misplaced tokenization: " + commId + " doesn't exist.");
+        while (tokenIter.hasNext()) {
+          Token tok = tokenIter.next();
+          if (commId.equals(guidOne.getCommunicationId()))
+            assertTrue(this.tokensCommOne.contains(tok.getText()));
+          else if (commId.equals(guidTwo.getCommunicationId()))
+            assertTrue(this.tokensCommTwo.contains(tok.getText()));
+          else
+            fail("Misplaced tokenization: " + commId + " doesn't exist.");
+        }
+      } catch (ConcreteException e) {
+        throw new RebarException(e);
       }
     }
   }
@@ -284,30 +289,34 @@ public class FileBackedCorpusTest {
     Iterator<IndexedCommunication> iter = reader.loadCommunications();
     while (iter.hasNext()) {
       IndexedCommunication ic = iter.next();
-      IndexedSentence is = ic.getSentences().get(0);
-      IndexedTokenization it = is.getTokenization();
-      TokenSequence ts = it.getBestTokenSequence();
-      Iterator<Token> tokenIter = ts.iterator();
-      String commId = ic.getCommunicationId();
+      try {
+        IndexedSentence is = ic.getSentences().get(0);
+        IndexedTokenization it = is.getTokenization();
+        TokenSequence ts = it.getBestTokenSequence();
+        Iterator<Token> tokenIter = ts.iterator();
+        String commId = ic.getCommunicationId();
 
-      List<LanguageIdentification> lidList = ic.getProto().getLanguageIdList();
-      assertEquals(1, lidList.size());
-      LanguageIdentification lid = lidList.get(0);
-      assertEquals(1, lid.getLanguageCount());
-      LanguageProb lp = lid.getLanguage(0);
-      assertEquals("eng", lp.getLanguage());
+        List<LanguageIdentification> lidList = ic.getProto().getLanguageIdList();
+        assertEquals(1, lidList.size());
+        LanguageIdentification lid = lidList.get(0);
+        assertEquals(1, lid.getLanguageCount());
+        LanguageProb lp = lid.getLanguage(0);
+        assertEquals("eng", lp.getLanguage());
 
-      while (tokenIter.hasNext()) {
-        Token tok = tokenIter.next();
-        if (commId.equals(guidOne.getCommunicationId())) {
-          assertTrue(this.tokensCommOne.contains(tok.getText()));
+        while (tokenIter.hasNext()) {
+          Token tok = tokenIter.next();
+          if (commId.equals(guidOne.getCommunicationId())) {
+            assertTrue(this.tokensCommOne.contains(tok.getText()));
 
-        } else if (commId.equals(guidTwo.getCommunicationId())) {
-          assertTrue(this.tokensCommTwo.contains(tok.getText()));
+          } else if (commId.equals(guidTwo.getCommunicationId())) {
+            assertTrue(this.tokensCommTwo.contains(tok.getText()));
 
-        } else {
-          fail("Misplaced tokenization: " + commId + " doesn't exist.");
+          } else {
+            fail("Misplaced tokenization: " + commId + " doesn't exist.");
+          }
         }
+      } catch (ConcreteException e) {
+        throw new RebarException(e);
       }
     }
   }

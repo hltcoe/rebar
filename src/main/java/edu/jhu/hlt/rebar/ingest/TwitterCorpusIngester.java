@@ -26,12 +26,13 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.ConcreteException;
 import edu.jhu.hlt.concrete.Twitter;
+import edu.jhu.hlt.concrete.index.IndexedCommunication;
+import edu.jhu.hlt.concrete.index.IndexedSection;
 import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.hlt.rebar.Corpus;
 import edu.jhu.hlt.rebar.CorpusFactory;
-import edu.jhu.hlt.rebar.IndexedCommunication;
-import edu.jhu.hlt.rebar.IndexedSection;
 import edu.jhu.hlt.rebar.RebarBackends;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Stage;
@@ -150,8 +151,12 @@ public class TwitterCorpusIngester {
   }
 
   private void addTweetInfo(IndexedCommunication com, Twitter.TweetInfo tweet) throws RebarException {
-    com.setField(TWEET_INFO_FIELD, tweet);
-    tweetInfoWriter.saveCommunication(com);
+    try {
+      com.setField(TWEET_INFO_FIELD, tweet);
+      tweetInfoWriter.saveCommunication(com);
+    } catch (ConcreteException e) {
+      throw new RebarException(e);
+    }
   }
 
   private void addSectionSegmentation(IndexedCommunication com) throws RebarException {
@@ -159,24 +164,28 @@ public class TwitterCorpusIngester {
     // Wrap it in a simple segmentation.
     Concrete.TextSpan textSpan = Concrete.TextSpan.newBuilder().setStart(0).setEnd(text.length()).build();
     Concrete.SectionSegmentation.Builder segmentation = Concrete.SectionSegmentation.newBuilder();
-    segmentation.setUuid(IdUtil.generateUUID()).setMetadata(annotationMetadata).addSectionBuilder() // start
-                                                                                                    // new
-                                                                                                    // sub-builder
+    segmentation.setUuid(IdUtil.generateUUID()).setMetadata(annotationMetadata).addSectionBuilder() 
         .setUuid(IdUtil.generateUUID()).setTextSpan(textSpan);
-    com.addSectionSegmentation(segmentation.build());
-    secSegWriter.saveCommunication(com);
+    try {
+      com.addSectionSegmentation(segmentation.build());
+      secSegWriter.saveCommunication(com);
+    } catch (ConcreteException e) {
+      throw new RebarException(e);
+    }
   }
 
   private void addSentenceSegmentation(IndexedCommunication com) throws RebarException {
-    for (IndexedSection sec : com.getSections()) {
-      Concrete.SentenceSegmentation.Builder segmentation = Concrete.SentenceSegmentation.newBuilder();
-      segmentation.setUuid(IdUtil.generateUUID()).setMetadata(annotationMetadata).addSentenceBuilder() // start
-                                                                                                       // new
-                                                                                                       // sub-builder
-          .setTextSpan(sec.getTextSpan()).setUuid(IdUtil.generateUUID());
-      sec.addSentenceSegmentation(segmentation.build());
+    try {
+      for (IndexedSection sec : com.getSections()) {
+        Concrete.SentenceSegmentation.Builder segmentation = Concrete.SentenceSegmentation.newBuilder();
+        segmentation.setUuid(IdUtil.generateUUID()).setMetadata(annotationMetadata).addSentenceBuilder() 
+            .setTextSpan(sec.getTextSpan()).setUuid(IdUtil.generateUUID());
+        sec.addSentenceSegmentation(segmentation.build());
+      }
+      sentSegWriter.saveCommunication(com);
+    } catch (ConcreteException e) {
+      throw new RebarException(e);
     }
-    sentSegWriter.saveCommunication(com);
   }
 
   private void ingestTweet(Twitter.TweetInfo tweet) throws RebarException {

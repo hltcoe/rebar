@@ -20,10 +20,11 @@ import org.slf4j.LoggerFactory;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
 import edu.jhu.hlt.concrete.Concrete;
+import edu.jhu.hlt.concrete.ConcreteException;
+import edu.jhu.hlt.concrete.index.IndexedCommunication;
 import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.hlt.rebar.Corpus;
 import edu.jhu.hlt.rebar.CorpusFactory;
-import edu.jhu.hlt.rebar.IndexedCommunication;
 import edu.jhu.hlt.rebar.RebarBackends;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Stage;
@@ -34,7 +35,7 @@ public class RebarTest {
   private static final Logger logger = LoggerFactory.getLogger(RebarTest.class);
   private static final SecureRandom sr = new SecureRandom();
 
-  public static void main(String[] args) throws RebarException {
+  public static void main(String[] args) throws RebarException, ConcreteException {
     String corpusName = "mock_test_corpus";
     CorpusFactory cf = RebarBackends.FILE.getCorpusFactory();
     if (cf.corpusExists(corpusName)) {
@@ -73,7 +74,7 @@ public class RebarTest {
     // }
   }
 
-  public static void writeLid(Corpus corpus, Set<Stage> deps, String version) throws RebarException {
+  public static void writeLid(Corpus corpus, Set<Stage> deps, String version) throws RebarException, ConcreteException {
     // Our output field:
     final FieldDescriptor lidField = Concrete.Communication.getDescriptor().findFieldByName("language_id");
 

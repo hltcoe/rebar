@@ -31,17 +31,16 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 
+import edu.jhu.hlt.concrete.index.IndexedCommunication;
+import edu.jhu.hlt.concrete.index.ProtoIndex;
 import edu.jhu.hlt.concrete.rpc.ConcreteRpc;
 import edu.jhu.hlt.concrete.rpc.ConcreteRpc.RPCRequest;
 import edu.jhu.hlt.concrete.rpc.ConcreteRpc.RPCResponse;
 import edu.jhu.hlt.rebar.Corpus;
 import edu.jhu.hlt.rebar.CorpusFactory;
-import edu.jhu.hlt.rebar.IndexedCommunication;
-import edu.jhu.hlt.rebar.ProtoIndex;
 import edu.jhu.hlt.rebar.RebarBackends;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Stage;
-import edu.jhu.hlt.rebar.StageOwnership;
 
 /**
  * Remote Procedure Call (RPC) server that uses unnamed pipes (aka stdin and stdout) to communicate. This class is meant to be spawned as a subprocess. See
@@ -296,21 +295,7 @@ class UnnamedPipeRPC {
         .addAllDependency(dependencies).setDescription(stage.getDescription()).setIsPublic(stage.isPublic()).build();
   }
 
-  private void addStageOwnership(StageOwnership stageOwnership, RPCResponse.Builder response) {
-    if (stageOwnership == null)
-      return;
-    ConcreteRpc.StageOwnershipMap.Builder ownershipMap = response.addStageOwnershipBuilder();
-    for (Map.Entry<StageOwnership.FieldValuePointer, Stage> e : stageOwnership.entrySet()) {
-      StageOwnership.FieldValuePointer fvp = e.getKey();
-      List<ConcreteRpc.StageOwnershipMap.Segment> segments = new ArrayList<ConcreteRpc.StageOwnershipMap.Segment>();
-      while (fvp != null) {
-        segments.add(ConcreteRpc.StageOwnershipMap.Segment.newBuilder().setFieldTag(fvp.field.getNumber()).setIndex(fvp.index).build());
-        fvp = fvp.parent;
-      }
-      Collections.reverse(segments);
-      ownershipMap.addEntryBuilder().setStageId(e.getValue().getStageId()).addAllPathSegment(segments);
-    }
-  }
+
 
   // ////////////////////////////////////////////////////////////////////
   // Request Handlers: Corpus
@@ -465,7 +450,6 @@ class UnnamedPipeRPC {
     final Corpus.Reader self = corpusReaders.get(request.getSelf().getId());
     final IndexedCommunication com = self.loadCommunication(request.getComId());
     RPCResponse.Builder response = RPCResponse.newBuilder().addCommunication(com.getProto());
-    addStageOwnership(com.getStageOwnership(), response);
     return response.build();
   }
 
@@ -522,7 +506,6 @@ class UnnamedPipeRPC {
     while (self.hasNext() && (maxValues-- > 0) && (bytes < ITERATOR_BYTE_LIMIT)) {
       IndexedCommunication com = self.next();
       response.addCommunication(com.getProto());
-      addStageOwnership(com.getStageOwnership(), response);
       bytes += com.getProto().getSerializedSize();
     }
     return response.build();

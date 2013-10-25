@@ -11,9 +11,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
+import edu.jhu.hlt.concrete.index.IndexedCommunication;
 import edu.jhu.hlt.rebar.Corpus;
 import edu.jhu.hlt.rebar.CorpusFactory;
-import edu.jhu.hlt.rebar.IndexedCommunication;
 import edu.jhu.hlt.rebar.RebarBackends;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Stage;
