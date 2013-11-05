@@ -15,8 +15,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class for reading and accessing configuration values in rebar.properties.
@@ -25,7 +26,7 @@ import org.apache.log4j.PropertyConfigurator;
  * 
  */
 public final class RebarConfiguration {
-  private static final Logger LOGGER = Logger.getLogger(RebarConfiguration.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RebarConfiguration.class);
 
   private static final Properties props;
 
@@ -43,7 +44,7 @@ public final class RebarConfiguration {
       try {
         stream.close();
       } catch (IOException ioe) {
-        LOGGER.trace(ioe, ioe);
+        LOGGER.debug(ioe.getMessage(), ioe);
       }
     }
     // Configure the logger.

@@ -11,7 +11,8 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 
@@ -31,7 +32,7 @@ import edu.jhu.hlt.rebar.Stage;
  */
 
 public class TwitterCorpusMaker {
-  private static final Logger LOGGER = Logger.getLogger(TwitterCorpusMaker.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TwitterCorpusMaker.class);
 
   private final Corpus corpus;
   private final Corpus.Initializer initializer;
@@ -125,7 +126,7 @@ public class TwitterCorpusMaker {
       // be *sure* that we exit, even if some accumulo thread
       // didn't get closed (e.g., because an exception was
       // raised).
-      LOGGER.error(e, e);
+      LOGGER.error(e.getMessage(), e);
       System.exit(-1);
     } finally {
       System.exit(0);
