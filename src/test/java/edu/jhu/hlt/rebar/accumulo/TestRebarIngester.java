@@ -7,8 +7,6 @@ package edu.jhu.hlt.rebar.accumulo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertArrayEquals;
-import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,29 +16,31 @@ import java.util.Random;
 import java.util.Set;
 
 import org.apache.accumulo.core.Constants;
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.Scanner;
-import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.security.Authorizations;
+import org.apache.thrift.TException;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TBinaryProtocol;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+
+import com.maxjthomas.dumpster.Document;
+import com.maxjthomas.dumpster.DocType;
+
 import edu.jhu.hlt.concrete.Concrete.Communication;
 import edu.jhu.hlt.concrete.Concrete.Communication.Kind;
 import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
 import edu.jhu.hlt.concrete.ConcreteException;
 import edu.jhu.hlt.concrete.index.IndexedCommunication;
-import edu.jhu.hlt.concrete.index.ProtoIndex;
 import edu.jhu.hlt.concrete.util.IdUtil;
 import edu.jhu.hlt.rebar.RebarException;
 
@@ -54,6 +54,7 @@ public class TestRebarIngester {
   private Instance inst;
   private Connector conn;
   private RebarTableOps tableOps;
+  private TSerializer serializer;
 
   private final Random rand = new Random();
   
@@ -66,6 +67,7 @@ public class TestRebarIngester {
     this.inst = new MockInstance();
     this.conn = this.inst.getConnector("max", new byte[0]);
     this.tableOps = new RebarTableOps(conn);
+    this.serializer = new TSerializer(new TBinaryProtocol.Factory());
   }
 
   /**
@@ -100,6 +102,15 @@ public class TestRebarIngester {
         .build();
     
     return new IndexedCommunication(comm);
+  }
+  
+  public Document generateMockDocument() {
+    Document document = new Document();
+    document.t = DocType.TWEET;
+    document.text = "hello world!";
+    document.id = Integer.toString(Math.abs(this.rand.nextInt()));
+    
+    return document;
   }
   
   private Iterator<Entry<Key, Value>> generateIterator(Range range) throws TableNotFoundException {
@@ -185,5 +196,24 @@ public class TestRebarIngester {
     assertTrue(jedisSet.contains(docId2));
     assertTrue(jedisSet.contains(docId3));
     jedis.srem("ingested-ids", docId, docId2, docId3);
+  }
+  
+  @Test
+  public void testInsertDocument() throws TException, RebarException, TableNotFoundException {
+    Document d = this.generateMockDocument();
+    String rowId = RebarIngester.generateRowId(d);
+    String docId = d.id;
+    byte[] dbytes = this.serializer.serialize(d);
+    
+    RebarIngester rebar = new RebarIngester(this.conn);
+    rebar.ingest(d);
+    rebar.close();
+    
+    Iterator<Entry<Key, Value>> iter = this.generateIterator(new Range(rowId));
+    assertTrue("Should find results in accumulo.", iter.hasNext());
+    assertEquals(0, iter.next().getValue().compareTo(dbytes));
+    Jedis jedis = new Jedis("localhost");
+    assertTrue(jedis.smembers("ingested-ids").contains(docId));
+    jedis.srem("ingested-ids", docId);
   }
 }
