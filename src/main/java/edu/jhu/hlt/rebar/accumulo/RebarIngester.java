@@ -44,49 +44,28 @@ import edu.jhu.hlt.rebar.config.RebarConfiguration;
  * @author max
  *
  */
-public class RebarIngester implements AutoCloseable, Ingester.Iface {
+public class RebarIngester extends AbstractAccumuloClient implements AutoCloseable, Ingester.Iface {
 
-  private final Connector conn;
-  private final RebarTableOps tableOps;
   private final Jedis jedis;
-  
-  private BatchWriter bw;
   private Set<String> pendingInserts;
   private Set<String> existingIds;
-  private final TSerializer serializer;
   
   private static final JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost");
   private static final String ingestedIdsRedisKey = "ingested-ids";
-  
-  private final static Authorizations auths = org.apache.accumulo.core.Constants.NO_AUTHS;
-  private final static long MAX_WRITE_MEMORY = 1024L * 1024 * 5; // 5 mb
-  private final static int MAX_WRITE_LATENCY_MS = 5; // 5 msec
-  private final static int NUM_WRITE_THREADS = 5;
-  private final static int NUM_DELETER_QUERY_THREADS = 5;
-  private final static int NUM_QUERY_THREADS = 8;
   
   /**
    * @throws RebarException 
    * 
    */
   public RebarIngester() throws RebarException {
-    // TODO Auto-generated constructor stub
-    this(getConnector());
+    this(AbstractAccumuloClient.getConnector());
   }
   
   public RebarIngester(Connector conn) throws RebarException {
-    this.conn = conn;
-    this.tableOps = new RebarTableOps(this.conn);
-    this.tableOps.createTableIfNotExists("corpora");
+    super(conn);
     this.jedis = pool.getResource();
     this.pendingInserts = new HashSet<>();
     this.existingIds = this.jedis.smembers(ingestedIdsRedisKey);
-    this.serializer = new TSerializer(new TBinaryProtocol.Factory());
-    try {
-      this.bw = this.conn.createBatchWriter("corpora", MAX_WRITE_MEMORY, MAX_WRITE_LATENCY_MS, NUM_WRITE_THREADS);
-    } catch (TableNotFoundException e) {
-      throw new RebarException(e);
-    }
   }
   
   private boolean isCommunicationIngested(IndexedCommunication comm) {
@@ -129,6 +108,7 @@ public class RebarIngester implements AutoCloseable, Ingester.Iface {
     this.existingIds = this.jedis.smembers(ingestedIdsRedisKey);
   }
   
+  @Override
   public void flush() throws RebarException {
     try {
       this.bw.flush();
@@ -155,20 +135,9 @@ public class RebarIngester implements AutoCloseable, Ingester.Iface {
     return kind.toString() + "_" + commId;
   }
   
-  protected static String generateRowId(Document d) {
-    return d.t.toString() + "_" + d.id;
-  }
-  
-  public static Connector getConnector() throws RebarException {
-    Instance zki = new ZooKeeperInstance(RebarConfiguration.getAccumuloInstanceName(), RebarConfiguration.getZookeeperServer());
-    try {
-      return zki.getConnector(RebarConfiguration.getAccumuloUser(), RebarConfiguration.getAccumuloPassword());
-    } catch (AccumuloException e) {
-      throw new RebarException(e);
-    } catch (AccumuloSecurityException e) {
-      throw new RebarException(e);
-    }
-  }
+//  protected static String generateRowId(Document d) {
+//    return d.t.toString() + "_" + d.id;
+//  }
 
   /* (non-Javadoc)
    * @see com.maxjthomas.dumpster.Ingester.Iface#ingest(com.maxjthomas.dumpster.Document)
@@ -179,11 +148,11 @@ public class RebarIngester implements AutoCloseable, Ingester.Iface {
       if (isDocumentIngested(d) || isDocumentPendingIngest(d))
         return;
       
-      final Mutation m = new Mutation(generateRowId(d));
+      final Mutation m = new Mutation(d.id);
       
       try {
         Value v = new Value(this.serializer.serialize(d));
-        m.put("raw", "", v);
+        m.put(RebarConfiguration.DOCUMENT_COLF, "", v);
         this.bw.addMutation(m);
         this.pendingInserts.add(d.getId());
       } catch (MutationsRejectedException | TException e) {

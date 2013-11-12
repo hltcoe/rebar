@@ -4,10 +4,16 @@
 package edu.jhu.hlt.rebar.accumulo;
 
 import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.MutationsRejectedException;
+import org.apache.accumulo.core.data.Mutation;
+import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TException;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TBinaryProtocol;
 
 import com.maxjthomas.dumpster.AnnotationException;
 import com.maxjthomas.dumpster.Annotator;
+import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.LangId;
 import com.maxjthomas.dumpster.Stage;
 
@@ -17,21 +23,31 @@ import edu.jhu.hlt.rebar.RebarException;
  * @author max
  *
  */
-public class RebarAnnotator implements AutoCloseable, Annotator.Iface {
+public class RebarAnnotator extends AbstractAccumuloClient implements AutoCloseable, Annotator.Iface {
 
-  private final Connector conn;
-  private final String colFamilyAnnotationString = "anno";
-  
   /**
    * @throws RebarException 
    * 
    */
   public RebarAnnotator() throws RebarException {
-    this(RebarIngester.getConnector());
+    this(AbstractAccumuloClient.getConnector());
   }
   
-  public RebarAnnotator (Connector conn) {
-    this.conn = conn;
+  public RebarAnnotator (Connector conn) throws RebarException {
+    super(conn);
+  }
+
+
+  /* (non-Javadoc)
+   * @see edu.jhu.hlt.rebar.accumulo.AbstractAccumuloClient#flush()
+   */
+  @Override
+  public void flush() throws RebarException {
+    try {
+      this.bw.flush();
+    } catch (MutationsRejectedException e) {
+      throw new RebarException(e);
+    }
   }
 
   /* (non-Javadoc)
@@ -39,17 +55,17 @@ public class RebarAnnotator implements AutoCloseable, Annotator.Iface {
    */
   @Override
   public void close() throws Exception {
-    // TODO Auto-generated method stub
-    
+    this.bw.close();
   }
 
   /* (non-Javadoc)
-   * @see com.maxjthomas.dumpster.Annotator.Iface#addLanguageId(java.lang.String, com.maxjthomas.dumpster.Stage, com.maxjthomas.dumpster.LangId)
+   * @see com.maxjthomas.dumpster.Annotator.Iface#addLanguageId(com.maxjthomas.dumpster.Document, com.maxjthomas.dumpster.Stage, com.maxjthomas.dumpster.LangId)
    */
   @Override
-  public void addLanguageId(String documentId, Stage stage, LangId lid) throws AnnotationException, TException {
-    // use stage name as colQual
-    String cq = stage.name;
+  public void addLanguageId(Document document, Stage stage, LangId lid) throws AnnotationException, TException {
+    final Mutation m = new Mutation(document.getId());
+    byte[] lidBytes = this.serializer.serialize(lid);
+    Value lidV = new Value(lidBytes);
+    m.put(AbstractAccumuloClient.colFamilyAnnotations, stage.getName(), lidV);
   }
-  
 }

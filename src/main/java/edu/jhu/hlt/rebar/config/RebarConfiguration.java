@@ -15,6 +15,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+import org.apache.accumulo.core.Constants;
+import org.apache.accumulo.core.client.security.tokens.PasswordToken;
+import org.apache.accumulo.core.security.Authorizations;
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +32,11 @@ public final class RebarConfiguration {
   private static final Logger LOGGER = LoggerFactory.getLogger(RebarConfiguration.class);
 
   private static final Properties props;
+  
+  public static final String DOCUMENT_TABLE_NAME = "documents";
+  public static final String DOCUMENT_COLF = "raw_doc";
+  public static final String AVAILABLE_CORPUS_TABLE_NAME = "available_corpora";
+  public static final String CORPUS_PREFIX = "corpus_";
 
   static {
     props = new Properties();
@@ -93,5 +101,13 @@ public final class RebarConfiguration {
 
   public static Path getTestFileCorpusDirectory() {
     return Paths.get("target/file-corpora-test");
+  }
+  
+  public static Authorizations getAuths() {
+    return Constants.NO_AUTHS;
+  }
+  
+  public static PasswordToken getPasswordToken() {
+    return new PasswordToken(getAccumuloPassword());
   }
 }
