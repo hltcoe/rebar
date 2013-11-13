@@ -26,6 +26,7 @@ import com.maxjthomas.dumpster.CorpusHandler;
 import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.RebarThriftException;
 
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
@@ -52,10 +53,10 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
    */
   public RebarCorpusHandler(Connector conn) throws RebarException {
     super(conn);
-    this.tableOps.createTableIfNotExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME);
+    this.tableOps.createTableIfNotExists(Constants.AVAILABLE_CORPUS_TABLE_NAME);
     this.deserializer = new TDeserializer(new TBinaryProtocol.Factory());
     try {
-      this.corporaTableBW = this.conn.createBatchWriter(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME, defaultBwOpts.getBatchWriterConfig());
+      this.corporaTableBW = this.conn.createBatchWriter(Constants.AVAILABLE_CORPUS_TABLE_NAME, defaultBwOpts.getBatchWriterConfig());
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
     }
@@ -142,7 +143,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
         rangeSet.add(range);
       }
       
-      BatchScanner bsc = this.conn.createBatchScanner(RebarConfiguration.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths(), 10);
+      BatchScanner bsc = this.conn.createBatchScanner(Constants.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths(), 10);
       bsc.setRanges(rangeSet);
 
       Iterator<Entry<Key, Value>> bscIter = bsc.iterator();
@@ -175,7 +176,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
   @Override
   public Set<String> listCorpora() throws RebarThriftException, TException {
     try {
-      Scanner sc = this.conn.createScanner(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME, RebarConfiguration.getAuths());
+      Scanner sc = this.conn.createScanner(Constants.AVAILABLE_CORPUS_TABLE_NAME, RebarConfiguration.getAuths());
       Range r = new Range();
       sc.setRange(r);
       Iterator<Entry<Key, Value>> iter = sc.iterator();
@@ -233,7 +234,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
   @Override
   public boolean corpusExists(String corpusName) throws TException {
     try {
-      Scanner sc = this.conn.createScanner(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME, RebarConfiguration.getAuths());
+      Scanner sc = this.conn.createScanner(Constants.AVAILABLE_CORPUS_TABLE_NAME, RebarConfiguration.getAuths());
       Range r = new Range(corpusName);
       sc.setRange(r);
       Iterator<Entry<Key, Value>> iter = sc.iterator();
@@ -244,10 +245,10 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
   }
 
   protected static String generateCorpusName(String corpusName) {
-    return RebarConfiguration.CORPUS_PREFIX + corpusName;
+    return Constants.CORPUS_PREFIX + corpusName;
   }
 
   public static boolean isValidCorpusName(String corpusName) {
-    return corpusName.startsWith(RebarConfiguration.CORPUS_PREFIX);
+    return corpusName.startsWith(Constants.CORPUS_PREFIX);
   }
 }

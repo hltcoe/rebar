@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.RebarThriftException;
 
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.util.RebarUtil;
 
 /**
@@ -65,7 +65,7 @@ public class TestRebarCorpusHandler {
    */
   @After
   public void tearDown() throws Exception {
-    this.tableOps.deleteTable(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME);
+    this.tableOps.deleteTable(Constants.AVAILABLE_CORPUS_TABLE_NAME);
   }
   
   public Set<Document> createDocumentSet() {
@@ -82,7 +82,7 @@ public class TestRebarCorpusHandler {
   @Test(expected=RebarThriftException.class)
   public void testCreateBadNameCorpus() throws Exception {
     String testCorpus = "foo";
-    assertTrue(this.tableOps.tableExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME));
+    assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
     rch.createCorpus(testCorpus, createDocumentSet());
     rch.close();
   }
@@ -90,7 +90,7 @@ public class TestRebarCorpusHandler {
   @Test(expected=RebarThriftException.class)
   public void testCreateBadDocsCorpus() throws Exception {
     String testCorpus = "corpus_foo";
-    assertTrue(this.tableOps.tableExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME));
+    assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
     rch.createCorpus(testCorpus, new HashSet<Document>());
     rch.close();
   }
@@ -98,7 +98,7 @@ public class TestRebarCorpusHandler {
   @Test(expected=RebarThriftException.class)
   public void testCreateDupeCorpus() throws Exception {
     String testCorpus = "corpus_foo";
-    assertTrue(this.tableOps.tableExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME));
+    assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
     rch.createCorpus(testCorpus, createDocumentSet());
     rch.createCorpus(testCorpus, createDocumentSet());
     rch.close();
@@ -107,13 +107,13 @@ public class TestRebarCorpusHandler {
   @Test
   public void testCreateCorpus() throws Exception {
     String testCorpus = "corpus_foo";
-    assertTrue(this.tableOps.tableExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME));
+    assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
     Set<Document> docSet = createDocumentSet();
     rch.createCorpus(testCorpus, docSet);
     rch.close();
     
     //Scanner sc = this.conn.createScanner("available_corpora", Constants.NO_AUTHS);
-    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME, new Range());
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.AVAILABLE_CORPUS_TABLE_NAME, new Range());
     assertTrue("Should find results in the corpus table, but didn't.", iter.hasNext());
     
     iter = TestRebarIngester.generateIterator(conn, testCorpus, new Range());
@@ -123,7 +123,7 @@ public class TestRebarCorpusHandler {
   @Test
   public void testDeleteCorpus() throws Exception {
     String testCorpus = "corpus_foo";
-    assertTrue(this.tableOps.tableExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME));
+    assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
     Set<Document> docSet = createDocumentSet();
     rch.createCorpus(testCorpus, docSet);
     rch.deleteCorpus(testCorpus);
@@ -132,7 +132,7 @@ public class TestRebarCorpusHandler {
     assertFalse("Should NOT find this corpus table!", this.tableOps.tableExists(testCorpus));
     
     //Scanner sc = this.conn.createScanner("available_corpora", Constants.NO_AUTHS);
-    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME, new Range());
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.AVAILABLE_CORPUS_TABLE_NAME, new Range());
     boolean hasResults = iter.hasNext();
     while (iter.hasNext()) {
       Entry<Key, Value> e = iter.next();
@@ -152,14 +152,14 @@ public class TestRebarCorpusHandler {
   @Test
   public void testCorpusExists() throws Exception {
     String testCorpus = "corpus_foo";
-    assertTrue(this.tableOps.tableExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME));
+    assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
     Set<Document> docSet = createDocumentSet();
     rch.createCorpus(testCorpus, docSet);
     rch.close();
 
     assertTrue("Did not find the corpus table.", this.tableOps.tableExists(testCorpus));
     //Scanner sc = this.conn.createScanner("available_corpora", Constants.NO_AUTHS);
-    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME, new Range());
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.AVAILABLE_CORPUS_TABLE_NAME, new Range());
     assertTrue("Should find results in the corpus table, but did.", iter.hasNext());
   }
   

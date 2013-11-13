@@ -111,7 +111,7 @@ public class TestRebarIngester {
     rebar.ingest(d);
     rebar.close();
     
-    Iterator<Entry<Key, Value>> iter = generateIterator(this.conn, RebarConfiguration.DOCUMENT_TABLE_NAME, new Range(docId));
+    Iterator<Entry<Key, Value>> iter = generateIterator(this.conn, edu.jhu.hlt.rebar.Constants.DOCUMENT_TABLE_NAME, new Range(docId));
     assertTrue("Should find results in accumulo.", iter.hasNext());
     assertEquals(0, iter.next().getValue().compareTo(dbytes));
     Jedis jedis = new Jedis("localhost");
@@ -129,10 +129,10 @@ public class TestRebarIngester {
       rebar.ingest(d);
     rebar.close();
     
-    Iterator<Entry<Key, Value>> iter = generateIterator(this.conn, RebarConfiguration.DOCUMENT_TABLE_NAME, new Range());
+    Iterator<Entry<Key, Value>> iter = generateIterator(this.conn, edu.jhu.hlt.rebar.Constants.DOCUMENT_TABLE_NAME, new Range());
     assertEquals("Should find a few results in accumulo.", nDocs, RebarUtil.countIteratorResults(iter));
     
-    iter = generateIterator(this.conn, RebarConfiguration.DOCUMENT_TABLE_NAME, new Range());
+    iter = generateIterator(this.conn, edu.jhu.hlt.rebar.Constants.DOCUMENT_TABLE_NAME, new Range());
     Set<Document> fetchDocs = new HashSet<>(nDocs);
     while(iter.hasNext()) {
       Document d = new Document();
@@ -141,7 +141,7 @@ public class TestRebarIngester {
       fetchDocs.add(d);
     }
     
-    BatchScanner bsc = this.conn.createBatchScanner(RebarConfiguration.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths(), 10);
+    BatchScanner bsc = this.conn.createBatchScanner(edu.jhu.hlt.rebar.Constants.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths(), 10);
     List<Range> rangeList = new ArrayList<>();
     rangeList.add(new Range(docs.iterator().next().id));
     bsc.setRanges(rangeList);

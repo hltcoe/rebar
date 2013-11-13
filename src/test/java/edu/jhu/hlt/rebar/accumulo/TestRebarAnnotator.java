@@ -34,7 +34,7 @@ import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.LangId;
 import com.maxjthomas.dumpster.Stage;
 
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.util.RebarUtil;
 
 /**
@@ -118,7 +118,7 @@ public class TestRebarAnnotator {
       this.ra.addLanguageId(d, newStage, lid);
     }
 
-    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.DOCUMENT_TABLE_NAME, new Range());
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
     assertEquals("Should get 20 total rows.", 20, RebarUtil.countIteratorResults(iter));
     try (AccumuloStageHandler ashy = new AccumuloStageHandler(this.conn);) {
       Set<Stage> stageSet = ashy.getStages();
@@ -143,7 +143,7 @@ public class TestRebarAnnotator {
       this.ra.addLanguageId(d, newStage, lid);
     }
 
-    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.DOCUMENT_TABLE_NAME, new Range());
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
     assertEquals("Should get 20 total rows.", 20, RebarUtil.countIteratorResults(iter));
 
     List<Document> docList = new ArrayList<>(docSet);
@@ -152,16 +152,16 @@ public class TestRebarAnnotator {
       LangId lid = lidList.get(i);
       String id = d.id;
       Range r = new Range(id);
-      iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.DOCUMENT_TABLE_NAME, r);
+      iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, r);
       while (iter.hasNext()) {
         Entry<Key, Value> e = iter.next();
         Key k = e.getKey();
         String colF = k.getColumnFamily().toString();
-        if (colF.equals(RebarConfiguration.DOCUMENT_COLF)) {
+        if (colF.equals(Constants.DOCUMENT_COLF)) {
           Document dser = new Document();
           this.deserializer.deserialize(dser, e.getValue().get());
           assertEquals("Should get a document from document colf.", d, dser);
-        } else if (colF.equals(RebarConfiguration.DOCUMENT_ANNOTATION_COLF)) {
+        } else if (colF.equals(Constants.DOCUMENT_ANNOTATION_COLF)) {
           LangId dser = new LangId();
           this.deserializer.deserialize(dser, e.getValue().get());
           assertEquals("Should get a LID from annotation colf.", lid, dser);

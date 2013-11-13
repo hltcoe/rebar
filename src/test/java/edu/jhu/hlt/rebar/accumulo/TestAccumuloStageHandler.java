@@ -33,8 +33,8 @@ import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.LangId;
 import com.maxjthomas.dumpster.Stage;
 
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
 import edu.jhu.hlt.rebar.util.RebarUtil;
 
 /**
@@ -103,14 +103,14 @@ public class TestAccumuloStageHandler {
     Stage s = generateTestStage();
     this.ash.createStage(s);
     
-    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.STAGES_TABLE_NAME, new Range());
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.STAGES_TABLE_NAME, new Range());
     assertTrue("Should find results in the stages table, but didn't.", iter.hasNext());
     
     Stage newS = generateTestStage();
     newS.name = "stage_quxbarfoo";
     this.ash.createStage(newS);
     
-    iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.STAGES_TABLE_NAME, new Range());
+    iter = TestRebarIngester.generateIterator(conn, Constants.STAGES_TABLE_NAME, new Range());
     assertEquals("Should get 2 stages back.", 2, RebarUtil.countIteratorResults(iter));
     
     Stage sDeps = generateTestStage();
@@ -121,7 +121,7 @@ public class TestAccumuloStageHandler {
     sDeps.dependencies = depsSet;
     this.ash.createStage(sDeps);
     
-    iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.STAGES_TABLE_NAME, new Range());
+    iter = TestRebarIngester.generateIterator(conn, Constants.STAGES_TABLE_NAME, new Range());
     assertEquals("Should get 3 stages back.", 3, RebarUtil.countIteratorResults(iter));
     
     while (iter.hasNext()) {

@@ -24,6 +24,7 @@ import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.Stage;
 import com.maxjthomas.dumpster.StageHandler;
 
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
 import edu.jhu.hlt.rebar.util.RebarUtil;
@@ -46,8 +47,8 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
   public AccumuloStageHandler(Connector conn) throws RebarException {
     super(conn);
     try {
-      this.tableOps.createTableIfNotExists(RebarConfiguration.STAGES_TABLE_NAME);
-      this.stagesTableBW = this.conn.createBatchWriter(RebarConfiguration.STAGES_TABLE_NAME, defaultBwOpts.getBatchWriterConfig());
+      this.tableOps.createTableIfNotExists(Constants.STAGES_TABLE_NAME);
+      this.stagesTableBW = this.conn.createBatchWriter(Constants.STAGES_TABLE_NAME, defaultBwOpts.getBatchWriterConfig());
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
     }
@@ -79,7 +80,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
   @Override
   public boolean stageExists(String stageName) throws TException {
     try {
-      Scanner sc = this.conn.createScanner(RebarConfiguration.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
+      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
       Range r = new Range(stageName);
       sc.setRange(r);
       Iterator<Entry<Key, Value>> iter = sc.iterator();
@@ -105,12 +106,12 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
     
     if (!isValidStageName(stage))
       throw new TException("Stage names must begin with '"
-          + RebarConfiguration.STAGES_PREFIX + "'; " 
+          + Constants.STAGES_PREFIX + "'; " 
           + stage.name + " is not valid.");
     
     // create entry in stage table
     final Mutation m = new Mutation(stage.name);
-    m.put(RebarConfiguration.STAGES_OBJ_COLF, "", new Value(this.serializer.serialize(stage)));
+    m.put(Constants.STAGES_OBJ_COLF, "", new Value(this.serializer.serialize(stage)));
     try {
       this.stagesTableBW.addMutation(m);
     } catch (MutationsRejectedException  e) {
@@ -125,10 +126,10 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
   public Set<Stage> getStages() throws TException {
     Set<Stage> stagesToReturn = new HashSet<>();
     try {
-      Scanner sc = this.conn.createScanner(RebarConfiguration.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
+      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
       Range r = new Range();
       sc.setRange(r);
-      sc.fetchColumnFamily(new Text(RebarConfiguration.STAGES_OBJ_COLF));
+      sc.fetchColumnFamily(new Text(Constants.STAGES_OBJ_COLF));
       Iterator<Entry<Key, Value>> iter = sc.iterator();
       while(iter.hasNext()) {
         Value v = iter.next().getValue();
@@ -148,7 +149,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
   }
   
   public static boolean isValidStageName(String stageName) {
-    return stageName.startsWith(RebarConfiguration.STAGES_PREFIX);
+    return stageName.startsWith(Constants.STAGES_PREFIX);
   }
 
   /* (non-Javadoc)
@@ -158,10 +159,10 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
   public int getAnnotatedDocumentCount(Stage stage) throws TException {
     try {
       // TODO Auto-generated method stub
-      Scanner sc = this.conn.createScanner(RebarConfiguration.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
+      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
       Range r = new Range();
       sc.setRange(r);
-      sc.fetchColumnFamily(new Text(RebarConfiguration.STAGES_DOCS_ANNOTATED_IDS_COLF));
+      sc.fetchColumnFamily(new Text(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF));
       Iterator<Entry<Key, Value>> iter = sc.iterator();
       return RebarUtil.countIteratorResults(iter);
     } catch (TableNotFoundException e) {
@@ -172,7 +173,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
   public void addAnnotatedDocument(Stage stage, Document document) throws RebarException {
     try {
       final Mutation m = new Mutation(stage.name);
-      m.put(RebarConfiguration.STAGES_DOCS_ANNOTATED_IDS_COLF, document.id, RebarUtil.EMPTY_VALUE);
+      m.put(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF, document.id, RebarUtil.EMPTY_VALUE);
       this.stagesTableBW.addMutation(m);
     } catch (MutationsRejectedException e) {
       throw new RebarException(e);

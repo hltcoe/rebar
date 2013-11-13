@@ -15,8 +15,8 @@ import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.LangId;
 import com.maxjthomas.dumpster.Stage;
 
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
  * @author max
@@ -68,7 +68,7 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
     byte[] lidBytes = this.serializer.serialize(lid);
     final Mutation m = new Mutation(document.id);
     try {
-      m.put(RebarConfiguration.DOCUMENT_ANNOTATION_COLF, stage.name, new Value(lidBytes));
+      m.put(Constants.DOCUMENT_ANNOTATION_COLF, stage.name, new Value(lidBytes));
       this.bw.addMutation(m);
       this.ash.addAnnotatedDocument(stage, document);
     } catch (MutationsRejectedException | RebarException e) {

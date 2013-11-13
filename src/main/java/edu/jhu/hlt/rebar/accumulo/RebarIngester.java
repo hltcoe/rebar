@@ -26,8 +26,8 @@ import com.maxjthomas.dumpster.IngestException;
 import com.maxjthomas.dumpster.Ingester;
 
 import edu.jhu.hlt.concrete.Concrete.Communication.Kind;
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
  * @author max
@@ -118,7 +118,7 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
       
       try {
         Value v = new Value(this.serializer.serialize(d));
-        m.put(RebarConfiguration.DOCUMENT_COLF, "", v);
+        m.put(Constants.DOCUMENT_COLF, "", v);
         this.bw.addMutation(m);
         this.pendingInserts.add(d.getId());
       } catch (MutationsRejectedException | TException e) {
