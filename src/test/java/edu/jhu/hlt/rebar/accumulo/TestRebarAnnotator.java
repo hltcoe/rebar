@@ -65,31 +65,6 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
     ri.close();
   }
 
-  static Map<String, Double> generateLidMap() {
-    Map<String, Double> langIdMap = new HashMap<>();
-    langIdMap.put("eng", rand.nextDouble());
-    langIdMap.put("spa", rand.nextDouble());
-    langIdMap.put("fra", rand.nextDouble());
-    return langIdMap;
-  }
-
-  static LangId generateLangId(Document d) {
-    LangId lid = new LangId();
-    lid.id = d.id + "_LID";
-    lid.name = "max_lid_test";
-    lid.version = "v1";
-    lid.languageToProbabilityMap = generateLidMap();
-    return lid;
-  }
-  
-  static Set<LangId> generateLangIdSet(Set<Document> docSet) {
-    Set<LangId> lidSet = new HashSet<>();
-    for (Document d : docSet) 
-      lidSet.add(generateLangId(d));
-    
-    return lidSet;
-  }
-
   /**
    * @throws java.lang.Exception
    */
@@ -99,7 +74,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
   
   @Test
   public void testAnnotateDocumentNoStage() throws Exception {
-    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", TestAccumuloStageHandler.getCurrentUnixTime(), new HashSet<String>());
+    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
 //    Stage newStage = TestAccumuloStageHandler.generateTestStage();
 
     List<LangId> lidList = new ArrayList<>();
@@ -121,7 +96,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
 
   @Test
   public void testAnnotateDocument() throws Exception {
-    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", TestAccumuloStageHandler.getCurrentUnixTime(), new HashSet<String>());
+    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
 
     try (AccumuloStageHandler ash = new AccumuloStageHandler(conn);) {
       ash.createStage(newStage);

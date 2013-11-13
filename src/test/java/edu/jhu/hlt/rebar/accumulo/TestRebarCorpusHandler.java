@@ -60,22 +60,11 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
     //this.tableOps.deleteTable(Constants.AVAILABLE_CORPUS_TABLE_NAME);
   }
   
-  public Set<Document> createDocumentSet() {
-    Set<Document> docSet = new HashSet<>();
-    
-    for (int i = 0; i < 10; i++) {
-      Document d = TestRebarIngester.generateMockDocument();
-      docSet.add(d);
-    }
-    
-    return docSet;
-  }
-  
   @Test(expected=RebarThriftException.class)
   public void testCreateBadNameCorpus() throws Exception {
     String testCorpus = "foo";
     assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
-    rch.createCorpus(testCorpus, createDocumentSet());
+    rch.createCorpus(testCorpus, AbstractAccumuloTest.generateMockDocumentSet(10));
     rch.close();
   }
   
@@ -91,8 +80,8 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   public void testCreateDupeCorpus() throws Exception {
     String testCorpus = "corpus_foo";
     assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
-    rch.createCorpus(testCorpus, createDocumentSet());
-    rch.createCorpus(testCorpus, createDocumentSet());
+    rch.createCorpus(testCorpus, AbstractAccumuloTest.generateMockDocumentSet(10));
+    rch.createCorpus(testCorpus, AbstractAccumuloTest.generateMockDocumentSet(10));
     rch.close();
   }
 
@@ -100,7 +89,7 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   public void testCreateCorpus() throws Exception {
     String testCorpus = "corpus_foo";
     assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
-    Set<Document> docSet = createDocumentSet();
+    Set<Document> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     rch.createCorpus(testCorpus, docSet);
     rch.close();
     
@@ -116,7 +105,7 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   public void testDeleteCorpus() throws Exception {
     String testCorpus = "corpus_foo";
     assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
-    Set<Document> docSet = createDocumentSet();
+    Set<Document> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     rch.createCorpus(testCorpus, docSet);
     rch.deleteCorpus(testCorpus);
     rch.close();
@@ -145,7 +134,7 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   public void testCorpusExists() throws Exception {
     String testCorpus = "corpus_foo";
     assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
-    Set<Document> docSet = createDocumentSet();
+    Set<Document> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     rch.createCorpus(testCorpus, docSet);
     rch.close();
 
@@ -158,14 +147,14 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   @Test
   public void testListCorpora() throws Exception {
     String testCorpus = "corpus_foo";
-    Set<Document> docSet = createDocumentSet();
+    Set<Document> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     assertEquals("Shouldn't find any corpora initially.", 0, rch.listCorpora().size());
     
     rch.createCorpus(testCorpus, docSet);
     assertEquals("Should find 1 corpus", 1, rch.listCorpora().size());
     
-    rch.createCorpus("corpus_foo_bar", createDocumentSet());
-    rch.createCorpus("corpus_qux_bar", createDocumentSet());
+    rch.createCorpus("corpus_foo_bar", AbstractAccumuloTest.generateMockDocumentSet(10));
+    rch.createCorpus("corpus_qux_bar", AbstractAccumuloTest.generateMockDocumentSet(10));
     assertEquals("Should find 3 corpora", 3, rch.listCorpora().size());
     
     rch.deleteCorpus(testCorpus);
@@ -176,7 +165,7 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   @Test
   public void testGetCorpusDocSet() throws Exception {
     String testCorpus = "corpus_foo";
-    Set<Document> docSet = createDocumentSet();
+    Set<Document> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     try (RebarIngester ri = new RebarIngester(this.conn);) {
       for (Document d : docSet)
         ri.ingest(d);

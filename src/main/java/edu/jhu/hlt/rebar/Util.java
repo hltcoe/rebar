@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
+import org.joda.time.DateTime;
 
 /**
  * @author max
@@ -24,6 +25,11 @@ public class Util {
    */
   private Util() {
     // TODO Auto-generated constructor stub
+  }
+  
+  public static int getCurrentUnixTime() {
+    long millis = new DateTime().getMillis();
+    return ((int) (millis/1000));
   }
 
   public static int countIteratorResults(Iterator<Entry<Key, Value>> iter) {

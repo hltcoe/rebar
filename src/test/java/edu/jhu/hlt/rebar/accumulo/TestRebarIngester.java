@@ -65,29 +65,6 @@ public class TestRebarIngester extends AbstractAccumuloTest {
   public void tearDown() throws Exception {
   }
   
-  public static Document generateMockDocument() {
-    Document document = new Document();
-    document.t = DocType.TWEET;
-    document.text = "hello world!";
-    document.id = Integer.toString(Math.abs(rand.nextInt()));
-    
-    return document;
-  }
-  
-  public static Set<Document> generateMockDocumentSet(int capacity) {
-    Set<Document> docSet = new HashSet<>(capacity);
-    for (int i = 0; i < capacity ; i++) 
-      docSet.add(generateMockDocument());
-    
-    return docSet;
-  }
-  
-  static Iterator<Entry<Key, Value>> generateIterator(Connector conn, String tableName, Range range) throws TableNotFoundException {
-    Scanner sc = conn.createScanner(tableName, Constants.NO_AUTHS);
-    sc.setRange(range);
-    return sc.iterator();
-  }
-  
   @Test
   public void testInsertDocument() throws TException, RebarException, TableNotFoundException {
     Document d = generateMockDocument();

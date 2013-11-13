@@ -74,15 +74,6 @@ public class TestAccumuloStageHandler extends AbstractAccumuloTest {
     this.ash.createStage(s);
     assertTrue("Should find the test stage.", this.ash.stageExists(sName));
   }
-  
-  public static int getCurrentUnixTime() {
-    long millis = new DateTime().getMillis();
-    return ((int) (millis/1000));
-  }
-  
-  public static Stage generateTestStage() {
-    return new Stage("stage_foo", "Foo stage for testing", getCurrentUnixTime(), new HashSet<String>());
-  }
 
   /**
    * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#createStage(com.maxjthomas.dumpster.Stage)}.
