@@ -62,6 +62,7 @@ public class TestAccumuloStageHandler {
    */
   @After
   public void tearDown() throws Exception {
+    this.ash.close();
   }
 
   /**
@@ -70,7 +71,11 @@ public class TestAccumuloStageHandler {
    */
   @Test
   public void testStageExists() throws TException {
-    assertFalse("Shouldn't find any stages at the start.", this.ash.stageExists(generateTestStage().name));
+    Stage s = generateTestStage();
+    String sName = s.name;
+    assertFalse("Shouldn't find any stages at the start.", this.ash.stageExists(sName));
+    this.ash.createStage(s);
+    assertTrue("Should find the test stage.", this.ash.stageExists(sName));
   }
   
   public static int getCurrentUnixTime() {
@@ -92,14 +97,37 @@ public class TestAccumuloStageHandler {
     Stage s = generateTestStage();
     this.ash.createStage(s);
     
-//    assertTrue("Should find a table with this stage but didn't.", this.tableOps.tableExists(s.name));
-    
     Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.STAGES_TABLE_NAME, new Range());
     assertTrue("Should find results in the stages table, but didn't.", iter.hasNext());
     
-//    iter = TestRebarIngester.generateIterator(conn, s.name, new Range());
-//    assertEquals("Should find an equal number of documents and ids in the corpus.", docSet.size(), TestRebarIngester.countIteratorResults(iter));
-//  
+    Stage newS = generateTestStage();
+    newS.name = "stage_quxbarfoo";
+    this.ash.createStage(newS);
+    
+    iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.STAGES_TABLE_NAME, new Range());
+    assertEquals("Should get 2 stages back.", 2, TestRebarIngester.countIteratorResults(iter));
+    
+    Stage sDeps = generateTestStage();
+    String sDepsName = "stage_with_deps";
+    sDeps.name = sDepsName;
+    Set<String> depsSet = new HashSet<>();
+    depsSet.add(newS.name);
+    sDeps.dependencies = depsSet;
+    this.ash.createStage(sDeps);
+    
+    iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.STAGES_TABLE_NAME, new Range());
+    assertEquals("Should get 3 stages back.", 3, TestRebarIngester.countIteratorResults(iter));
+    
+    while (iter.hasNext()) {
+      Value v = iter.next().getValue();
+      Stage compStage = new Stage();
+      this.deserializer.deserialize(compStage, v.get());
+      if (compStage.name.equals(sDepsName)) {
+        assertEquals("Should get the same thing back from the stage with dependencies.", sDeps, compStage);
+        assertEquals("Dependencies should be the same in dependency stage.", depsSet, compStage.dependencies);
+        break;
+      }
+    }
   }
   
   /**
@@ -115,6 +143,18 @@ public class TestAccumuloStageHandler {
     s.dependencies = badDeps;
     this.ash.createStage(s);
   }
+  
+  /**
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#createStage(com.maxjthomas.dumpster.Stage)}.
+   * @throws TException 
+   * @throws TableNotFoundException 
+   */
+  @Test(expected=TException.class)
+  public void testCreateStageTwice() throws TException, TableNotFoundException {
+    Stage s = generateTestStage();
+    this.ash.createStage(s);
+    this.ash.createStage(s);
+  }
 
   /**
    * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#getStages()}.
@@ -127,6 +167,25 @@ public class TestAccumuloStageHandler {
     
     Set<Stage> stages = this.ash.getStages();
     assertEquals("Stages should be equal.", s, stages.iterator().next());
+  }
+  
+  /**
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#getStages()}.
+   * @throws TException 
+   */
+  @Test
+  public void testGetMultiStages() throws TException {
+    Set<Stage> ingestedStages = new HashSet<>();
+    Stage s = generateTestStage();
+    this.ash.createStage(s);
+    ingestedStages.add(s);
+    Stage newS = generateTestStage();
+    newS.name = "stage_quxqux";
+    this.ash.createStage(newS);
+    ingestedStages.add(newS);
+    
+    Set<Stage> stages = this.ash.getStages();
+    assertEquals("Stages should be equal.", ingestedStages, stages);
   }
 
 }
