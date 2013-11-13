@@ -40,9 +40,9 @@ import redis.clients.jedis.Jedis;
 import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.DocType;
 
-
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
+import edu.jhu.hlt.rebar.util.RebarUtil;
 
 /**
  * @author max
@@ -100,16 +100,6 @@ public class TestRebarIngester {
     return sc.iterator();
   }
   
-  static int countIteratorResults(Iterator<Entry<Key, Value>> iter) {
-    int resCt = 0;
-    while (iter.hasNext()) {
-      iter.next();
-      resCt++;
-    }
-    
-    return resCt;
-  }
-  
   @Test
   public void testInsertDocument() throws TException, RebarException, TableNotFoundException {
     Document d = generateMockDocument();
@@ -140,7 +130,7 @@ public class TestRebarIngester {
     rebar.close();
     
     Iterator<Entry<Key, Value>> iter = generateIterator(this.conn, RebarConfiguration.DOCUMENT_TABLE_NAME, new Range());
-    assertEquals("Should find a few results in accumulo.", nDocs, countIteratorResults(iter));
+    assertEquals("Should find a few results in accumulo.", nDocs, RebarUtil.countIteratorResults(iter));
     
     iter = generateIterator(this.conn, RebarConfiguration.DOCUMENT_TABLE_NAME, new Range());
     Set<Document> fetchDocs = new HashSet<>(nDocs);

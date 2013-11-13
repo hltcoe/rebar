@@ -35,6 +35,7 @@ import com.maxjthomas.dumpster.Stage;
 
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
+import edu.jhu.hlt.rebar.util.RebarUtil;
 
 /**
  * @author max
@@ -110,7 +111,7 @@ public class TestAccumuloStageHandler {
     this.ash.createStage(newS);
     
     iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.STAGES_TABLE_NAME, new Range());
-    assertEquals("Should get 2 stages back.", 2, TestRebarIngester.countIteratorResults(iter));
+    assertEquals("Should get 2 stages back.", 2, RebarUtil.countIteratorResults(iter));
     
     Stage sDeps = generateTestStage();
     String sDepsName = "stage_with_deps";
@@ -121,7 +122,7 @@ public class TestAccumuloStageHandler {
     this.ash.createStage(sDeps);
     
     iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.STAGES_TABLE_NAME, new Range());
-    assertEquals("Should get 3 stages back.", 3, TestRebarIngester.countIteratorResults(iter));
+    assertEquals("Should get 3 stages back.", 3, RebarUtil.countIteratorResults(iter));
     
     while (iter.hasNext()) {
       Value v = iter.next().getValue();

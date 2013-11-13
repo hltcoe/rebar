@@ -35,6 +35,7 @@ import com.maxjthomas.dumpster.LangId;
 import com.maxjthomas.dumpster.Stage;
 
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
+import edu.jhu.hlt.rebar.util.RebarUtil;
 
 /**
  * @author max
@@ -121,7 +122,7 @@ public class TestRebarAnnotator {
     }
 
     Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.DOCUMENT_TABLE_NAME, new Range());
-    assertEquals("Should get 20 total rows.", 20, TestRebarIngester.countIteratorResults(iter));
+    assertEquals("Should get 20 total rows.", 20, RebarUtil.countIteratorResults(iter));
 
     List<Document> docList = new ArrayList<>(docSet);
     for (int i = 0; i < 10; i++) {

@@ -170,7 +170,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
       sc.setRange(r);
       sc.fetchColumnFamily(new Text(RebarConfiguration.STAGES_DOCS_ANNOTATED_IDS_COLF));
       Iterator<Entry<Key, Value>> iter = sc.iterator();
-      return RebarUtil.countAccumuloIteratorResults(iter);
+      return RebarUtil.countIteratorResults(iter);
     } catch (TableNotFoundException e) {
       throw new TException(e);
     }

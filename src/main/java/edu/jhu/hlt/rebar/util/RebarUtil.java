@@ -46,7 +46,7 @@ public class RebarUtil {
     return ie;
   }
   
-  public static int countAccumuloIteratorResults(Iterator<Entry<Key, Value>> iter) {
+  public static int countIteratorResults(Iterator<Entry<Key, Value>> iter) {
     int resCt = 0;
     while (iter.hasNext()) {
       iter.next();
