@@ -207,4 +207,20 @@ public class TestAccumuloStageHandler extends AbstractAccumuloTest {
     
     assertEquals("Should find 10 document IDs in the annotated-docs column:", 10, this.ash.getAnnotatedDocumentCount(s));
   }
+  
+  @Test
+  public void testGetAnnotatedDocumentIds() throws RebarException, Exception {
+    Stage s = generateTestStage();
+    
+    Set<Document> docSet = TestRebarIngester.generateMockDocumentSet(10);
+    for (Document d : docSet) {
+      this.ash.addAnnotatedDocument(s, d);
+    }
+    
+    Set<String> idSet = new HashSet<>();
+    for (Document d : docSet)
+      idSet.add(d.id);
+    
+    assertEquals("Should have equal ID sets:", idSet, this.ash.getAnnotatedDocumentIds(s));
+  }
 }

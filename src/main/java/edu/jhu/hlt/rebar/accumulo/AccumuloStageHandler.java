@@ -181,5 +181,24 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
       
     }
   }
+  
+  public Set<String> getAnnotatedDocumentIds(Stage s) throws RebarException {
+    Set<String> ids = new HashSet<>();
+    
+    try {
+      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
+      Range r = new Range(s.name);
+      sc.setRange(r);
+      sc.fetchColumnFamily(new Text(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF));
+      Iterator<Entry<Key, Value>> iter = sc.iterator();
+      while (iter.hasNext()) {
+        ids.add(iter.next().getKey().getColumnQualifier().toString());
+      }
+      
+      return ids;
+    } catch (TableNotFoundException e) {
+      throw new RebarException(e);
+    }
+  }
 
 }
