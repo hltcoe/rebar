@@ -35,6 +35,7 @@ public final class RebarConfiguration {
   
   public static final String DOCUMENT_TABLE_NAME = "documents";
   public static final String DOCUMENT_COLF = "raw_doc";
+  public static final String DOCUMENT_ANNOTATION_COLF = "annotations";
   public static final String AVAILABLE_CORPUS_TABLE_NAME = "available_corpora";
   public static final String CORPUS_PREFIX = "corpus_";
   public static final String STAGES_TABLE_NAME = "available_stages";

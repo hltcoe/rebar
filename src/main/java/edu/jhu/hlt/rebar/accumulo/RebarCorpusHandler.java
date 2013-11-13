@@ -151,7 +151,6 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
       BatchScanner bsc = this.conn.createBatchScanner(RebarConfiguration.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths(), 10);
       bsc.setRanges(rangeSet);
 
-      //bsc.addScanIterator(WholeRowIterator.class);
       Iterator<Entry<Key, Value>> bscIter = bsc.iterator();
       while (bscIter.hasNext()) {
         Value v = bscIter.next().getValue();
