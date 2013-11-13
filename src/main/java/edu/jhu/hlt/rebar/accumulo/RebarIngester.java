@@ -56,7 +56,7 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
     this.existingIds = this.jedis.smembers(ingestedIdsRedisKey);
   }
   
-  private boolean isDocumentIngested(Document d) {
+  public boolean isDocumentIngested(Document d) {
     return this.existingIds.contains(d.getId());
   }
   

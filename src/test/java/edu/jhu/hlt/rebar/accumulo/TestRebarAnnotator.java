@@ -3,29 +3,22 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.Set;
 
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.Instance;
-import org.apache.accumulo.core.client.mock.MockInstance;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
+import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
-import org.apache.thrift.TDeserializer;
-import org.apache.thrift.TException;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.hadoop.io.Text;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +29,7 @@ import com.maxjthomas.dumpster.Stage;
 
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.Util;
+import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
  * @author max
@@ -112,6 +106,12 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
 
     Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
     assertEquals("Should get 20 total rows.", 20, Util.countIteratorResults(iter));
+    
+    Scanner sc = this.conn.createScanner(Constants.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths());
+    sc.setRange(new Range());
+    sc.fetchColumn(new Text(Constants.DOCUMENT_ANNOTATION_COLF), new Text(newStage.name));
+    iter = sc.iterator();
+    assertEquals("Should get 10 annotations: ", 10, Util.countIteratorResults(iter));
 
     List<Document> docList = new ArrayList<>(docSet);
     for (int i = 0; i < 10; i++) {
