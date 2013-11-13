@@ -18,7 +18,6 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
-
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -29,7 +28,6 @@ import com.maxjthomas.dumpster.RebarThriftException;
 
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
-import edu.jhu.hlt.rebar.util.RebarUtil;
 
 /**
  * @author max
@@ -117,11 +115,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
       bw.close();
 
     } catch (MutationsRejectedException | RebarException | TableNotFoundException e) {
-      try {
-        throw RebarUtil.wrapException(e);
-      } catch (RebarException e1) {
-        throw new RebarThriftException(e1.getMessage());
-      }
+      throw new TException(e);
     }
   }
 
@@ -216,11 +210,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
       mDel.putDelete("", "");
       this.corporaTableBW.addMutation(mDel);
     } catch (MutationsRejectedException | RebarException e) {
-      try {
-        throw RebarUtil.wrapException(e);
-      } catch (RebarException e1) {
-        throw new RebarThriftException(e1.getMessage());
-      }
+      throw new TException(e);
     }
   }
 
@@ -249,11 +239,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
       Iterator<Entry<Key, Value>> iter = sc.iterator();
       return iter.hasNext();
     } catch (TableNotFoundException e) {
-      try {
-        throw RebarUtil.wrapException(e);
-      } catch (RebarException e1) {
-        throw new TException(e1.getMessage());
-      }
+      throw new TException(e);
     }
   }
 

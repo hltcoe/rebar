@@ -85,11 +85,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
       Iterator<Entry<Key, Value>> iter = sc.iterator();
       return iter.hasNext();
     } catch (TableNotFoundException e) {
-      try {
-        throw RebarUtil.wrapException(e);
-      } catch (RebarException e1) {
-        throw new TException(e1.getMessage());
-      }
+      throw new TException(e);
     }
   }
 
@@ -142,11 +138,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
       
       return stagesToReturn;
     } catch (TableNotFoundException e) {
-      try {
-        throw RebarUtil.wrapException(e);
-      } catch (RebarException e1) {
-        throw new TException(e1);
-      }
+      throw new TException(e);
     }
   }
   
