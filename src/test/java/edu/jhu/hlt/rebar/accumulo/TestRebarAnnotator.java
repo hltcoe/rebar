@@ -89,6 +89,14 @@ public class TestRebarAnnotator {
     lid.languageToProbabilityMap = generateLidMap();
     return lid;
   }
+  
+  static Set<LangId> generateLangIdSet(Set<Document> docSet) {
+    Set<LangId> lidSet = new HashSet<>();
+    for (Document d : docSet) 
+      lidSet.add(generateLangId(d));
+    
+    return lidSet;
+  }
 
   /**
    * @throws java.lang.Exception

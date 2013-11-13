@@ -3,7 +3,9 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,8 +29,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.maxjthomas.dumpster.Document;
+import com.maxjthomas.dumpster.LangId;
 import com.maxjthomas.dumpster.Stage;
 
+import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
@@ -187,5 +192,30 @@ public class TestAccumuloStageHandler {
     Set<Stage> stages = this.ash.getStages();
     assertEquals("Stages should be equal.", ingestedStages, stages);
   }
-
+  
+  @Test
+  public void testAddAnnotatedDocument() throws RebarException, Exception {
+    Stage s = generateTestStage();
+    
+    Set<Document> docSet = TestRebarIngester.generateMockDocumentSet(10);
+    for (Document d : docSet) {
+      this.ash.addAnnotatedDocument(s, d);
+    }
+    
+    assertEquals("Should find 10 document IDs in the annotated-docs column:", 10, this.ash.getAnnotatedDocumentCount(s));
+  }
+  
+  @Test
+  public void testGetAnnotatedDocumentCount() throws RebarException, Exception {
+    Stage s = generateTestStage();
+    
+    Set<Document> docSet = TestRebarIngester.generateMockDocumentSet(10);
+    try (RebarAnnotator ra = new RebarAnnotator(this.conn);) {
+      for (Document d : docSet) {
+        ra.addLanguageId(d, s, TestRebarAnnotator.generateLangId(d));
+      }
+    }
+    
+    assertEquals("Should find 10 document IDs in the annotated-docs column:", 10, this.ash.getAnnotatedDocumentCount(s));
+  }
 }

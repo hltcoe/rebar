@@ -26,6 +26,8 @@ import edu.jhu.hlt.rebar.config.RebarConfiguration;
  */
 public class RebarAnnotator extends AbstractAccumuloClient implements AutoCloseable, Annotator.Iface {
 
+  private final AccumuloStageHandler ash;
+  
   /**
    * @throws RebarException 
    * 
@@ -36,6 +38,7 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
   
   public RebarAnnotator (Connector conn) throws RebarException {
     super(conn);
+    this.ash = new AccumuloStageHandler(this.conn);
   }
 
 
@@ -67,10 +70,9 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
     try {
       m.put(RebarConfiguration.DOCUMENT_ANNOTATION_COLF, stage.name, new Value(lidBytes));
       this.bw.addMutation(m);
-    } catch (MutationsRejectedException e) {
-      throw new TException(e.getMessage());
-    } finally {
-      
+      this.ash.addAnnotatedDocument(stage, document);
+    } catch (MutationsRejectedException | RebarException e) {
+      throw new TException(e);
     }
   }
 }

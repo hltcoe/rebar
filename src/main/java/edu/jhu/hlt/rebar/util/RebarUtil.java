@@ -8,7 +8,10 @@ package edu.jhu.hlt.rebar.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
+import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 
 import com.maxjthomas.dumpster.RebarThriftException;
@@ -21,6 +24,8 @@ import edu.jhu.hlt.rebar.RebarException;
  */
 public class RebarUtil {
 
+  public static final Value EMPTY_VALUE = new Value(new byte[0]);
+  
   /**
    * 
    */
@@ -41,7 +46,13 @@ public class RebarUtil {
     return ie;
   }
   
-  public static Value emptyValue() {
-    return new Value(new byte[0]);
+  public static int countAccumuloIteratorResults(Iterator<Entry<Key, Value>> iter) {
+    int resCt = 0;
+    while (iter.hasNext()) {
+      iter.next();
+      resCt++;
+    }
+    
+    return resCt;
   }
 }

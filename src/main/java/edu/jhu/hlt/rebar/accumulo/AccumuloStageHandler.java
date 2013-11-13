@@ -5,8 +5,8 @@ package edu.jhu.hlt.rebar.accumulo;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.Connector;
@@ -17,8 +17,10 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
+import org.apache.hadoop.io.Text;
 import org.apache.thrift.TException;
 
+import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.Stage;
 import com.maxjthomas.dumpster.StageHandler;
 
@@ -143,7 +145,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
       try {
         throw RebarUtil.wrapException(e);
       } catch (RebarException e1) {
-        throw new TException(e1.getMessage());
+        throw new TException(e1);
       }
     }
   }
@@ -154,6 +156,36 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
   
   public static boolean isValidStageName(String stageName) {
     return stageName.startsWith(RebarConfiguration.STAGES_PREFIX);
+  }
+
+  /* (non-Javadoc)
+   * @see com.maxjthomas.dumpster.StageHandler.Iface#getAnnotatedDocumentCount(com.maxjthomas.dumpster.Stage)
+   */
+  @Override
+  public int getAnnotatedDocumentCount(Stage stage) throws TException {
+    try {
+      // TODO Auto-generated method stub
+      Scanner sc = this.conn.createScanner(RebarConfiguration.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
+      Range r = new Range();
+      sc.setRange(r);
+      sc.fetchColumnFamily(new Text(RebarConfiguration.STAGES_DOCS_ANNOTATED_IDS_COLF));
+      Iterator<Entry<Key, Value>> iter = sc.iterator();
+      return RebarUtil.countAccumuloIteratorResults(iter);
+    } catch (TableNotFoundException e) {
+      throw new TException(e);
+    }
+  }
+  
+  public void addAnnotatedDocument(Stage stage, Document document) throws RebarException {
+    try {
+      final Mutation m = new Mutation(stage.name);
+      m.put(RebarConfiguration.STAGES_DOCS_ANNOTATED_IDS_COLF, document.id, RebarUtil.EMPTY_VALUE);
+      this.stagesTableBW.addMutation(m);
+    } catch (MutationsRejectedException e) {
+      throw new RebarException(e);
+    } finally {
+      
+    }
   }
 
 }

@@ -42,6 +42,8 @@ public final class RebarConfiguration {
   public static final String STAGES_PREFIX = "stage_";
   public static final String STAGES_OBJ_COLF = "stage_obj";
   public static final String STAGES_DOCS_COLF = "documents";
+  public static final String STAGES_DOCS_ANNOTATED_IDS_COLF = "annotated_ids";
+  
 
   static {
     props = new Properties();
