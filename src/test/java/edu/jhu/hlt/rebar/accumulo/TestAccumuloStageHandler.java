@@ -41,13 +41,8 @@ import edu.jhu.hlt.rebar.Util;
  * @author max
  *
  */
-public class TestAccumuloStageHandler {
+public class TestAccumuloStageHandler extends AbstractAccumuloTest {
 
-  private Instance inst;
-  private Connector conn;
-  private RebarTableOps tableOps;
-  private TSerializer serializer;
-  private TDeserializer deserializer;
   private AccumuloStageHandler ash;
   
   /**
@@ -55,11 +50,7 @@ public class TestAccumuloStageHandler {
    */
   @Before
   public void setUp() throws Exception {
-    this.inst = new MockInstance();
-    this.conn = this.inst.getConnector("max", new PasswordToken(""));
-    this.tableOps = new RebarTableOps(conn);
-    this.serializer = new TSerializer(new TBinaryProtocol.Factory());
-    this.deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+    this.initialize();
     this.ash = new AccumuloStageHandler(this.conn);
   }
   

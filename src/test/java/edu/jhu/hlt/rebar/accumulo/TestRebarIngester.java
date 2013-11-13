@@ -48,26 +48,14 @@ import edu.jhu.hlt.rebar.config.RebarConfiguration;
  * @author max
  *
  */
-public class TestRebarIngester {
-
-  private Instance inst;
-  private Connector conn;
-  private RebarTableOps tableOps;
-  private TSerializer serializer;
-  private TDeserializer deserializer;
-
-  private static final Random rand = new Random();
+public class TestRebarIngester extends AbstractAccumuloTest {
   
   /**
    * @throws java.lang.Exception
    */
   @Before
   public void setUp() throws Exception {
-    this.inst = new MockInstance();
-    this.conn = this.inst.getConnector("max", new PasswordToken(""));
-    this.tableOps = new RebarTableOps(conn);
-    this.serializer = new TSerializer(new TBinaryProtocol.Factory());
-    this.deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+    this.initialize();
   }
 
   /**

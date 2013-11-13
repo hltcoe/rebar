@@ -37,14 +37,9 @@ import edu.jhu.hlt.rebar.Util;
  * @author max
  *
  */
-public class TestRebarCorpusHandler {
+public class TestRebarCorpusHandler extends AbstractAccumuloTest {
 
   private static final Logger logger = LoggerFactory.getLogger(TestRebarCorpusHandler.class);
-  
-  private Instance inst;
-  private Connector conn;
-  private RebarTableOps tableOps;
-  private TSerializer serializer;
   
   private RebarCorpusHandler rch;
   
@@ -53,10 +48,7 @@ public class TestRebarCorpusHandler {
    */
   @Before
   public void setUp() throws Exception {
-    this.inst = new MockInstance();
-    this.conn = this.inst.getConnector("max", new PasswordToken(""));
-    this.tableOps = new RebarTableOps(conn);
-    this.serializer = new TSerializer(new TBinaryProtocol.Factory());
+    this.initialize();
     this.rch = new RebarCorpusHandler(this.conn);
   }
 
@@ -65,7 +57,7 @@ public class TestRebarCorpusHandler {
    */
   @After
   public void tearDown() throws Exception {
-    this.tableOps.deleteTable(Constants.AVAILABLE_CORPUS_TABLE_NAME);
+    //this.tableOps.deleteTable(Constants.AVAILABLE_CORPUS_TABLE_NAME);
   }
   
   public Set<Document> createDocumentSet() {

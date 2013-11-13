@@ -41,26 +41,17 @@ import edu.jhu.hlt.rebar.Util;
  * @author max
  * 
  */
-public class TestRebarAnnotator {
+public class TestRebarAnnotator extends AbstractAccumuloTest {
 
   private Set<Document> docSet;
-  private Instance inst;
-  private Connector conn;
-  private TSerializer serializer;
-  private TDeserializer deserializer;
   private RebarAnnotator ra;
-
-  private static final Random rand = new Random();
 
   /**
    * @throws java.lang.Exception
    */
   @Before
   public void setUp() throws Exception {
-    this.inst = new MockInstance();
-    this.conn = this.inst.getConnector("max", new PasswordToken(""));
-    this.serializer = new TSerializer(new TBinaryProtocol.Factory());
-    this.deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+    this.initialize();
     this.ra = new RebarAnnotator(conn);
 
     docSet = new HashSet<>();
