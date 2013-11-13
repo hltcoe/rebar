@@ -8,24 +8,14 @@ package edu.jhu.hlt.rebar.accumulo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.MutationsRejectedException;
-import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.security.Authorizations;
 import org.apache.thrift.TException;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TBinaryProtocol;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -36,7 +26,6 @@ import com.maxjthomas.dumpster.IngestException;
 import com.maxjthomas.dumpster.Ingester;
 
 import edu.jhu.hlt.concrete.Concrete.Communication.Kind;
-import edu.jhu.hlt.concrete.index.IndexedCommunication;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
@@ -66,29 +55,6 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
     this.jedis = pool.getResource();
     this.pendingInserts = new HashSet<>();
     this.existingIds = this.jedis.smembers(ingestedIdsRedisKey);
-  }
-  
-  private boolean isCommunicationIngested(IndexedCommunication comm) {
-    return this.existingIds.contains(comm.getGuid().getCommunicationId());
-  }
-  
-  private boolean isCommunicationPendingIngest(IndexedCommunication comm) {
-    return this.pendingInserts.contains(comm.getGuid().getCommunicationId());
-  }
-  
-  public void insert(IndexedCommunication comm) throws RebarException {
-    if (isCommunicationIngested(comm) || isCommunicationPendingIngest(comm))
-      return;
-    
-    final Mutation m = new Mutation(comm.generateRowId());
-    Value v = new Value(comm.getProto().toByteArray());
-    m.put("", "", v);
-    try {
-      this.bw.addMutation(m);
-      this.pendingInserts.add(comm.getGuid().getCommunicationId());
-    } catch (MutationsRejectedException e) {
-      throw new RebarException(e);
-    }
   }
   
   private boolean isDocumentIngested(Document d) {

@@ -40,12 +40,7 @@ import redis.clients.jedis.Jedis;
 import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.DocType;
 
-import edu.jhu.hlt.concrete.Concrete.Communication;
-import edu.jhu.hlt.concrete.Concrete.Communication.Kind;
-import edu.jhu.hlt.concrete.Concrete.CommunicationGUID;
-import edu.jhu.hlt.concrete.ConcreteException;
-import edu.jhu.hlt.concrete.index.IndexedCommunication;
-import edu.jhu.hlt.concrete.util.IdUtil;
+
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
@@ -55,7 +50,6 @@ import edu.jhu.hlt.rebar.config.RebarConfiguration;
  */
 public class TestRebarIngester {
 
-  private List<IndexedCommunication> commList;
   private Instance inst;
   private Connector conn;
   private RebarTableOps tableOps;
@@ -69,7 +63,6 @@ public class TestRebarIngester {
    */
   @Before
   public void setUp() throws Exception {
-    this.commList = generateMockCommunications(10000, Kind.TWEET);
     this.inst = new MockInstance();
     this.conn = this.inst.getConnector("max", new PasswordToken(""));
     this.tableOps = new RebarTableOps(conn);
@@ -82,33 +75,6 @@ public class TestRebarIngester {
    */
   @After
   public void tearDown() throws Exception {
-  }
-  
-  public List<IndexedCommunication> generateMockCommunications(int nComms, Communication.Kind commType) throws ConcreteException {
-    List<IndexedCommunication> commList = new ArrayList<>(10000);
-    for (int i = 0; i < nComms; i++) {
-      commList.add(generateMockCommunication(commType));
-    }
-    
-    return commList;
-  }
-  
-  public IndexedCommunication generateMockCommunication (Communication.Kind commType) throws ConcreteException {
-    int randCommId = Math.abs(rand.nextInt());
-    long ts = (long)(rand.nextInt(300000000) * rand.nextFloat()) + 1288061605; // min date --> oct 2010 ish
-    String commIdString = "Communication_" + randCommId; 
-    
-    CommunicationGUID.Builder commGuidBuilder = CommunicationGUID.newBuilder()
-        .setCommunicationId(commIdString);
-    Communication comm = Communication.newBuilder()
-        .setGuid(commGuidBuilder)
-        .setText("Blah blah blah blah blah")
-        .setUuid(IdUtil.generateUUID())
-        .setKind(commType)
-        .setStartTime(ts)
-        .build();
-    
-    return new IndexedCommunication(comm);
   }
   
   public static Document generateMockDocument() {
@@ -142,75 +108,6 @@ public class TestRebarIngester {
     }
     
     return resCt;
-  }
-  
-  @Test
-  public void testInsertCommunication() throws RebarException, ConcreteException, TableNotFoundException {
-    IndexedCommunication comm = this.generateMockCommunication(Kind.TWEET);
-    String rowId = comm.generateRowId();
-    String docId = comm.getGuid().getCommunicationId();
-    byte[] commBytes = comm.getProto().toByteArray();
-    
-    RebarIngester rebar = new RebarIngester(this.conn);
-    rebar.insert(comm);
-    rebar.close();
-    
-    Iterator<Entry<Key, Value>> iter = generateIterator(this.conn, RebarConfiguration.DOCUMENT_TABLE_NAME, new Range(rowId));
-    assertTrue("Should find results in accumulo.", iter.hasNext());
-    assertEquals(0, iter.next().getValue().compareTo(commBytes));
-    Jedis jedis = new Jedis("localhost");
-    assertTrue(jedis.smembers("ingested-ids").contains(docId));
-    jedis.srem("ingested-ids", docId);
-  }
-  
-  @Test
-  public void testInsertDuplicateCommunications() throws RebarException, ConcreteException, TableNotFoundException {
-    IndexedCommunication comm = this.generateMockCommunication(Kind.TWEET);
-    String docId = comm.getGuid().getCommunicationId();
-    
-    RebarIngester rebar = new RebarIngester(this.conn);
-    rebar.insert(comm);
-    rebar.insert(comm);
-    rebar.insert(comm);
-    rebar.close();
-    
-    Iterator<Entry<Key, Value>> iter = generateIterator(this.conn, RebarConfiguration.DOCUMENT_TABLE_NAME, new Range());
-    assertTrue("Should find results in accumulo.", iter.hasNext());
-    
-    
-    assertEquals(1, countIteratorResults(iter));
-    Jedis jedis = new Jedis("localhost");
-    assertTrue(jedis.smembers("ingested-ids").contains(docId));
-    jedis.srem("ingested-ids", docId);
-  }
-  
-  @Test
-  public void testInsertVariedCommunications() throws RebarException, ConcreteException, TableNotFoundException {
-    IndexedCommunication comm = this.generateMockCommunication(Kind.TWEET);
-    String docId = comm.getGuid().getCommunicationId();
-    
-    IndexedCommunication comm2 = this.generateMockCommunication(Kind.TWEET);
-    String docId2 = comm2.getGuid().getCommunicationId();
-    
-    IndexedCommunication comm3 = this.generateMockCommunication(Kind.TWEET);
-    String docId3 = comm3.getGuid().getCommunicationId();
-    
-    RebarIngester rebar = new RebarIngester(this.conn);
-    rebar.insert(comm);
-    rebar.insert(comm2);
-    rebar.insert(comm3);
-    rebar.close();
-    
-    Iterator<Entry<Key, Value>> iter = generateIterator(this.conn, RebarConfiguration.DOCUMENT_TABLE_NAME, new Range());
-    assertTrue("Should find results in accumulo.", iter.hasNext());
-    
-    assertEquals(3, countIteratorResults(iter));
-    Jedis jedis = new Jedis("localhost");
-    Set<String> jedisSet = jedis.smembers("ingested-ids");
-    assertTrue(jedisSet.contains(docId));
-    assertTrue(jedisSet.contains(docId2));
-    assertTrue(jedisSet.contains(docId3));
-    jedis.srem("ingested-ids", docId, docId2, docId3);
   }
   
   @Test
