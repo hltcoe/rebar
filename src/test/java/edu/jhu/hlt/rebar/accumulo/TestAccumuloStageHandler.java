@@ -8,6 +8,7 @@ import static org.junit.Assert.*;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Instance;
@@ -91,22 +92,41 @@ public class TestAccumuloStageHandler {
     Stage s = generateTestStage();
     this.ash.createStage(s);
     
-    assertTrue("Should find a table with this stage but didn't.", this.tableOps.tableExists(s.name));
+//    assertTrue("Should find a table with this stage but didn't.", this.tableOps.tableExists(s.name));
     
-    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME, new Range());
-    assertTrue("Should find results in the corpus table, but didn't.", iter.hasNext());
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.STAGES_TABLE_NAME, new Range());
+    assertTrue("Should find results in the stages table, but didn't.", iter.hasNext());
     
 //    iter = TestRebarIngester.generateIterator(conn, s.name, new Range());
 //    assertEquals("Should find an equal number of documents and ids in the corpus.", docSet.size(), TestRebarIngester.countIteratorResults(iter));
 //  
   }
+  
+  /**
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#createStage(com.maxjthomas.dumpster.Stage)}.
+   * @throws TException 
+   * @throws TableNotFoundException 
+   */
+  @Test(expected=TException.class)
+  public void testCreateStageBadDeps() throws TException, TableNotFoundException {
+    Stage s = generateTestStage();
+    Set<String> badDeps = new HashSet<>();
+    badDeps.add("stage_fooqux");
+    s.dependencies = badDeps;
+    this.ash.createStage(s);
+  }
 
   /**
    * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#getStages()}.
+   * @throws TException 
    */
   @Test
-  public void testGetStages() {
-    fail("Not yet implemented"); // TODO
+  public void testGetStages() throws TException {
+    Stage s = generateTestStage();
+    this.ash.createStage(s);
+    
+    Set<Stage> stages = this.ash.getStages();
+    assertEquals("Stages should be equal.", s, stages.iterator().next());
   }
 
 }

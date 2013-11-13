@@ -3,6 +3,7 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -98,6 +99,12 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
     if (this.stageExists(stage.name))
       throw new TException("Can't create a stage that exists.");
     
+    Set<String> deps = stage.dependencies;
+    for (String dep : deps) {
+      if (!this.stageExists(dep))
+        throw new TException("Dependency: " + dep + " doesn't exist, so can't create that stage.");
+    }
+    
     if (!isValidStageName(stage))
       throw new TException("Stage names must begin with '"
           + RebarConfiguration.STAGES_PREFIX + "'; " 
@@ -105,14 +112,10 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
     
     // create entry in stage table
     final Mutation m = new Mutation(stage.name);
-    m.put("", "", new Value(this.serializer.serialize(stage)));
+    m.put(RebarConfiguration.STAGES_OBJ_COLF, "", new Value(this.serializer.serialize(stage)));
     try {
       this.stagesTableBW.addMutation(m);
-      
-      this.tableOps.createTableIfNotExists(stage.name);
-      
-      
-    } catch (MutationsRejectedException | RebarException e) {
+    } catch (MutationsRejectedException  e) {
       throw new TException(e.getMessage());
     }
   }
@@ -122,8 +125,27 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
    */
   @Override
   public Set<Stage> getStages() throws TException {
-    // TODO Auto-generated method stub
-    return null;
+    Set<Stage> stagesToReturn = new HashSet<>();
+    try {
+      Scanner sc = this.conn.createScanner(RebarConfiguration.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
+      Range r = new Range();
+      sc.setRange(r);
+      Iterator<Entry<Key, Value>> iter = sc.iterator();
+      while(iter.hasNext()) {
+        Value v = iter.next().getValue();
+        Stage s = new Stage();
+        this.deserializer.deserialize(s, v.get());
+        stagesToReturn.add(s);
+      }
+      
+      return stagesToReturn;
+    } catch (TableNotFoundException e) {
+      try {
+        throw RebarUtil.wrapException(e);
+      } catch (RebarException e1) {
+        throw new TException(e1.getMessage());
+      }
+    }
   }
   
   public static boolean isValidStageName(Stage s) {

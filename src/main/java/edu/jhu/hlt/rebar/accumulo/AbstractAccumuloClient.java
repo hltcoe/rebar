@@ -11,6 +11,7 @@ import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.ZooKeeperInstance;
+import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
@@ -26,6 +27,7 @@ public abstract class AbstractAccumuloClient implements AutoCloseable {
   protected final Connector conn;
   protected final RebarTableOps tableOps;
   protected final TSerializer serializer;
+  protected final TDeserializer deserializer;
   
   protected static final String colFamilyRoot = "root";
   protected static final String colFamilyAnnotations = "anno";
@@ -61,6 +63,7 @@ public abstract class AbstractAccumuloClient implements AutoCloseable {
     this.tableOps = new RebarTableOps(this.conn);
     this.tableOps.createTableIfNotExists(documentTableName);
     this.serializer = new TSerializer(new TBinaryProtocol.Factory());
+    this.deserializer = new TDeserializer(new TBinaryProtocol.Factory());
     try {
       this.bw = this.conn.createBatchWriter(documentTableName, defaultBwOpts.getBatchWriterConfig());
     } catch (TableNotFoundException e) {
