@@ -37,6 +37,8 @@ public final class RebarConfiguration {
   public static final String DOCUMENT_COLF = "raw_doc";
   public static final String AVAILABLE_CORPUS_TABLE_NAME = "available_corpora";
   public static final String CORPUS_PREFIX = "corpus_";
+  public static final String STAGES_TABLE_NAME = "available_stages";
+  public static final String STAGES_PREFIX = "stage_";
 
   static {
     props = new Properties();

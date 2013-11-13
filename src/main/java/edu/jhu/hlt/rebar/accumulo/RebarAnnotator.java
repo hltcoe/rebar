@@ -57,15 +57,4 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
   public void close() throws Exception {
     this.bw.close();
   }
-
-  /* (non-Javadoc)
-   * @see com.maxjthomas.dumpster.Annotator.Iface#addLanguageId(com.maxjthomas.dumpster.Document, com.maxjthomas.dumpster.Stage, com.maxjthomas.dumpster.LangId)
-   */
-  @Override
-  public void addLanguageId(Document document, Stage stage, LangId lid) throws AnnotationException, TException {
-    final Mutation m = new Mutation(document.getId());
-    byte[] lidBytes = this.serializer.serialize(lid);
-    Value lidV = new Value(lidBytes);
-    m.put(AbstractAccumuloClient.colFamilyAnnotations, stage.getName(), lidV);
-  }
 }
