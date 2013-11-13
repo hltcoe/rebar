@@ -41,8 +41,8 @@ import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.DocType;
 
 import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
-import edu.jhu.hlt.rebar.util.RebarUtil;
 
 /**
  * @author max
@@ -130,7 +130,7 @@ public class TestRebarIngester {
     rebar.close();
     
     Iterator<Entry<Key, Value>> iter = generateIterator(this.conn, edu.jhu.hlt.rebar.Constants.DOCUMENT_TABLE_NAME, new Range());
-    assertEquals("Should find a few results in accumulo.", nDocs, RebarUtil.countIteratorResults(iter));
+    assertEquals("Should find a few results in accumulo.", nDocs, Util.countIteratorResults(iter));
     
     iter = generateIterator(this.conn, edu.jhu.hlt.rebar.Constants.DOCUMENT_TABLE_NAME, new Range());
     Set<Document> fetchDocs = new HashSet<>(nDocs);

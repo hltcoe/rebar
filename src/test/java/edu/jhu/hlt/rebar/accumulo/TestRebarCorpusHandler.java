@@ -31,7 +31,7 @@ import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.RebarThriftException;
 
 import edu.jhu.hlt.rebar.Constants;
-import edu.jhu.hlt.rebar.util.RebarUtil;
+import edu.jhu.hlt.rebar.Util;
 
 /**
  * @author max
@@ -117,7 +117,7 @@ public class TestRebarCorpusHandler {
     assertTrue("Should find results in the corpus table, but didn't.", iter.hasNext());
     
     iter = TestRebarIngester.generateIterator(conn, testCorpus, new Range());
-    assertEquals("Should find an equal number of documents and ids in the corpus.", docSet.size(), RebarUtil.countIteratorResults(iter));
+    assertEquals("Should find an equal number of documents and ids in the corpus.", docSet.size(), Util.countIteratorResults(iter));
   }
   
   @Test

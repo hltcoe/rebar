@@ -3,7 +3,7 @@
  * This software is released under the 2-clause BSD license.
  * See LICENSE in the project root directory.
  */
-package edu.jhu.hlt.rebar.util;
+package edu.jhu.hlt.rebar;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -15,14 +15,14 @@ import org.apache.accumulo.core.data.Value;
  * @author max
  *
  */
-public class RebarUtil {
+public class Util {
 
   public static final Value EMPTY_VALUE = new Value(new byte[0]);
   
   /**
    * 
    */
-  private RebarUtil() {
+  private Util() {
     // TODO Auto-generated constructor stub
   }
 

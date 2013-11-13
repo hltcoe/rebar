@@ -26,8 +26,8 @@ import com.maxjthomas.dumpster.StageHandler;
 
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
-import edu.jhu.hlt.rebar.util.RebarUtil;
 
 /**
  * @author max
@@ -164,7 +164,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
       sc.setRange(r);
       sc.fetchColumnFamily(new Text(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF));
       Iterator<Entry<Key, Value>> iter = sc.iterator();
-      return RebarUtil.countIteratorResults(iter);
+      return Util.countIteratorResults(iter);
     } catch (TableNotFoundException e) {
       throw new TException(e);
     }
@@ -173,7 +173,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
   public void addAnnotatedDocument(Stage stage, Document document) throws RebarException {
     try {
       final Mutation m = new Mutation(stage.name);
-      m.put(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF, document.id, RebarUtil.EMPTY_VALUE);
+      m.put(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF, document.id, Util.EMPTY_VALUE);
       this.stagesTableBW.addMutation(m);
     } catch (MutationsRejectedException e) {
       throw new RebarException(e);
