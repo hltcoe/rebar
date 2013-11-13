@@ -3,8 +3,7 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +23,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TDeserializer;
+import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.junit.After;
@@ -104,6 +104,28 @@ public class TestRebarAnnotator {
    */
   @After
   public void tearDown() throws Exception {
+  }
+  
+  @Test
+  public void testAnnotateDocumentNoStage() throws Exception {
+    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", TestAccumuloStageHandler.getCurrentUnixTime(), new HashSet<String>());
+//    Stage newStage = TestAccumuloStageHandler.generateTestStage();
+
+    List<LangId> lidList = new ArrayList<>();
+    for (Document d : this.docSet) {
+      LangId lid = generateLangId(d);
+      lidList.add(lid);
+      this.ra.addLanguageId(d, newStage, lid);
+    }
+
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.DOCUMENT_TABLE_NAME, new Range());
+    assertEquals("Should get 20 total rows.", 20, RebarUtil.countIteratorResults(iter));
+    try (AccumuloStageHandler ashy = new AccumuloStageHandler(this.conn);) {
+      Set<Stage> stageSet = ashy.getStages();
+      assertTrue("Should get a stage added.", stageSet.size() > 0);
+    }
+    
+    this.ra.close();
   }
 
   @Test

@@ -8,8 +8,6 @@ import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TException;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TBinaryProtocol;
 
 import com.maxjthomas.dumpster.AnnotationException;
 import com.maxjthomas.dumpster.Annotator;
@@ -64,7 +62,9 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
 
   @Override
   public void addLanguageId(Document document, Stage stage, LangId lid) throws AnnotationException, TException {
-    // TODO Auto-generated method stub
+    if (!this.ash.stageExists(stage.name))
+      this.ash.createStage(stage);
+    
     byte[] lidBytes = this.serializer.serialize(lid);
     final Mutation m = new Mutation(document.id);
     try {

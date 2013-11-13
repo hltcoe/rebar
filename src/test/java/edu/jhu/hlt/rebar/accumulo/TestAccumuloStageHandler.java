@@ -164,15 +164,21 @@ public class TestAccumuloStageHandler {
 
   /**
    * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#getStages()}.
-   * @throws TException 
+   * @throws Exception 
+   * @throws RebarException 
    */
   @Test
-  public void testGetStages() throws TException {
+  public void testGetStages() throws RebarException, Exception {
     Stage s = generateTestStage();
     this.ash.createStage(s);
     
     Set<Stage> stages = this.ash.getStages();
     assertEquals("Stages should be equal.", s, stages.iterator().next());
+    
+    try (AccumuloStageHandler handler = new AccumuloStageHandler(conn);) {
+      stages = handler.getStages();
+      assertEquals("Stages should be equal despite different handler.", s, stages.iterator().next());
+    }
   }
   
   /**

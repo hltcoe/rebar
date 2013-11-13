@@ -128,6 +128,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
       Scanner sc = this.conn.createScanner(RebarConfiguration.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
       Range r = new Range();
       sc.setRange(r);
+      sc.fetchColumnFamily(new Text(RebarConfiguration.STAGES_OBJ_COLF));
       Iterator<Entry<Key, Value>> iter = sc.iterator();
       while(iter.hasNext()) {
         Value v = iter.next().getValue();
