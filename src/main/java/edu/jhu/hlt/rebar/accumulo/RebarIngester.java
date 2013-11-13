@@ -27,6 +27,7 @@ import com.maxjthomas.dumpster.Ingester;
 
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.RedisCache;
 
 /**
  * @author max
@@ -36,10 +37,14 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
 
   private final Jedis jedis;
   private Set<String> pendingInserts;
-  private Set<String> existingIds;
-  
-  private static final JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost");
-  private static final String ingestedIdsRedisKey = "ingested-ids";
+  private static Set<String> existingIds;
+  static {
+    try {
+      existingIds = RedisCache.getIngestedIds();
+    } catch (RebarException e) {
+      throw new RuntimeException("Couldn't initialize the redis cache.", e);
+    }
+  }
   
   /**
    * @throws RebarException 
@@ -51,13 +56,12 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
   
   public RebarIngester(Connector conn) throws RebarException {
     super(conn);
-    this.jedis = pool.getResource();
+    this.jedis = RedisCache.POOL.getResource();
     this.pendingInserts = new HashSet<>();
-    this.existingIds = this.jedis.smembers(ingestedIdsRedisKey);
   }
   
-  public boolean isDocumentIngested(Document d) {
-    return this.existingIds.contains(d.getId());
+  private boolean isDocumentIngested(Document d) {
+    return existingIds.contains(d.getId());
   }
   
   private boolean isDocumentPendingIngest(Document d) {
@@ -65,12 +69,12 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
   }
   
   private void flushPendingIds() {
-    this.jedis.sadd(ingestedIdsRedisKey, this.pendingInserts.toArray(new String[0]));
+    this.jedis.sadd(Constants.INGESTED_IDS_REDIS_KEY, this.pendingInserts.toArray(new String[0]));
     this.pendingInserts = new HashSet<>();
   }
   
-  private void updateExistingIds() {
-    this.existingIds = this.jedis.smembers(ingestedIdsRedisKey);
+  private synchronized void updateExistingIds() {
+    existingIds = this.jedis.smembers(Constants.INGESTED_IDS_REDIS_KEY);
   }
   
   @Override
@@ -88,7 +92,7 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
     try {
       this.bw.close();
       this.flushPendingIds();
-      pool.returnResource(this.jedis);
+      RedisCache.POOL.returnResource(this.jedis);
     } catch (MutationsRejectedException e) {
       throw new RebarException(e);
     } finally {
@@ -96,10 +100,6 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
     }
   }
   
-//  protected static String generateRowId(Document d) {
-//    return d.t.toString() + "_" + d.id;
-//  }
-
   /* (non-Javadoc)
    * @see com.maxjthomas.dumpster.Ingester.Iface#ingest(com.maxjthomas.dumpster.Document)
    */
