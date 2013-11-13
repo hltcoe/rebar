@@ -74,8 +74,8 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
   
   @Test
   public void testAnnotateDocumentNoStage() throws Exception {
-    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
-//    Stage newStage = TestAccumuloStageHandler.generateTestStage();
+//    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
+    Stage newStage = TestAccumuloStageHandler.generateTestStage();
 
     List<LangId> lidList = new ArrayList<>();
     for (Document d : this.docSet) {
@@ -96,8 +96,9 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
 
   @Test
   public void testAnnotateDocument() throws Exception {
-    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
-
+//    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
+    Stage newStage = TestAccumuloStageHandler.generateTestStage();
+    
     try (AccumuloStageHandler ash = new AccumuloStageHandler(conn);) {
       ash.createStage(newStage);
     }

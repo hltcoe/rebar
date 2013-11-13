@@ -25,7 +25,6 @@ import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.IngestException;
 import com.maxjthomas.dumpster.Ingester;
 
-import edu.jhu.hlt.concrete.Concrete.Communication.Kind;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 
@@ -95,10 +94,6 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
     } finally {
       
     }
-  }
-  
-  protected static String generateRowId(String commId, Kind kind) {
-    return kind.toString() + "_" + commId;
   }
   
 //  protected static String generateRowId(Document d) {

@@ -31,6 +31,7 @@ import com.maxjthomas.dumpster.DocType;
 import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.LangId;
 import com.maxjthomas.dumpster.Stage;
+import com.maxjthomas.dumpster.Type;
 
 import edu.jhu.hlt.rebar.Util;
 
@@ -112,7 +113,7 @@ public class AbstractAccumuloTest {
   }
   
   protected static Stage generateTestStage() {
-    return new Stage("stage_foo", "Foo stage for testing", Util.getCurrentUnixTime(), new HashSet<String>());
+    return new Stage("stage_foo", "Foo stage for testing", Util.getCurrentUnixTime(), new HashSet<String>(), Type.LANG_ID);
   }
 
 }
