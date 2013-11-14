@@ -6,6 +6,7 @@ package edu.jhu.hlt.rebar.accumulo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,33 +60,6 @@ public class TestRebarReader extends AbstractAccumuloTest {
   public void tearDown() throws Exception {
   }
 
-  public Set<Document> constructDocumentSet(Iterator<Entry<Key, Value>> iter) throws TException {
-    Set<Document> docSet = new HashSet<>();
-    Map<String, Entry<Key, Value>> rowIdToEntryMap = new HashMap<>();
-    while (iter.hasNext()) {
-      Entry<Key, Value> e = iter.next();
-      Key k = e.getKey();
-      String rowId = k.getRow().toString();
-      if (rowIdToEntryMap.containsKey(rowId)) {
-        // we have the other stage, do some work.
-        String colF = k.getColumnFamily().toString();
-        if (colF.equals(Constants.DOCUMENT_COLF)) {
-          // current entry is the document
-          Document d = new Document();
-          this.deserializer.deserialize(d, e.getValue().get());
-
-          // we now have the document; merge in the annotation.
-          Entry<Key, Value> mapped = rowIdToEntryMap.get(rowId);
-
-        }
-      } else {
-        rowIdToEntryMap.put(rowId, e);
-      }
-    }
-
-    return docSet;
-  }
-
   private BatchScanner createScanner(Stage stageOfInterest, Set<String> idSet) throws RebarException {
     List<Range> rangeList = new ArrayList<>();
     for (String id : idSet)
@@ -113,25 +87,24 @@ public class TestRebarReader extends AbstractAccumuloTest {
     return d;
   }
 
-  public Set<Document> slowConstructDocumentSet(Stage s, Set<String> docIds) throws RebarException {
+  private Set<Document> constructDocumentSet(Stage s, Set<String> docIds) throws RebarException, TException, IOException {
     Set<Document> docSet = new HashSet<>();
-    String stageName = s.name;
 
     BatchScanner bsc = this.createScanner(s, docIds);
     Iterator<Entry<Key, Value>> iter = bsc.iterator();
     while (iter.hasNext()) {
       Entry<Key, Value> e = iter.next();
       Map<Key, Value> rows = WholeRowIterator.decodeRow(e.getKey(), e.getValue());
-      Document root = getRoot(rows);
+      Document root = this.getRoot(rows);
       for (Entry<Key, Value> r : rows.entrySet()) {
         if (r.getKey().compareColumnQualifier(new Text(s.name)) == 0) {
           // this is the stage we want.
           switch (s.type) {
           case LANG_ID:
             LangId lid = new LangId();
-            this.deserializer.deserialize(lid, e.getValue());
+            this.deserializer.deserialize(lid, e.getValue().get());
             root.setLid(lid);
-          
+            break;
           default:
             throw new IllegalArgumentException("Case: " + s.type.toString() + " not handled yet.");
           }
@@ -140,7 +113,6 @@ public class TestRebarReader extends AbstractAccumuloTest {
       
       docSet.add(root);
     }
-    
 
     return docSet;
   }
@@ -159,6 +131,8 @@ public class TestRebarReader extends AbstractAccumuloTest {
         re.ingest(d);
       }
     }
+    
+    Set<Document> docsWithLid = new HashSet<>();
 
     List<LangId> langIdList = new ArrayList<>();
     Stage s = generateTestStage();
@@ -167,6 +141,9 @@ public class TestRebarReader extends AbstractAccumuloTest {
         LangId mockLid = generateLangId(d);
         ra.addLanguageId(d, s, mockLid);
         langIdList.add(mockLid);
+        Document newDoc = new Document(d);
+        newDoc.lid = mockLid;
+        docsWithLid.add(newDoc);
       }
     }
 
@@ -179,6 +156,8 @@ public class TestRebarReader extends AbstractAccumuloTest {
 
     assertEquals("Should get 10 annotated docs:", 10, annotatedDocs);
 
+    Set<Document> fetchedDocs = this.constructDocumentSet(s, idSet);
+    
     Scanner sc = this.conn.createScanner(Constants.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths());
     sc.setRange(new Range());
     sc.fetchColumnFamily(new Text(Constants.DOCUMENT_COLF));
