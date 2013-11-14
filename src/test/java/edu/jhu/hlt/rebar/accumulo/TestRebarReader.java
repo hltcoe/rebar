@@ -46,12 +46,15 @@ import edu.jhu.hlt.rebar.config.RebarConfiguration;
  */
 public class TestRebarReader extends AbstractAccumuloTest {
 
+  private RebarReader rr;
+  
   /**
    * @throws java.lang.Exception
    */
   @Before
   public void setUp() throws Exception {
     this.initialize();
+    this.rr = new RebarReader(this.conn);
   }
 
   /**
@@ -59,63 +62,7 @@ public class TestRebarReader extends AbstractAccumuloTest {
    */
   @After
   public void tearDown() throws Exception {
-  }
-
-  private BatchScanner createScanner(Stage stageOfInterest, Set<String> idSet) throws RebarException {
-    List<Range> rangeList = new ArrayList<>();
-    for (String id : idSet)
-      rangeList.add(new Range(id));
-    
-    try {
-      String sName = stageOfInterest.name;
-      BatchScanner bsc = this.conn.createBatchScanner(Constants.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths(), 8);
-      bsc.setRanges(rangeList);
-      bsc.fetchColumnFamily(new Text(Constants.DOCUMENT_COLF));
-      bsc.fetchColumn(new Text(Constants.DOCUMENT_ANNOTATION_COLF), new Text(sName));
-      bsc.addScanIterator(new IteratorSetting(1000, "wholeRows", WholeRowIterator.class));
-      return bsc;
-    } catch (TableNotFoundException e) {
-      throw new RebarException(e);
-    }
-  }
-  
-  private Document getRoot(Map<Key, Value> decodedRow) throws TException {
-    Document d = new Document();
-    for (Map.Entry<Key, Value> entry : decodedRow.entrySet()) 
-      if (entry.getKey().compareColumnFamily(new Text(Constants.DOCUMENT_COLF)) == 0) 
-        this.deserializer.deserialize(d, entry.getValue().get());
-      
-    return d;
-  }
-
-  private Set<Document> constructDocumentSet(Stage s, Set<String> docIds) throws RebarException, TException, IOException {
-    Set<Document> docSet = new HashSet<>();
-
-    BatchScanner bsc = this.createScanner(s, docIds);
-    Iterator<Entry<Key, Value>> iter = bsc.iterator();
-    while (iter.hasNext()) {
-      Entry<Key, Value> e = iter.next();
-      Map<Key, Value> rows = WholeRowIterator.decodeRow(e.getKey(), e.getValue());
-      Document root = this.getRoot(rows);
-      for (Entry<Key, Value> r : rows.entrySet()) {
-        if (r.getKey().compareColumnQualifier(new Text(s.name)) == 0) {
-          // this is the stage we want.
-          switch (s.type) {
-          case LANG_ID:
-            LangId lid = new LangId();
-            this.deserializer.deserialize(lid, r.getValue().get());
-            root.setLid(lid);
-            break;
-          default:
-            throw new IllegalArgumentException("Case: " + s.type.toString() + " not handled yet.");
-          }
-        }
-      }
-      
-      docSet.add(root);
-    }
-
-    return docSet;
+    this.rr.close();
   }
 
   /**
@@ -157,11 +104,11 @@ public class TestRebarReader extends AbstractAccumuloTest {
     }
 
     assertEquals("Should get n annotated docs: (n = " + nDocs + ")", nDocs, annotatedDocs);
-    BatchScanner bsc = this.createScanner(s, idSet);
+    BatchScanner bsc = this.rr.createScanner(s, idSet);
     assertEquals("Should get " + nDocs + " entries in this batch scanner.", 3, Util.countIteratorResults(bsc.iterator()));
     bsc.close();
 
-    Set<Document> fetchedDocs = this.constructDocumentSet(s, idSet);
+    Set<Document> fetchedDocs = this.rr.getAnnotatedDocuments(s);
     assertEquals("Documents with LID should be the same.", docsWithLid, fetchedDocs);
   }
 

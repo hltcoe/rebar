@@ -124,6 +124,14 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
    */
   @Override
   public Set<Stage> getStages() throws TException {
+    try {
+      return this.getStagesInternal();
+    } catch (RebarException e) {
+      throw new TException(e);
+    }
+  }
+  
+  public Set<Stage> getStagesInternal() throws RebarException {
     Set<Stage> stagesToReturn = new HashSet<>();
     try {
       Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
@@ -139,8 +147,8 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
       }
       
       return stagesToReturn;
-    } catch (TableNotFoundException e) {
-      throw new TException(e);
+    } catch (TableNotFoundException | TException e) {
+      throw new RebarException(e);
     }
   }
   

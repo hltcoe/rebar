@@ -19,6 +19,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
+import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,6 +65,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
    */
   @After
   public void tearDown() throws Exception {
+    this.ra.close();
   }
   
   @Test
@@ -84,8 +86,20 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
       Set<Stage> stageSet = ashy.getStages();
       assertTrue("Should get a stage added.", stageSet.size() > 0);
     }
-    
-    this.ra.close();
+  }
+  
+  @Test(expected=TException.class)
+  public void testAnnotateDocumentTwice() throws Exception {
+//    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
+    Stage newStage = TestAccumuloStageHandler.generateTestStage();
+
+    List<LangId> lidList = new ArrayList<>();
+    for (Document d : this.docSet) {
+      LangId lid = generateLangId(d);
+      lidList.add(lid);
+      this.ra.addLanguageId(d, newStage, lid);
+      this.ra.addLanguageId(d, newStage, lid);
+    }
   }
 
   @Test
@@ -103,9 +117,18 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
       lidList.add(lid);
       this.ra.addLanguageId(d, newStage, lid);
     }
+    
+    Stage stageTwo = generateTestStage();
+    stageTwo.name = "stage_two_test";
+    List<LangId> lidListTwo = new ArrayList<>();
+    for (Document d : this.docSet) {
+      LangId lid = generateLangId(d);
+      lidListTwo.add(lid);
+      this.ra.addLanguageId(d, stageTwo, lid);
+    }
 
     Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
-    assertEquals("Should get 20 total rows.", 20, Util.countIteratorResults(iter));
+    assertEquals("Should get 30 total rows.", 30, Util.countIteratorResults(iter));
     
     Scanner sc = this.conn.createScanner(Constants.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths());
     sc.setRange(new Range());
@@ -117,6 +140,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
     for (int i = 0; i < 10; i++) {
       Document d = docList.get(i);
       LangId lid = lidList.get(i);
+      LangId lidTwo = lidListTwo.get(i);
       String id = d.id;
       Range r = new Range(id);
       iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, r);
@@ -131,12 +155,14 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
           LangId dser = new LangId();
           this.deserializer.deserialize(dser, e.getValue().get());
           assertEquals("Should get a LID from annotation colf.", lid, dser);
+        } else if (k.compareColumnQualifier(new Text(stageTwo.name)) == 0) {
+          LangId dser = new LangId();
+          this.deserializer.deserialize(dser, e.getValue().get());
+          assertEquals("Should get a LID from annotation colf.", lidTwo, dser);
         } else {
           fail("Column family was bad: " + k.getColumnFamily().toString());
         }
       }
     }
-    
-    this.ra.close();
   }
 }
