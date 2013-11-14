@@ -37,6 +37,7 @@ import com.maxjthomas.dumpster.Stage;
 
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
@@ -102,7 +103,7 @@ public class TestRebarReader extends AbstractAccumuloTest {
           switch (s.type) {
           case LANG_ID:
             LangId lid = new LangId();
-            this.deserializer.deserialize(lid, e.getValue().get());
+            this.deserializer.deserialize(lid, r.getValue().get());
             root.setLid(lid);
             break;
           default:
@@ -125,11 +126,12 @@ public class TestRebarReader extends AbstractAccumuloTest {
    */
   @Test
   public void testGetAnnotatedDocuments() throws RebarException, Exception {
-    List<Document> docList = new ArrayList<>(generateMockDocumentSet(10));
+    int nDocs = 3;
+    List<Document> docList = new ArrayList<>(generateMockDocumentSet(nDocs));
     try (RebarIngester re = new RebarIngester(this.conn);) {
-      for (Document d : docList) {
+      for (Document d : docList)
         re.ingest(d);
-      }
+      
     }
     
     Set<Document> docsWithLid = new HashSet<>();
@@ -154,35 +156,13 @@ public class TestRebarReader extends AbstractAccumuloTest {
       idSet = ash.getAnnotatedDocumentIds(s);
     }
 
-    assertEquals("Should get 10 annotated docs:", 10, annotatedDocs);
+    assertEquals("Should get n annotated docs: (n = " + nDocs + ")", nDocs, annotatedDocs);
+    BatchScanner bsc = this.createScanner(s, idSet);
+    assertEquals("Should get " + nDocs + " entries in this batch scanner.", 3, Util.countIteratorResults(bsc.iterator()));
+    bsc.close();
 
     Set<Document> fetchedDocs = this.constructDocumentSet(s, idSet);
-    
-    Scanner sc = this.conn.createScanner(Constants.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths());
-    sc.setRange(new Range());
-    sc.fetchColumnFamily(new Text(Constants.DOCUMENT_COLF));
-    sc.fetchColumn(new Text(Constants.DOCUMENT_ANNOTATION_COLF), new Text(s.name));
-    Iterator<Entry<Key, Value>> iter = sc.iterator();
-
-    int counter = 0;
-    while (iter.hasNext()) {
-      Entry<Key, Value> e = iter.next();
-      counter++;
-      Key k = e.getKey();
-      String colF = k.getColumnFamily().toString();
-
-      Document newDoc = new Document();
-
-      if (colF.equals(Constants.DOCUMENT_COLF)) {
-        this.deserializer.deserialize(newDoc, e.getValue().get());
-      } else if (colF.equals(Constants.DOCUMENT_ANNOTATION_COLF)) {
-
-      } else {
-        fail("Got bad ColF: " + colF);
-      }
-    }
-
-    assertEquals("Should get 20 rows.", 20, counter);
+    assertEquals("Documents with LID should be the same.", docsWithLid, fetchedDocs);
   }
 
 }

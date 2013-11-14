@@ -123,17 +123,16 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
       while (iter.hasNext()) {
         Entry<Key, Value> e = iter.next();
         Key k = e.getKey();
-        String colF = k.getColumnFamily().toString();
-        if (colF.equals(Constants.DOCUMENT_COLF)) {
+        if (k.compareColumnFamily(new Text(Constants.DOCUMENT_COLF)) == 0) {
           Document dser = new Document();
           this.deserializer.deserialize(dser, e.getValue().get());
           assertEquals("Should get a document from document colf.", d, dser);
-        } else if (colF.equals(Constants.DOCUMENT_ANNOTATION_COLF)) {
+        } else if (k.compareColumnQualifier(new Text(newStage.name)) == 0) {
           LangId dser = new LangId();
           this.deserializer.deserialize(dser, e.getValue().get());
           assertEquals("Should get a LID from annotation colf.", lid, dser);
         } else {
-          fail("Column family was bad: " + colF);
+          fail("Column family was bad: " + k.getColumnFamily().toString());
         }
       }
     }
