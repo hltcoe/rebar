@@ -5,12 +5,13 @@ package edu.jhu.hlt.rebar.accumulo;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.Connector;
@@ -24,15 +25,16 @@ import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import org.apache.hadoop.io.Text;
 import org.apache.thrift.TException;
 
-import edu.jhu.hlt.rebar.Constants;
-import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
-
 import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.LangId;
 import com.maxjthomas.dumpster.LanguagePrediction;
 import com.maxjthomas.dumpster.Reader;
 import com.maxjthomas.dumpster.Stage;
+import com.maxjthomas.dumpster.Type;
+
+import edu.jhu.hlt.rebar.Constants;
+import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
  * @author max
@@ -41,6 +43,7 @@ import com.maxjthomas.dumpster.Stage;
 public class RebarReader extends AbstractAccumuloClient implements Reader.Iface {
 
   private final AccumuloStageHandler ash;
+  private static Map<String, Type> stageNameToTypeMap = null;
   
   /**
    * @throws RebarException
@@ -56,6 +59,16 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
   public RebarReader(Connector conn) throws RebarException {
     super(conn);
     this.ash = new AccumuloStageHandler(this.conn);
+    if (stageNameToTypeMap == null) {
+      this.updateCache();
+    }
+  }
+  
+  private synchronized void updateCache() throws RebarException {
+    Set<Stage> stages = this.ash.getStagesInternal();
+    stageNameToTypeMap = new HashMap<>(stages.size());
+    for (Stage s : stages) 
+      stageNameToTypeMap.put(s.getName(), s.getType());
   }
 
   /* (non-Javadoc)
@@ -103,7 +116,15 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
     // TODO: dependencies.
     // we need to get a list of the dependency names so that if we see those stages, 
     // we can add them to the object.
-    Set<String> dependencyNames = s.dependencies;
+    Set<String> namesToGet = new HashSet<String>(s.dependencies);
+    
+    // however, we also want to add the current stage name to get its annotations as well.
+    namesToGet.add(s.name);
+    
+    // check our cache to make sure we have all of these stages - if not, update.
+    namesToGet.removeAll(stageNameToTypeMap.entrySet());
+    if (namesToGet.size() > 0)
+      this.updateCache();
 
     BatchScanner bsc = this.createScanner(s, docIds);
     Iterator<Entry<Key, Value>> iter = bsc.iterator();
@@ -112,22 +133,22 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
       Map<Key, Value> rows = WholeRowIterator.decodeRow(e.getKey(), e.getValue());
       Document root = this.getRoot(rows);
       for (Entry<Key, Value> r : rows.entrySet()) {
-        if (r.getKey().compareColumnQualifier(new Text(s.name)) == 0) {
-          // this is the stage we want.
-          switch (s.type) {
-          case LANG_ID:
-            LangId lid = new LangId();
-            this.deserializer.deserialize(lid, r.getValue().get());
-            root.setLid(lid);
-            break;
-          case LANG_PRED:
-            LanguagePrediction lp = new LanguagePrediction();
-            this.deserializer.deserialize(lp, r.getValue().get());
-            root.setLanguage(lp);
-            break;
-          default:
-            throw new IllegalArgumentException("Case: " + s.type.toString() + " not handled yet.");
-          }
+        Key k = r.getKey();
+        String colQ = k.getColumnQualifier().toString();
+        Type t = stageNameToTypeMap.get(colQ);
+        switch (t) {
+        case LANG_ID:
+          LangId lid = new LangId();
+          this.deserializer.deserialize(lid, r.getValue().get());
+          root.setLid(lid);
+          break;
+        case LANG_PRED:
+          LanguagePrediction lp = new LanguagePrediction();
+          this.deserializer.deserialize(lp, r.getValue().get());
+          root.setLanguage(lp);
+          break;
+        default:
+          throw new IllegalArgumentException("Case: " + s.type.toString() + " not handled yet.");
         }
       }
       
@@ -139,9 +160,14 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
   
   private Document getRoot(Map<Key, Value> decodedRow) throws TException {
     Document d = new Document();
-    for (Map.Entry<Key, Value> entry : decodedRow.entrySet()) 
-      if (entry.getKey().compareColumnFamily(new Text(Constants.DOCUMENT_COLF)) == 0) 
+    Iterator<Entry<Key, Value>> iter = decodedRow.entrySet().iterator();
+    while (iter.hasNext()) {
+      Entry<Key, Value> entry = iter.next();
+      if (entry.getKey().compareColumnFamily(new Text(Constants.DOCUMENT_COLF)) == 0) { 
         this.deserializer.deserialize(d, entry.getValue().get());
+        iter.remove();
+      }
+    }
       
     return d;
   }
@@ -156,6 +182,10 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
       BatchScanner bsc = this.conn.createBatchScanner(Constants.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths(), 8);
       bsc.setRanges(rangeList);
       bsc.fetchColumnFamily(new Text(Constants.DOCUMENT_COLF));
+      // need to fetch columns for all dependencies, as well.
+      for (String dep : stageOfInterest.dependencies)
+        bsc.fetchColumn(new Text(Constants.DOCUMENT_ANNOTATION_COLF), new Text(dep));
+      
       bsc.fetchColumn(new Text(Constants.DOCUMENT_ANNOTATION_COLF), new Text(sName));
       bsc.addScanIterator(new IteratorSetting(1000, "wholeRows", WholeRowIterator.class));
       return bsc;
