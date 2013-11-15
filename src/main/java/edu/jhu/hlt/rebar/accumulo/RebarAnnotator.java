@@ -20,6 +20,7 @@ import com.maxjthomas.dumpster.LangId;
 import com.maxjthomas.dumpster.LanguagePrediction;
 import com.maxjthomas.dumpster.RebarThriftException;
 import com.maxjthomas.dumpster.Stage;
+import com.maxjthomas.dumpster.Type;
 
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.IllegalAnnotationException;
@@ -113,6 +114,8 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
 
   @Override
   public void addLanguageId(Document document, Stage stage, LangId lid) throws TException {
+    if (stage.type != Type.LANG_ID)
+      throw new TException("Stage " + stage.name + " is of type " + stage.type.toString() + "; it cannot support a language ID annotation.");
     try {
       this.addAnnotation(document, stage, lid);
     } catch (MutationsRejectedException | RebarException | IllegalAnnotationException e) {
@@ -128,6 +131,8 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
    */
   @Override
   public void addLanguagePrediction(Document document, Stage stage, LanguagePrediction lp) throws RebarThriftException, TException {
+    if (stage.type != Type.LANG_PRED)
+      throw new TException("Stage " + stage.name + " is of type " + stage.type.toString() + "; it cannot support a language prediction annotation.");
     try {
       this.addAnnotation(document, stage, lp);
     } catch (MutationsRejectedException | RebarException | IllegalAnnotationException e) {

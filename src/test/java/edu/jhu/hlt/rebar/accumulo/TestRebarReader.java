@@ -116,7 +116,7 @@ public class TestRebarReader extends AbstractAccumuloTest {
    * @throws RebarException
    */
   @Test
-  public void testGetAnnotatedDocumentsMultiStage() throws RebarException, Exception {
+  public void testGetAnnotatedDocumentsStageDependency() throws RebarException, Exception {
     // create the stages
     Stage stageA = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>(), Type.LANG_ID);
     Set<String> stageBDeps = new HashSet<>();
@@ -138,7 +138,6 @@ public class TestRebarReader extends AbstractAccumuloTest {
     Set<Document> fetchedDocs = this.rr.getAnnotatedDocuments(stageA);
 
     Set<Document> docsWithLid = new HashSet<>();
-    List<LanguagePrediction> lpList = new ArrayList<>();
     try (RebarAnnotator ra = new RebarAnnotator(this.conn);) {
       // add language prediction annotation
       for (Document d : fetchedDocs) {
@@ -160,7 +159,6 @@ public class TestRebarReader extends AbstractAccumuloTest {
           lp.predictedLanguage = "Unknown";
         }
 
-        lpList.add(lp);
         ra.addLanguagePrediction(d, stageB, lp);
         Document newDoc = new Document(d);
         newDoc.language = lp;
@@ -177,5 +175,99 @@ public class TestRebarReader extends AbstractAccumuloTest {
 
     fetchedDocs = this.rr.getAnnotatedDocuments(stageB);
     assertEquals("Documents with LID should be the same.", docsWithLid, fetchedDocs);
+  }
+  
+  /**
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.RebarReader#getAnnotatedDocuments(com.maxjthomas.dumpster.Stage)}.
+   * 
+   * @throws Exception
+   * @throws RebarException
+   */
+  @Test
+  public void testGetAnnotatedDocumentsManyStages() throws RebarException, Exception {
+    // create the stages
+    Stage stageA = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>(), Type.LANG_ID);
+    Set<String> stageBDeps = new HashSet<>();
+    stageBDeps.add(stageA.name);
+    Stage stageB = new Stage("stage_max_lp_test", "Testing stage for LP", Util.getCurrentUnixTime(), stageBDeps, Type.LANG_PRED);
+    Stage stageC = new Stage("stage_max_lid_test_v2", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>(), Type.LANG_ID);
+    Set<String> stageDDeps = new HashSet<>();
+    stageDDeps.add(stageC.name);
+    Stage stageD = new Stage("stage_max_lp_test_v2", "Testing stage for LP", Util.getCurrentUnixTime(), stageDDeps, Type.LANG_PRED);
+
+    // ingest documents
+    int nDocs = 1;
+    List<Document> docList = this.ingestDocuments(nDocs);
+
+    // annotate documents
+    try (RebarAnnotator ra = new RebarAnnotator(this.conn);) {
+      for (Document d : docList) {
+        LangId mockLid = generateLangId(d);
+        ra.addLanguageId(d, stageA, mockLid);
+        mockLid = generateLangId(d);
+        ra.addLanguageId(d, stageC, mockLid);
+      }
+    }
+
+    Set<Document> fetchedDocs = this.rr.getAnnotatedDocuments(stageA);
+
+    Set<Document> docsWithLid = new HashSet<>();
+    Set<Document> docsWithLidSetD = new HashSet<>();
+    try (RebarAnnotator ra = new RebarAnnotator(this.conn);) {
+      // add language prediction annotation
+      for (Document d : fetchedDocs) {
+        LangId lid = d.lid;
+        LanguagePrediction lp = new LanguagePrediction();
+        Entry<String, Double> e = lid.languageToProbabilityMap.entrySet().iterator().next();
+
+        switch (e.getKey()) {
+        case "eng":
+          lp.predictedLanguage = "English";
+          break;
+        case "fra":
+          lp.predictedLanguage = "French";
+          break;
+        case "spa":
+          lp.predictedLanguage = "Spanish";
+          break;
+        default:
+          lp.predictedLanguage = "Unknown";
+        }
+
+        ra.addLanguagePrediction(d, stageB, lp);
+        
+        
+        Document newDoc = new Document(d);
+        newDoc.language = lp;
+        docsWithLid.add(newDoc);
+      }
+      
+      for (Document d : this.rr.getAnnotatedDocuments(stageC)) {
+        LanguagePrediction lpD = new LanguagePrediction();
+        lpD.predictedLanguage = "Swahili";
+        ra.addLanguagePrediction(d, stageD, lpD);
+        
+        Document dDoc = new Document(d);
+        dDoc.language = lpD;
+        docsWithLidSetD.add(dDoc);
+      }
+    }
+    
+    int annotatedDocs = 0;
+    try (AccumuloStageHandler ash = new AccumuloStageHandler(this.conn);) {
+      annotatedDocs = ash.getAnnotatedDocumentCount(stageB);
+    }
+    assertEquals("Should get n annotated docs: (n = " + nDocs + ")", nDocs, annotatedDocs);
+    
+    try (AccumuloStageHandler ash = new AccumuloStageHandler(this.conn);) {
+      annotatedDocs = ash.getAnnotatedDocumentCount(stageD);
+    }
+    assertEquals("Should get n annotated docs: (n = " + nDocs + ")", nDocs, annotatedDocs);
+
+    fetchedDocs = this.rr.getAnnotatedDocuments(stageB);
+    assertEquals("Documents with LID should be the same.", docsWithLid, fetchedDocs);
+    
+    fetchedDocs = this.rr.getAnnotatedDocuments(stageD);
+    assertEquals("Documents with LID in set D should be the same.", docsWithLidSetD, fetchedDocs);
   }
 }

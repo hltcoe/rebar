@@ -27,6 +27,7 @@ import org.junit.Test;
 import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.LangId;
 import com.maxjthomas.dumpster.Stage;
+import com.maxjthomas.dumpster.Type;
 
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.Util;
@@ -98,6 +99,20 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
       LangId lid = generateLangId(d);
       lidList.add(lid);
       this.ra.addLanguageId(d, newStage, lid);
+      this.ra.addLanguageId(d, newStage, lid);
+    }
+  }
+  
+  @Test(expected=TException.class)
+  public void testAnnotateWrongType() throws Exception {
+//    
+    Stage newStage = TestAccumuloStageHandler.generateTestStage();
+    newStage.type = Type.LANG_PRED;
+
+    List<LangId> lidList = new ArrayList<>();
+    for (Document d : this.docSet) {
+      LangId lid = generateLangId(d);
+      lidList.add(lid);
       this.ra.addLanguageId(d, newStage, lid);
     }
   }
