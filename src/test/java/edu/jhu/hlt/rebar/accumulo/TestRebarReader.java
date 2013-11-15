@@ -33,7 +33,9 @@ import org.junit.Test;
 
 import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.LangId;
+import com.maxjthomas.dumpster.LanguagePrediction;
 import com.maxjthomas.dumpster.Stage;
+import com.maxjthomas.dumpster.Type;
 
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
@@ -47,7 +49,7 @@ import edu.jhu.hlt.rebar.config.RebarConfiguration;
 public class TestRebarReader extends AbstractAccumuloTest {
 
   private RebarReader rr;
-  
+
   /**
    * @throws java.lang.Exception
    */
@@ -74,13 +76,8 @@ public class TestRebarReader extends AbstractAccumuloTest {
   @Test
   public void testGetAnnotatedDocuments() throws RebarException, Exception {
     int nDocs = 3;
-    List<Document> docList = new ArrayList<>(generateMockDocumentSet(nDocs));
-    try (RebarIngester re = new RebarIngester(this.conn);) {
-      for (Document d : docList)
-        re.ingest(d);
-      
-    }
-    
+    List<Document> docList = this.ingestDocuments(nDocs);
+
     Set<Document> docsWithLid = new HashSet<>();
 
     List<LangId> langIdList = new ArrayList<>();
@@ -112,4 +109,73 @@ public class TestRebarReader extends AbstractAccumuloTest {
     assertEquals("Documents with LID should be the same.", docsWithLid, fetchedDocs);
   }
 
+  /**
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.RebarReader#getAnnotatedDocuments(com.maxjthomas.dumpster.Stage)}.
+   * 
+   * @throws Exception
+   * @throws RebarException
+   */
+  @Test
+  public void testGetAnnotatedDocumentsMultiStage() throws RebarException, Exception {
+    // create the stages
+    Stage stageA = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>(), Type.LANG_ID);
+    Set<String> stageBDeps = new HashSet<>();
+    stageBDeps.add(stageA.name);
+    Stage stageB = new Stage("stage_max_lp_test", "Testing stage for LP", Util.getCurrentUnixTime(), stageBDeps, Type.LANG_PRED);
+
+    // ingest documents
+    int nDocs = 3;
+    List<Document> docList = this.ingestDocuments(nDocs);
+
+    // annotate documents
+    try (RebarAnnotator ra = new RebarAnnotator(this.conn);) {
+      for (Document d : docList) {
+        LangId mockLid = generateLangId(d);
+        ra.addLanguageId(d, stageA, mockLid);
+      }
+    }
+
+    Set<Document> fetchedDocs = this.rr.getAnnotatedDocuments(stageA);
+
+    Set<Document> docsWithLid = new HashSet<>();
+    List<LanguagePrediction> lpList = new ArrayList<>();
+    try (RebarAnnotator ra = new RebarAnnotator(this.conn);) {
+      // add language prediction annotation
+      for (Document d : fetchedDocs) {
+        LangId lid = d.lid;
+        LanguagePrediction lp = new LanguagePrediction();
+        Entry<String, Double> e = lid.languageToProbabilityMap.entrySet().iterator().next();
+
+        switch (e.getKey()) {
+        case "eng":
+          lp.predictedLanguage = "English";
+          break;
+        case "fra":
+          lp.predictedLanguage = "French";
+          break;
+        case "spa":
+          lp.predictedLanguage = "Spanish";
+          break;
+        default:
+          lp.predictedLanguage = "Unknown";
+        }
+
+        lpList.add(lp);
+        ra.addLanguagePrediction(d, stageB, lp);
+        Document newDoc = new Document(d);
+        newDoc.language = lp;
+        docsWithLid.add(newDoc);
+      }
+    }
+    
+    int annotatedDocs = 0;
+    try (AccumuloStageHandler ash = new AccumuloStageHandler(this.conn);) {
+      annotatedDocs = ash.getAnnotatedDocumentCount(stageB);
+    }
+
+    assertEquals("Should get n annotated docs: (n = " + nDocs + ")", nDocs, annotatedDocs);
+
+    fetchedDocs = this.rr.getAnnotatedDocuments(stageB);
+    assertEquals("Documents with LID should be the same.", docsWithLid, fetchedDocs);
+  }
 }

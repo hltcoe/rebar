@@ -104,7 +104,7 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
    * @see com.maxjthomas.dumpster.Ingester.Iface#ingest(com.maxjthomas.dumpster.Document)
    */
   @Override
-  public void ingest(Document d) throws IngestException {
+  public void ingest(Document d) throws TException {
     try {
       if (isDocumentIngested(d) || isDocumentPendingIngest(d))
         return;
@@ -120,16 +120,7 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
         throw new RebarException(e);
       }
     } catch (RebarException e) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      try {
-        new ObjectOutputStream(os).writeObject(e);
-      } catch (IOException e1) {
-        throw new IngestException(e1.getMessage());
-      }
-
-      IngestException ie = new IngestException(e.getMessage());
-      ie.setSerEx(os.toByteArray());
-      throw ie;
+      throw new TException(e);
     }
   }
 }

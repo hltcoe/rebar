@@ -90,7 +90,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
   
   @Test(expected=TException.class)
   public void testAnnotateDocumentTwice() throws Exception {
-//    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
+//    
     Stage newStage = TestAccumuloStageHandler.generateTestStage();
 
     List<LangId> lidList = new ArrayList<>();

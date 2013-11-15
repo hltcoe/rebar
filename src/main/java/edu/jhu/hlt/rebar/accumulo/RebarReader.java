@@ -30,6 +30,7 @@ import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.LangId;
+import com.maxjthomas.dumpster.LanguagePrediction;
 import com.maxjthomas.dumpster.Reader;
 import com.maxjthomas.dumpster.Stage;
 
@@ -98,6 +99,11 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
   
   private Set<Document> constructDocumentSet(Stage s, Set<String> docIds) throws RebarException, TException, IOException {
     Set<Document> docSet = new HashSet<>();
+    
+    // TODO: dependencies.
+    // we need to get a list of the dependency names so that if we see those stages, 
+    // we can add them to the object.
+    Set<String> dependencyNames = s.dependencies;
 
     BatchScanner bsc = this.createScanner(s, docIds);
     Iterator<Entry<Key, Value>> iter = bsc.iterator();
@@ -113,6 +119,11 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
             LangId lid = new LangId();
             this.deserializer.deserialize(lid, r.getValue().get());
             root.setLid(lid);
+            break;
+          case LANG_PRED:
+            LanguagePrediction lp = new LanguagePrediction();
+            this.deserializer.deserialize(lp, r.getValue().get());
+            root.setLanguage(lp);
             break;
           default:
             throw new IllegalArgumentException("Case: " + s.type.toString() + " not handled yet.");
