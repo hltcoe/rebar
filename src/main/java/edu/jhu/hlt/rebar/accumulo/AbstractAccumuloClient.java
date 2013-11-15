@@ -15,8 +15,8 @@ import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
+import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
  * @author max
@@ -72,9 +72,9 @@ public abstract class AbstractAccumuloClient implements AutoCloseable {
   }
   
   public static Connector getConnector() throws RebarException {
-    Instance zki = new ZooKeeperInstance(RebarConfiguration.getAccumuloInstanceName(), RebarConfiguration.getZookeeperServer());
+    Instance zki = new ZooKeeperInstance(Configuration.getAccumuloInstanceName(), Configuration.getZookeeperServer());
     try {
-      return zki.getConnector(RebarConfiguration.getAccumuloUser(), RebarConfiguration.getPasswordToken());
+      return zki.getConnector(Configuration.getAccumuloUser(), Configuration.getPasswordToken());
     } catch (AccumuloException e) {
       throw new RebarException(e);
     } catch (AccumuloSecurityException e) {

@@ -40,9 +40,9 @@ import redis.clients.jedis.Jedis;
 import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.DocType;
 
+import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
  * @author max
@@ -106,7 +106,7 @@ public class TestRebarIngester extends AbstractAccumuloTest {
       fetchDocs.add(d);
     }
     
-    BatchScanner bsc = this.conn.createBatchScanner(edu.jhu.hlt.rebar.Constants.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths(), 10);
+    BatchScanner bsc = this.conn.createBatchScanner(edu.jhu.hlt.rebar.Constants.DOCUMENT_TABLE_NAME, Configuration.getAuths(), 10);
     List<Range> rangeList = new ArrayList<>();
     rangeList.add(new Range(docs.iterator().next().id));
     bsc.setRanges(rangeList);

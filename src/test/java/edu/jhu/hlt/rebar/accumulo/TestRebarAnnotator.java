@@ -30,8 +30,8 @@ import com.maxjthomas.dumpster.Stage;
 import com.maxjthomas.dumpster.Type;
 
 import edu.jhu.hlt.rebar.Constants;
+import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Util;
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
  * @author max
@@ -83,7 +83,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
 
     Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
     assertEquals("Should get 20 total rows.", 20, Util.countIteratorResults(iter));
-    try (AccumuloStageHandler ashy = new AccumuloStageHandler(this.conn);) {
+    try (RebarStageHandler ashy = new RebarStageHandler(this.conn);) {
       Set<Stage> stageSet = ashy.getStages();
       assertTrue("Should get a stage added.", stageSet.size() > 0);
     }
@@ -122,7 +122,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
 //    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
     Stage newStage = TestAccumuloStageHandler.generateTestStage();
     
-    try (AccumuloStageHandler ash = new AccumuloStageHandler(conn);) {
+    try (RebarStageHandler ash = new RebarStageHandler(conn);) {
       ash.createStage(newStage);
     }
 
@@ -145,7 +145,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
     Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
     assertEquals("Should get 30 total rows.", 30, Util.countIteratorResults(iter));
     
-    Scanner sc = this.conn.createScanner(Constants.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths());
+    Scanner sc = this.conn.createScanner(Constants.DOCUMENT_TABLE_NAME, Configuration.getAuths());
     sc.setRange(new Range());
     sc.fetchColumn(new Text(Constants.DOCUMENT_ANNOTATION_COLF), new Text(newStage.name));
     iter = sc.iterator();

@@ -32,7 +32,7 @@ import edu.jhu.hlt.rebar.RebarException;
  */
 public class RebarAnnotator extends AbstractAccumuloClient implements AutoCloseable, Annotator.Iface {
 
-  private final AccumuloStageHandler ash;
+  private final RebarStageHandler ash;
   private static final Map<String, Set<String>> stageNameToIngestedIdSetMap;
   static {
     stageNameToIngestedIdSetMap = new HashMap<>();
@@ -48,7 +48,7 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
 
   public RebarAnnotator(Connector conn) throws RebarException {
     super(conn);
-    this.ash = new AccumuloStageHandler(this.conn);
+    this.ash = new RebarStageHandler(this.conn);
     for (Stage s : this.ash.getStagesInternal()) {
       String name = s.name;
       Set<String> annotatedIds = this.ash.getAnnotatedDocumentIds(s);

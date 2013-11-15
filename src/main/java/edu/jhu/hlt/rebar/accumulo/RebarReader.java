@@ -33,8 +33,8 @@ import com.maxjthomas.dumpster.Stage;
 import com.maxjthomas.dumpster.Type;
 
 import edu.jhu.hlt.rebar.Constants;
+import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
  * @author max
@@ -42,7 +42,7 @@ import edu.jhu.hlt.rebar.config.RebarConfiguration;
  */
 public class RebarReader extends AbstractAccumuloClient implements Reader.Iface {
 
-  private final AccumuloStageHandler ash;
+  private final RebarStageHandler ash;
   private static Map<String, Type> stageNameToTypeMap = null;
   
   /**
@@ -58,7 +58,7 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
    */
   public RebarReader(Connector conn) throws RebarException {
     super(conn);
-    this.ash = new AccumuloStageHandler(this.conn);
+    this.ash = new RebarStageHandler(this.conn);
     if (stageNameToTypeMap == null) {
       this.updateCache();
     }
@@ -179,7 +179,7 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
     
     try {
       String sName = stageOfInterest.name;
-      BatchScanner bsc = this.conn.createBatchScanner(Constants.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths(), 8);
+      BatchScanner bsc = this.conn.createBatchScanner(Constants.DOCUMENT_TABLE_NAME, Configuration.getAuths(), 8);
       bsc.setRanges(rangeList);
       bsc.fetchColumnFamily(new Text(Constants.DOCUMENT_COLF));
       // need to fetch columns for all dependencies, as well.

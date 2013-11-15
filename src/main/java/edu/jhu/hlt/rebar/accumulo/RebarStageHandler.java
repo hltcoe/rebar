@@ -25,26 +25,26 @@ import com.maxjthomas.dumpster.Stage;
 import com.maxjthomas.dumpster.StageHandler;
 
 import edu.jhu.hlt.rebar.Constants;
+import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
  * @author max
  * 
  */
-public class AccumuloStageHandler extends AbstractAccumuloClient implements StageHandler.Iface {
+public class RebarStageHandler extends AbstractAccumuloClient implements StageHandler.Iface {
 
   private final BatchWriter stagesTableBW;
 
   /**
    * 
    */
-  public AccumuloStageHandler() throws RebarException {
+  public RebarStageHandler() throws RebarException {
     this(AbstractAccumuloClient.getConnector());
   }
 
-  public AccumuloStageHandler(Connector conn) throws RebarException {
+  public RebarStageHandler(Connector conn) throws RebarException {
     super(conn);
     try {
       this.tableOps.createTableIfNotExists(Constants.STAGES_TABLE_NAME);
@@ -94,7 +94,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
 
   public boolean stageExistsInternal(String stageName) throws RebarException {
     try {
-      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
+      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, Configuration.getAuths());
       Range r = new Range(stageName);
       sc.setRange(r);
       Iterator<Entry<Key, Value>> iter = sc.iterator();
@@ -158,7 +158,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
   public Set<Stage> getStagesInternal() throws RebarException {
     Set<Stage> stagesToReturn = new HashSet<>();
     try {
-      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
+      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, Configuration.getAuths());
       Range r = new Range();
       sc.setRange(r);
       sc.fetchColumnFamily(new Text(Constants.STAGES_OBJ_COLF));
@@ -192,7 +192,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
   @Override
   public int getAnnotatedDocumentCount(Stage stage) throws TException {
     try {
-      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
+      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, Configuration.getAuths());
       Range r = new Range(stage.name);
       sc.setRange(r);
       sc.fetchColumnFamily(new Text(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF));
@@ -219,7 +219,7 @@ public class AccumuloStageHandler extends AbstractAccumuloClient implements Stag
     Set<String> ids = new HashSet<>();
 
     try {
-      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, RebarConfiguration.getAuths());
+      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, Configuration.getAuths());
       Range r = new Range(s.name);
       sc.setRange(r);
       sc.fetchColumnFamily(new Text(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF));

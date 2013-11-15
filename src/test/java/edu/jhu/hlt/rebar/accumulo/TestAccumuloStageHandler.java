@@ -43,7 +43,7 @@ import edu.jhu.hlt.rebar.Util;
  */
 public class TestAccumuloStageHandler extends AbstractAccumuloTest {
 
-  private AccumuloStageHandler ash;
+  private RebarStageHandler ash;
   
   /**
    * @throws java.lang.Exception
@@ -51,7 +51,7 @@ public class TestAccumuloStageHandler extends AbstractAccumuloTest {
   @Before
   public void setUp() throws Exception {
     this.initialize();
-    this.ash = new AccumuloStageHandler(this.conn);
+    this.ash = new RebarStageHandler(this.conn);
   }
   
   /**
@@ -63,7 +63,7 @@ public class TestAccumuloStageHandler extends AbstractAccumuloTest {
   }
 
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#stageExists(java.lang.String)}.
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.RebarStageHandler#stageExists(java.lang.String)}.
    * @throws TException 
    */
   @Test
@@ -76,7 +76,7 @@ public class TestAccumuloStageHandler extends AbstractAccumuloTest {
   }
 
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#createStage(com.maxjthomas.dumpster.Stage)}.
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.RebarStageHandler#createStage(com.maxjthomas.dumpster.Stage)}.
    * @throws TException 
    * @throws TableNotFoundException 
    */
@@ -119,7 +119,7 @@ public class TestAccumuloStageHandler extends AbstractAccumuloTest {
   }
   
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#createStage(com.maxjthomas.dumpster.Stage)}.
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.RebarStageHandler#createStage(com.maxjthomas.dumpster.Stage)}.
    * @throws TException 
    * @throws TableNotFoundException 
    */
@@ -133,7 +133,7 @@ public class TestAccumuloStageHandler extends AbstractAccumuloTest {
   }
   
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#createStage(com.maxjthomas.dumpster.Stage)}.
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.RebarStageHandler#createStage(com.maxjthomas.dumpster.Stage)}.
    * @throws TException 
    * @throws TableNotFoundException 
    */
@@ -145,7 +145,7 @@ public class TestAccumuloStageHandler extends AbstractAccumuloTest {
   }
 
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#getStages()}.
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.RebarStageHandler#getStages()}.
    * @throws Exception 
    * @throws RebarException 
    */
@@ -157,14 +157,14 @@ public class TestAccumuloStageHandler extends AbstractAccumuloTest {
     Set<Stage> stages = this.ash.getStages();
     assertEquals("Stages should be equal.", s, stages.iterator().next());
     
-    try (AccumuloStageHandler handler = new AccumuloStageHandler(conn);) {
+    try (RebarStageHandler handler = new RebarStageHandler(conn);) {
       stages = handler.getStages();
       assertEquals("Stages should be equal despite different handler.", s, stages.iterator().next());
     }
   }
   
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.accumulo.AccumuloStageHandler#getStages()}.
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.RebarStageHandler#getStages()}.
    * @throws TException 
    */
   @Test

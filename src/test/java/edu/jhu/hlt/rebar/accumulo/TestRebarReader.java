@@ -38,9 +38,9 @@ import com.maxjthomas.dumpster.Stage;
 import com.maxjthomas.dumpster.Type;
 
 import edu.jhu.hlt.rebar.Constants;
+import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
  * @author max
@@ -95,7 +95,7 @@ public class TestRebarReader extends AbstractAccumuloTest {
 
     int annotatedDocs = 0;
     Set<String> idSet;
-    try (AccumuloStageHandler ash = new AccumuloStageHandler(this.conn);) {
+    try (RebarStageHandler ash = new RebarStageHandler(this.conn);) {
       annotatedDocs = ash.getAnnotatedDocumentCount(s);
       idSet = ash.getAnnotatedDocumentIds(s);
     }
@@ -167,7 +167,7 @@ public class TestRebarReader extends AbstractAccumuloTest {
     }
     
     int annotatedDocs = 0;
-    try (AccumuloStageHandler ash = new AccumuloStageHandler(this.conn);) {
+    try (RebarStageHandler ash = new RebarStageHandler(this.conn);) {
       annotatedDocs = ash.getAnnotatedDocumentCount(stageB);
     }
 
@@ -254,12 +254,12 @@ public class TestRebarReader extends AbstractAccumuloTest {
     }
     
     int annotatedDocs = 0;
-    try (AccumuloStageHandler ash = new AccumuloStageHandler(this.conn);) {
+    try (RebarStageHandler ash = new RebarStageHandler(this.conn);) {
       annotatedDocs = ash.getAnnotatedDocumentCount(stageB);
     }
     assertEquals("Should get n annotated docs: (n = " + nDocs + ")", nDocs, annotatedDocs);
     
-    try (AccumuloStageHandler ash = new AccumuloStageHandler(this.conn);) {
+    try (RebarStageHandler ash = new RebarStageHandler(this.conn);) {
       annotatedDocs = ash.getAnnotatedDocumentCount(stageD);
     }
     assertEquals("Should get n annotated docs: (n = " + nDocs + ")", nDocs, annotatedDocs);

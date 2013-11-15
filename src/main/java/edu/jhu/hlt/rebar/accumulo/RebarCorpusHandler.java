@@ -27,8 +27,8 @@ import com.maxjthomas.dumpster.Document;
 import com.maxjthomas.dumpster.RebarThriftException;
 
 import edu.jhu.hlt.rebar.Constants;
+import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
  * @author max
@@ -130,7 +130,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
     Set<Document> docSet = new HashSet<>();
     try {
       // first hit the corpus table itself, to get the ids for the ranges.
-      Scanner sc = this.conn.createScanner(corpusName, RebarConfiguration.getAuths());
+      Scanner sc = this.conn.createScanner(corpusName, Configuration.getAuths());
       Range r = new Range();
       sc.setRange(r);
       
@@ -143,7 +143,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
         rangeSet.add(range);
       }
       
-      BatchScanner bsc = this.conn.createBatchScanner(Constants.DOCUMENT_TABLE_NAME, RebarConfiguration.getAuths(), 10);
+      BatchScanner bsc = this.conn.createBatchScanner(Constants.DOCUMENT_TABLE_NAME, Configuration.getAuths(), 10);
       bsc.setRanges(rangeSet);
 
       Iterator<Entry<Key, Value>> bscIter = bsc.iterator();
@@ -176,7 +176,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
   @Override
   public Set<String> listCorpora() throws RebarThriftException, TException {
     try {
-      Scanner sc = this.conn.createScanner(Constants.AVAILABLE_CORPUS_TABLE_NAME, RebarConfiguration.getAuths());
+      Scanner sc = this.conn.createScanner(Constants.AVAILABLE_CORPUS_TABLE_NAME, Configuration.getAuths());
       Range r = new Range();
       sc.setRange(r);
       Iterator<Entry<Key, Value>> iter = sc.iterator();
@@ -234,7 +234,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
   @Override
   public boolean corpusExists(String corpusName) throws TException {
     try {
-      Scanner sc = this.conn.createScanner(Constants.AVAILABLE_CORPUS_TABLE_NAME, RebarConfiguration.getAuths());
+      Scanner sc = this.conn.createScanner(Constants.AVAILABLE_CORPUS_TABLE_NAME, Configuration.getAuths());
       Range r = new Range(corpusName);
       sc.setRange(r);
       Iterator<Entry<Key, Value>> iter = sc.iterator();

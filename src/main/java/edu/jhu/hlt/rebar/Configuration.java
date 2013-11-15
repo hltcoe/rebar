@@ -7,7 +7,7 @@
 /**
  * Class for reading and accessing configuration values in rebar.properties.
  */
-package edu.jhu.hlt.rebar.config;
+package edu.jhu.hlt.rebar;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,8 +19,6 @@ import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.log4j.PropertyConfigurator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Class for reading and accessing configuration values in rebar.properties.
@@ -28,16 +26,14 @@ import org.slf4j.LoggerFactory;
  * Also configures the log4j logger based on properties defined in that file.
  * 
  */
-public final class RebarConfiguration {
-  private static final Logger LOGGER = LoggerFactory.getLogger(RebarConfiguration.class);
-
+public final class Configuration {
   private static final Properties props;
   
   static {
     props = new Properties();
     InputStream stream = null;
     try {
-      stream = RebarConfiguration.class.getClassLoader().getResourceAsStream("rebar.properties");
+      stream = Configuration.class.getClassLoader().getResourceAsStream("rebar.properties");
       if (stream == null)
         throw new RuntimeException("Problem finding rebar.properties on the classpath.");
       props.load(stream);
@@ -47,7 +43,7 @@ public final class RebarConfiguration {
       try {
         stream.close();
       } catch (IOException ioe) {
-        LOGGER.debug(ioe.getMessage(), ioe);
+        
       }
     }
     // Configure the logger.
