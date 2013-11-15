@@ -41,7 +41,7 @@ import edu.jhu.hlt.rebar.Util;
  * @author max
  *
  */
-public class TestAccumuloStageHandler extends AbstractAccumuloTest {
+public class TestRebarStageHandler extends AbstractAccumuloTest {
 
   private RebarStageHandler ash;
   

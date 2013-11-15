@@ -72,7 +72,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
   @Test
   public void testAnnotateDocumentNoStage() throws Exception {
 //    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
-    Stage newStage = TestAccumuloStageHandler.generateTestStage();
+    Stage newStage = TestRebarStageHandler.generateTestStage();
 
     List<LangId> lidList = new ArrayList<>();
     for (Document d : this.docSet) {
@@ -92,7 +92,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
   @Test(expected=TException.class)
   public void testAnnotateDocumentTwice() throws Exception {
 //    
-    Stage newStage = TestAccumuloStageHandler.generateTestStage();
+    Stage newStage = TestRebarStageHandler.generateTestStage();
 
     List<LangId> lidList = new ArrayList<>();
     for (Document d : this.docSet) {
@@ -106,7 +106,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
   @Test(expected=TException.class)
   public void testAnnotateWrongType() throws Exception {
 //    
-    Stage newStage = TestAccumuloStageHandler.generateTestStage();
+    Stage newStage = TestRebarStageHandler.generateTestStage();
     newStage.type = Type.LANG_PRED;
 
     List<LangId> lidList = new ArrayList<>();
@@ -120,7 +120,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
   @Test
   public void testAnnotateDocument() throws Exception {
 //    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
-    Stage newStage = TestAccumuloStageHandler.generateTestStage();
+    Stage newStage = TestRebarStageHandler.generateTestStage();
     
     try (RebarStageHandler ash = new RebarStageHandler(conn);) {
       ash.createStage(newStage);
