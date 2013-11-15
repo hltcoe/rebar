@@ -180,17 +180,7 @@
     </profile>
   </profiles>
   <dependencies>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.0.13</version>
-      <exclusions>
-	<exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-	</exclusion>
-      </exclusions>
-    </dependency>
+    
     <!-- Test dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -205,6 +195,12 @@
       <scope>test</scope>
     </dependency>
 
+<dependency>
+	<groupId>org.slf4j</groupId>
+	<artifactId>slf4j-api</artifactId>
+	<version>1.7.5</version>
+</dependency>
+            
     <dependency>
       <groupId>com.maxjthomas.dumpster</groupId>
       <artifactId>dumpster</artifactId>
