@@ -42,7 +42,7 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
    * 
    */
   public RebarAnnotator() throws RebarException {
-    this(AbstractAccumuloClient.getConnector());
+    this(Constants.getConnector());
   }
 
   public RebarAnnotator(Connector conn) throws RebarException {

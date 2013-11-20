@@ -43,7 +43,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
    * @throws RebarException
    */
   public RebarCorpusHandler() throws RebarException {
-    this(AbstractAccumuloClient.getConnector());
+    this(Constants.getConnector());
   }
 
   /**

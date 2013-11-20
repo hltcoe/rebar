@@ -43,7 +43,7 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
    * 
    */
   public RebarIngester() throws RebarException {
-    this(AbstractAccumuloClient.getConnector());
+    this(Constants.getConnector());
   }
   
   public RebarIngester(Connector conn) throws RebarException {

@@ -49,7 +49,7 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
    * @throws RebarException
    */
   public RebarReader() throws RebarException {
-    this(getConnector());
+    this(Constants.getConnector());
   }
 
   /**

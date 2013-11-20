@@ -16,6 +16,7 @@ import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
 import edu.jhu.hlt.rebar.Configuration;
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 
 /**
@@ -55,7 +56,7 @@ public abstract class AbstractAccumuloClient implements AutoCloseable {
    * 
    */
   public AbstractAccumuloClient() throws RebarException {
-    this(getConnector());
+    this(Constants.getConnector());
   }
 
   public AbstractAccumuloClient(Connector conn) throws RebarException {
@@ -67,17 +68,6 @@ public abstract class AbstractAccumuloClient implements AutoCloseable {
     try {
       this.bw = this.conn.createBatchWriter(documentTableName, defaultBwOpts.getBatchWriterConfig());
     } catch (TableNotFoundException e) {
-      throw new RebarException(e);
-    }
-  }
-  
-  public static Connector getConnector() throws RebarException {
-    Instance zki = new ZooKeeperInstance(Configuration.getAccumuloInstanceName(), Configuration.getZookeeperServer());
-    try {
-      return zki.getConnector(Configuration.getAccumuloUser(), Configuration.getPasswordToken());
-    } catch (AccumuloException e) {
-      throw new RebarException(e);
-    } catch (AccumuloSecurityException e) {
       throw new RebarException(e);
     }
   }

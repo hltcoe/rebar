@@ -40,7 +40,7 @@ public class RebarStageHandler extends AbstractAccumuloClient implements StageHa
    * 
    */
   public RebarStageHandler() throws RebarException {
-    this(AbstractAccumuloClient.getConnector());
+    this(Constants.getConnector());
   }
 
   public RebarStageHandler(Connector conn) throws RebarException {
