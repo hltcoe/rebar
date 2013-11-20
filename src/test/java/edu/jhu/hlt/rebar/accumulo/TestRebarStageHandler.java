@@ -29,10 +29,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.maxjthomas.dumpster.Document;
-import com.maxjthomas.dumpster.LangId;
-import com.maxjthomas.dumpster.Stage;
-
+import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.Stage;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
@@ -186,8 +184,8 @@ public class TestRebarStageHandler extends AbstractAccumuloTest {
   public void testAddAnnotatedDocument() throws RebarException, Exception {
     Stage s = generateTestStage();
     
-    Set<Document> docSet = TestRebarIngester.generateMockDocumentSet(10);
-    for (Document d : docSet) {
+    Set<Communication> docSet = TestRebarIngester.generateMockDocumentSet(10);
+    for (Communication d : docSet) {
       this.ash.addAnnotatedDocument(s, d);
     }
     
@@ -198,9 +196,9 @@ public class TestRebarStageHandler extends AbstractAccumuloTest {
   public void testGetAnnotatedDocumentCount() throws RebarException, Exception {
     Stage s = generateTestStage();
     
-    Set<Document> docSet = TestRebarIngester.generateMockDocumentSet(10);
+    Set<Communication> docSet = TestRebarIngester.generateMockDocumentSet(10);
     try (RebarAnnotator ra = new RebarAnnotator(this.conn);) {
-      for (Document d : docSet) {
+      for (Communication d : docSet) {
         ra.addLanguageId(d, s, TestRebarAnnotator.generateLangId(d));
       }
     }
@@ -212,13 +210,13 @@ public class TestRebarStageHandler extends AbstractAccumuloTest {
   public void testGetAnnotatedDocumentIds() throws RebarException, Exception {
     Stage s = generateTestStage();
     
-    Set<Document> docSet = TestRebarIngester.generateMockDocumentSet(10);
-    for (Document d : docSet) {
+    Set<Communication> docSet = TestRebarIngester.generateMockDocumentSet(10);
+    for (Communication d : docSet) {
       this.ash.addAnnotatedDocument(s, d);
     }
     
     Set<String> idSet = new HashSet<>();
-    for (Document d : docSet)
+    for (Communication d : docSet)
       idSet.add(d.id);
     
     assertEquals("Should have equal ID sets:", idSet, this.ash.getAnnotatedDocumentIds(s));

@@ -30,12 +30,11 @@ import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
-import com.maxjthomas.dumpster.DocType;
-import com.maxjthomas.dumpster.Document;
-import com.maxjthomas.dumpster.LangId;
-import com.maxjthomas.dumpster.Stage;
-import com.maxjthomas.dumpster.Type;
-
+import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.DocType;
+import edu.jhu.hlt.concrete.LangId;
+import edu.jhu.hlt.concrete.Stage;
+import edu.jhu.hlt.concrete.StageType;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
 
@@ -74,17 +73,17 @@ public class AbstractAccumuloTest {
     return sc.iterator();
   }
 
-  public static Document generateMockDocument() {
-    Document document = new Document();
-    document.t = DocType.TWEET;
+  public static Communication generateMockDocument() {
+    Communication document = new Communication();
+    document.type = DocType.TWEET;
     document.text = "hello world!";
     document.id = Integer.toString(Math.abs(rand.nextInt()));
 
     return document;
   }
 
-  public static Set<Document> generateMockDocumentSet(int capacity) {
-    Set<Document> docSet = new HashSet<>(capacity);
+  public static Set<Communication> generateMockDocumentSet(int capacity) {
+    Set<Communication> docSet = new HashSet<>(capacity);
     for (int i = 0; i < capacity; i++)
       docSet.add(generateMockDocument());
 
@@ -99,7 +98,7 @@ public class AbstractAccumuloTest {
     return langIdMap;
   }
 
-  protected static LangId generateLangId(Document d) {
+  protected static LangId generateLangId(Communication d) {
     LangId lid = new LangId();
     lid.id = d.id + "_LID";
     lid.name = "max_lid_test";
@@ -108,22 +107,22 @@ public class AbstractAccumuloTest {
     return lid;
   }
 
-  protected static Set<LangId> generateLangIdSet(Set<Document> docSet) {
+  protected static Set<LangId> generateLangIdSet(Set<Communication> docSet) {
     Set<LangId> lidSet = new HashSet<>();
-    for (Document d : docSet)
+    for (Communication d : docSet)
       lidSet.add(generateLangId(d));
 
     return lidSet;
   }
 
   protected static Stage generateTestStage() {
-    return new Stage("stage_foo", "Foo stage for testing", Util.getCurrentUnixTime(), new HashSet<String>(), Type.LANG_ID);
+    return new Stage("stage_foo", "Foo stage for testing", Util.getCurrentUnixTime(), new HashSet<String>(), StageType.LANG_ID);
   }
 
-  protected List<Document> ingestDocuments(int nDocs) throws RebarException, TException {
-    List<Document> docList = new ArrayList<>(generateMockDocumentSet(nDocs));
+  protected List<Communication> ingestDocuments(int nDocs) throws RebarException, TException {
+    List<Communication> docList = new ArrayList<>(generateMockDocumentSet(nDocs));
     try (RebarIngester re = new RebarIngester(this.conn);) {
-      for (Document d : docList)
+      for (Communication d : docList)
         re.ingest(d);
     }
     

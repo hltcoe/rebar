@@ -24,11 +24,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.maxjthomas.dumpster.Document;
-import com.maxjthomas.dumpster.LangId;
-import com.maxjthomas.dumpster.Stage;
-import com.maxjthomas.dumpster.Type;
-
+import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.LangId;
+import edu.jhu.hlt.concrete.Stage;
+import edu.jhu.hlt.concrete.StageType;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Util;
@@ -39,7 +38,7 @@ import edu.jhu.hlt.rebar.Util;
  */
 public class TestRebarAnnotator extends AbstractAccumuloTest {
 
-  private Set<Document> docSet;
+  private Set<Communication> docSet;
   private RebarAnnotator ra;
 
   /**
@@ -53,7 +52,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
     docSet = new HashSet<>();
     RebarIngester ri = new RebarIngester(this.conn);
     for (int i = 0; i < 10; i++) {
-      Document d = TestRebarIngester.generateMockDocument();
+      Communication d = TestRebarIngester.generateMockDocument();
       ri.ingest(d);
       docSet.add(d);
     }
@@ -75,7 +74,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
     Stage newStage = TestRebarStageHandler.generateTestStage();
 
     List<LangId> lidList = new ArrayList<>();
-    for (Document d : this.docSet) {
+    for (Communication d : this.docSet) {
       LangId lid = generateLangId(d);
       lidList.add(lid);
       this.ra.addLanguageId(d, newStage, lid);
@@ -95,7 +94,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
     Stage newStage = TestRebarStageHandler.generateTestStage();
 
     List<LangId> lidList = new ArrayList<>();
-    for (Document d : this.docSet) {
+    for (Communication d : this.docSet) {
       LangId lid = generateLangId(d);
       lidList.add(lid);
       this.ra.addLanguageId(d, newStage, lid);
@@ -107,10 +106,10 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
   public void testAnnotateWrongType() throws Exception {
 //    
     Stage newStage = TestRebarStageHandler.generateTestStage();
-    newStage.type = Type.LANG_PRED;
+    newStage.type = StageType.LANG_PRED;
 
     List<LangId> lidList = new ArrayList<>();
-    for (Document d : this.docSet) {
+    for (Communication d : this.docSet) {
       LangId lid = generateLangId(d);
       lidList.add(lid);
       this.ra.addLanguageId(d, newStage, lid);
@@ -127,7 +126,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
     }
 
     List<LangId> lidList = new ArrayList<>();
-    for (Document d : this.docSet) {
+    for (Communication d : this.docSet) {
       LangId lid = generateLangId(d);
       lidList.add(lid);
       this.ra.addLanguageId(d, newStage, lid);
@@ -136,7 +135,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
     Stage stageTwo = generateTestStage();
     stageTwo.name = "stage_two_test";
     List<LangId> lidListTwo = new ArrayList<>();
-    for (Document d : this.docSet) {
+    for (Communication d : this.docSet) {
       LangId lid = generateLangId(d);
       lidListTwo.add(lid);
       this.ra.addLanguageId(d, stageTwo, lid);
@@ -151,9 +150,9 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
     iter = sc.iterator();
     assertEquals("Should get 10 annotations: ", 10, Util.countIteratorResults(iter));
 
-    List<Document> docList = new ArrayList<>(docSet);
+    List<Communication> docList = new ArrayList<>(docSet);
     for (int i = 0; i < 10; i++) {
-      Document d = docList.get(i);
+      Communication d = docList.get(i);
       LangId lid = lidList.get(i);
       LangId lidTwo = lidListTwo.get(i);
       String id = d.id;
@@ -163,7 +162,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
         Entry<Key, Value> e = iter.next();
         Key k = e.getKey();
         if (k.compareColumnFamily(new Text(Constants.DOCUMENT_COLF)) == 0) {
-          Document dser = new Document();
+          Communication dser = new Communication();
           this.deserializer.deserialize(dser, e.getValue().get());
           assertEquals("Should get a document from document colf.", d, dser);
         } else if (k.compareColumnQualifier(new Text(newStage.name)) == 0) {

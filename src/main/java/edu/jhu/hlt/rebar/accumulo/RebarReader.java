@@ -25,15 +25,15 @@ import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import org.apache.hadoop.io.Text;
 import org.apache.thrift.TException;
 
-import com.maxjthomas.dumpster.Document;
-import com.maxjthomas.dumpster.LangId;
-import com.maxjthomas.dumpster.LanguagePrediction;
-import com.maxjthomas.dumpster.Reader;
-import com.maxjthomas.dumpster.Stage;
-import com.maxjthomas.dumpster.Type;
-
-import edu.jhu.hlt.rebar.Constants;
+import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.LangId;
+import edu.jhu.hlt.concrete.LanguagePrediction;
+import edu.jhu.hlt.concrete.RebarThriftException;
+import edu.jhu.hlt.concrete.Stage;
+import edu.jhu.hlt.concrete.StageType;
+import edu.jhu.hlt.concrete.Reader;
 import edu.jhu.hlt.rebar.Configuration;
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 
 /**
@@ -43,7 +43,7 @@ import edu.jhu.hlt.rebar.RebarException;
 public class RebarReader extends AbstractAccumuloClient implements Reader.Iface {
 
   private final RebarStageHandler ash;
-  private static Map<String, Type> stageNameToTypeMap = null;
+  private static Map<String, StageType> stageNameToTypeMap = null;
   
   /**
    * @throws RebarException
@@ -92,26 +92,9 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
       throw new RebarException(e);
     }
   }
-
-  /* (non-Javadoc)
-   * @see com.maxjthomas.dumpster.Reader.Iface#getAnnotatedDocuments(com.maxjthomas.dumpster.Stage)
-   */
-  @Override
-  public Set<Document> getAnnotatedDocuments(Stage stage) throws TException {
-    if (!this.ash.stageExists(stage.name))
-      throw new TException("Stage " + stage.name + " doesn't exist; can't get its documents.");
-
-    try {
-      Set<String> docIds = this.ash.getAnnotatedDocumentIds(stage);
-      Set<Document> docSet = this.constructDocumentSet(stage, docIds);
-      return docSet;
-    } catch (RebarException | IOException e) {
-      throw new TException(e);
-    }
-  }
   
-  private Set<Document> constructDocumentSet(Stage s, Set<String> docIds) throws RebarException, TException, IOException {
-    Set<Document> docSet = new HashSet<>();
+  private Set<Communication> constructCommunicationSet(Stage s, Set<String> docIds) throws RebarException, TException, IOException {
+    Set<Communication> docSet = new HashSet<>();
     
     // TODO: dependencies.
     // we need to get a list of the dependency names so that if we see those stages, 
@@ -131,11 +114,11 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
     while (iter.hasNext()) {
       Entry<Key, Value> e = iter.next();
       Map<Key, Value> rows = WholeRowIterator.decodeRow(e.getKey(), e.getValue());
-      Document root = this.getRoot(rows);
+      Communication root = this.getRoot(rows);
       for (Entry<Key, Value> r : rows.entrySet()) {
         Key k = r.getKey();
         String colQ = k.getColumnQualifier().toString();
-        Type t = stageNameToTypeMap.get(colQ);
+        StageType t = stageNameToTypeMap.get(colQ);
         switch (t) {
         case LANG_ID:
           LangId lid = new LangId();
@@ -158,8 +141,8 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
     return docSet;
   }
   
-  private Document getRoot(Map<Key, Value> decodedRow) throws TException {
-    Document d = new Document();
+  private Communication getRoot(Map<Key, Value> decodedRow) throws TException {
+    Communication d = new Communication();
     Iterator<Entry<Key, Value>> iter = decodedRow.entrySet().iterator();
     while (iter.hasNext()) {
       Entry<Key, Value> entry = iter.next();
@@ -191,6 +174,23 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
       return bsc;
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
+    }
+  }
+
+  /* (non-Javadoc)
+   * @see edu.jhu.hlt.concrete.Reader.Iface#getAnnotatedCommunications(edu.jhu.hlt.concrete.Stage)
+   */
+  @Override
+  public Set<Communication> getAnnotatedCommunications(Stage stage) throws RebarThriftException, TException {
+    if (!this.ash.stageExists(stage.name))
+      throw new RebarThriftException("Stage " + stage.name + " doesn't exist; can't get its documents.");
+
+    try {
+      Set<String> docIds = this.ash.getAnnotatedDocumentIds(stage);
+      Set<Communication> docSet = this.constructCommunicationSet(stage, docIds);
+      return docSet;
+    } catch (RebarException | IOException e) {
+      throw new TException(e);
     }
   }
 }

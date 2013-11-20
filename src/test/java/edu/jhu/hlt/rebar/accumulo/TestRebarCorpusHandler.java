@@ -27,9 +27,8 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
-import com.maxjthomas.dumpster.Document;
-import com.maxjthomas.dumpster.RebarThriftException;
-
+import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.RebarThriftException;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.Util;
 
@@ -72,7 +71,7 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   public void testCreateBadDocsCorpus() throws Exception {
     String testCorpus = "corpus_foo";
     assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
-    rch.createCorpus(testCorpus, new HashSet<Document>());
+    rch.createCorpus(testCorpus, new HashSet<Communication>());
     rch.close();
   }
   
@@ -89,7 +88,7 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   public void testCreateCorpus() throws Exception {
     String testCorpus = "corpus_foo";
     assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
-    Set<Document> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
+    Set<Communication> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     rch.createCorpus(testCorpus, docSet);
     rch.close();
     
@@ -105,7 +104,7 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   public void testDeleteCorpus() throws Exception {
     String testCorpus = "corpus_foo";
     assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
-    Set<Document> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
+    Set<Communication> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     rch.createCorpus(testCorpus, docSet);
     rch.deleteCorpus(testCorpus);
     rch.close();
@@ -134,7 +133,7 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   public void testCorpusExists() throws Exception {
     String testCorpus = "corpus_foo";
     assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
-    Set<Document> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
+    Set<Communication> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     rch.createCorpus(testCorpus, docSet);
     rch.close();
 
@@ -147,7 +146,7 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   @Test
   public void testListCorpora() throws Exception {
     String testCorpus = "corpus_foo";
-    Set<Document> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
+    Set<Communication> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     assertEquals("Shouldn't find any corpora initially.", 0, rch.listCorpora().size());
     
     rch.createCorpus(testCorpus, docSet);
@@ -165,15 +164,15 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   @Test
   public void testGetCorpusDocSet() throws Exception {
     String testCorpus = "corpus_foo";
-    Set<Document> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
+    Set<Communication> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     try (RebarIngester ri = new RebarIngester(this.conn);) {
-      for (Document d : docSet)
+      for (Communication d : docSet)
         ri.ingest(d);
     }
     
     rch.createCorpus(testCorpus, docSet);
     rch.flush();
-    Set<Document> retDocSet = rch.getCorpusDocumentSet(testCorpus);
+    Set<Communication> retDocSet = rch.getCorpusCommunicationSet(testCorpus);
     rch.close();
     
     assertEquals("Should get the same docs in and out, but didn't.", docSet, retDocSet);

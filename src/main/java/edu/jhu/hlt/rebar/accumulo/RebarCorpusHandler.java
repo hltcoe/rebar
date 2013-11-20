@@ -22,12 +22,11 @@ import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
-import com.maxjthomas.dumpster.CorpusHandler;
-import com.maxjthomas.dumpster.Document;
-import com.maxjthomas.dumpster.RebarThriftException;
-
-import edu.jhu.hlt.rebar.Constants;
+import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.CorpusHandler;
+import edu.jhu.hlt.concrete.RebarThriftException;
 import edu.jhu.hlt.rebar.Configuration;
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 
 /**
@@ -84,7 +83,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
    * @see com.maxjthomas.dumpster.CorpusHandler.Iface#createCorpus(java.lang.String, java.util.Set)
    */
   @Override
-  public void createCorpus(String corpusName, Set<Document> docList) throws RebarThriftException, TException {
+  public void createCorpus(String corpusName, Set<Communication> docList) throws RebarThriftException, TException {
     if (this.corpusExists(corpusName))
       throw new RebarThriftException("This corpus already exists.");
 
@@ -107,7 +106,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
       this.tableOps.createTableIfNotExists(corpusName);
 
       BatchWriter bw = this.conn.createBatchWriter(corpusName, defaultBwOpts.getBatchWriterConfig());
-      for (Document d : docList) {
+      for (Communication d : docList) {
         final Mutation subM = new Mutation(d.id);
         subM.put("", "", new Value(new byte[0]));
         bw.addMutation(subM);
@@ -126,8 +125,8 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
    * @see com.maxjthomas.dumpster.CorpusHandler.Iface#getCorpusDocumentSet(java.lang.String)
    */
   @Override
-  public Set<Document> getCorpusDocumentSet(String corpusName) throws RebarThriftException, TException {
-    Set<Document> docSet = new HashSet<>();
+  public Set<Communication> getCorpusCommunicationSet(String corpusName) throws RebarThriftException, TException {
+    Set<Communication> docSet = new HashSet<>();
     try {
       // first hit the corpus table itself, to get the ids for the ranges.
       Scanner sc = this.conn.createScanner(corpusName, Configuration.getAuths());
@@ -149,7 +148,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
       Iterator<Entry<Key, Value>> bscIter = bsc.iterator();
       while (bscIter.hasNext()) {
         Value v = bscIter.next().getValue();
-        Document d = new Document(); 
+        Communication d = new Communication(); 
         this.deserializer.deserialize(d, v.get());
         docSet.add(d);
       }

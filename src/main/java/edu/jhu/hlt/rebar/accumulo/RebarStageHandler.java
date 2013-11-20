@@ -20,10 +20,9 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
 import org.apache.thrift.TException;
 
-import com.maxjthomas.dumpster.Document;
-import com.maxjthomas.dumpster.Stage;
-import com.maxjthomas.dumpster.StageHandler;
-
+import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.StageHandler;
+import edu.jhu.hlt.concrete.Stage;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.RebarException;
@@ -203,7 +202,7 @@ public class RebarStageHandler extends AbstractAccumuloClient implements StageHa
     }
   }
 
-  public void addAnnotatedDocument(Stage stage, Document document) throws RebarException {
+  public void addAnnotatedDocument(Stage stage, Communication document) throws RebarException {
     try {
       final Mutation m = new Mutation(stage.name);
       m.put(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF, document.id, Util.EMPTY_VALUE);

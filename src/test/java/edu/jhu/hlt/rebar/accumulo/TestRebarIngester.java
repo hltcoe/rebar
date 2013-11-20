@@ -37,9 +37,8 @@ import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 
-import com.maxjthomas.dumpster.Document;
-import com.maxjthomas.dumpster.DocType;
 
+import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
@@ -67,7 +66,7 @@ public class TestRebarIngester extends AbstractAccumuloTest {
   
   @Test
   public void testInsertDocument() throws TException, RebarException, TableNotFoundException {
-    Document d = generateMockDocument();
+    Communication d = generateMockDocument();
     //String rowId = RebarIngester.generateRowId(d);
     String docId = d.id;
     byte[] dbytes = this.serializer.serialize(d);
@@ -87,10 +86,10 @@ public class TestRebarIngester extends AbstractAccumuloTest {
   @Test
   public void testInsertManyDocuments() throws TException, RebarException, TableNotFoundException {
     int nDocs = 50;
-    Set<Document> docs = generateMockDocumentSet(nDocs);
+    Set<Communication> docs = generateMockDocumentSet(nDocs);
     
     RebarIngester rebar = new RebarIngester(this.conn);
-    for (Document d : docs)
+    for (Communication d : docs)
       rebar.ingest(d);
     rebar.close();
     
@@ -98,9 +97,9 @@ public class TestRebarIngester extends AbstractAccumuloTest {
     assertEquals("Should find a few results in accumulo.", nDocs, Util.countIteratorResults(iter));
     
     iter = generateIterator(this.conn, edu.jhu.hlt.rebar.Constants.DOCUMENT_TABLE_NAME, new Range());
-    Set<Document> fetchDocs = new HashSet<>(nDocs);
+    Set<Communication> fetchDocs = new HashSet<>(nDocs);
     while(iter.hasNext()) {
-      Document d = new Document();
+      Communication d = new Communication();
       Value v = iter.next().getValue();
       this.deserializer.deserialize(d, v.get());
       fetchDocs.add(d);

@@ -9,8 +9,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import edu.jhu.hlt.concrete.Communication;
 
-import com.maxjthomas.dumpster.Document;
+
 
 /**
  * @author max
@@ -39,7 +40,7 @@ public class RedisCache {
     }
   }
   
-  public static boolean isDocumentIngested(Document d) throws RebarException {
+  public static boolean isDocumentIngested(Communication d) throws RebarException {
     return getIngestedIds().contains(d.getId());
   }
 }

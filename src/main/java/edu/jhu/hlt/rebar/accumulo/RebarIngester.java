@@ -5,9 +5,6 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,13 +15,8 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TException;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-
-import com.maxjthomas.dumpster.Document;
-import com.maxjthomas.dumpster.IngestException;
-import com.maxjthomas.dumpster.Ingester;
-
+import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.Ingester;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.RedisCache;
@@ -60,11 +52,11 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
     this.pendingInserts = new HashSet<>();
   }
   
-  private boolean isDocumentIngested(Document d) {
+  private boolean isDocumentIngested(Communication d) {
     return existingIds.contains(d.getId());
   }
   
-  private boolean isDocumentPendingIngest(Document d) {
+  private boolean isDocumentPendingIngest(Communication d) {
     return this.pendingInserts.contains(d.getId());
   }
   
@@ -104,7 +96,7 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
    * @see com.maxjthomas.dumpster.Ingester.Iface#ingest(com.maxjthomas.dumpster.Document)
    */
   @Override
-  public void ingest(Document d) throws TException {
+  public void ingest(Communication d) throws TException {
     try {
       if (isDocumentIngested(d) || isDocumentPendingIngest(d))
         return;
