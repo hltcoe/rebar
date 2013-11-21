@@ -5,7 +5,6 @@ package edu.jhu.hlt.rebar.services;
 
 
 import org.apache.accumulo.core.client.Connector;
-import org.apache.thrift.server.TSimpleServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,11 +18,8 @@ import edu.jhu.hlt.rebar.accumulo.RebarIngester;
  *
  */
 public class RebarIngesterServer extends AbstractThriftServer {
-
-  private static final Logger logger = LoggerFactory.getLogger(RebarIngesterServer.class);
   
-  private RebarIngester ri;
-  private Ingester.Processor<RebarIngester> processor;
+  private static final Logger logger = LoggerFactory.getLogger(RebarIngesterServer.class);
   
   /**
    * @throws RebarException 
@@ -33,42 +29,35 @@ public class RebarIngesterServer extends AbstractThriftServer {
     this(Constants.getConnector(), port);
   }
   
+  public RebarIngesterServer(Connector conn, int port) throws RebarException {
+    this(conn, port, new RebarIngester(conn));
+  }
+  
   /**
    * @throws RebarException 
    * 
    */
-  public RebarIngesterServer(Connector conn, int port) throws RebarException {
-    super(port);
-    this.ri = new RebarIngester(conn);
-    this.processor = new Ingester.Processor<RebarIngester>(ri);
-    this.args.processor(this.processor);
-    this.server = new TSimpleServer(args);
+  private RebarIngesterServer(Connector conn, int port, RebarIngester ri) throws RebarException {
+    super(port, ri, new Ingester.Processor<>(ri));
   }
 
   public static void main(String... args) throws Exception {
-    try (RebarIngesterServer ris = new RebarIngesterServer(9990);) {
+    if (args.length != 1) {
+      logger.info("USAGE: " + RebarIngesterServer.class.getSimpleName() + " <port-number>");
+      System.exit(1);
+    }
+    
+    int port = 0;
+    try {
+      port = Integer.parseInt(args[0]);
+    } catch (NumberFormatException e) {
+      logger.error("You passed in a port that was a non-integer: " + args[0]);
+      System.exit(1);
+    }
+    
+    try (RebarIngesterServer ris = new RebarIngesterServer(port);) {
+      logger.info("Preparing to start RebarIngesterService.");
       ris.start();
     }
-  }
-
-  /* (non-Javadoc)
-   * @see java.lang.AutoCloseable#close()
-   */
-  @Override
-  public void close() throws Exception {
-    logger.debug("RebarIngesterServer closing.");
-    if (this.server.isServing())
-      this.stop();
-
-    this.ri.close();
-    this.serverXport.close();
-  }
-
-  /* (non-Javadoc)
-   * @see java.lang.Runnable#run()
-   */
-  @Override
-  public void run() {
-    this.start();
   }
 }

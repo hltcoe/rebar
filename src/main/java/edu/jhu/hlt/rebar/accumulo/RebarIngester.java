@@ -13,6 +13,8 @@ import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Jedis;
 import edu.jhu.hlt.concrete.Communication;
@@ -27,6 +29,8 @@ import edu.jhu.hlt.rebar.RedisCache;
  */
 public class RebarIngester extends AbstractAccumuloClient implements AutoCloseable, Ingester.Iface {
 
+  private static final Logger logger = LoggerFactory.getLogger(RebarIngester.class);
+  
   private final Jedis jedis;
   private Set<String> pendingInserts;
   private static Set<String> existingIds;
@@ -96,6 +100,7 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
   
   @Override
   public void ingest(Communication d) throws TException {
+    logger.debug("Got ingest request: " + d.id);
     try {
       if (isDocumentIngested(d) || isDocumentPendingIngest(d))
         return;
