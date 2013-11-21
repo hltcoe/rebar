@@ -67,11 +67,16 @@ public class AbstractAccumuloTest {
     this.deserializer = new TDeserializer(new TBinaryProtocol.Factory());
   }
 
-  protected static Iterator<Entry<Key, Value>> generateIterator(Connector conn, String tableName, Range range) throws TableNotFoundException {
+  public static Iterator<Entry<Key, Value>> generateIterator(Connector conn, String tableName, Range range) throws TableNotFoundException {
     Scanner sc = conn.createScanner(tableName, Constants.NO_AUTHS);
     sc.setRange(range);
     return sc.iterator();
   }
+  
+  public static Iterator<Entry<Key, Value>> generateIterator(String tableName, Range range) throws TableNotFoundException, RebarException {
+    return generateIterator(edu.jhu.hlt.rebar.Constants.getConnector(), tableName, range);
+  }
+  
 
   public static Communication generateMockDocument() {
     Communication document = new Communication();

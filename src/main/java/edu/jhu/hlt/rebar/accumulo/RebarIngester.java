@@ -61,8 +61,10 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
   }
   
   private void flushPendingIds() {
-    this.jedis.sadd(Constants.INGESTED_IDS_REDIS_KEY, this.pendingInserts.toArray(new String[0]));
-    this.pendingInserts = new HashSet<>();
+    if (this.pendingInserts.size() > 0) {
+      this.jedis.sadd(Constants.INGESTED_IDS_REDIS_KEY, this.pendingInserts.toArray(new String[0]));
+      this.pendingInserts = new HashSet<>();      
+    }
   }
   
   private synchronized void updateExistingIds() {
@@ -92,9 +94,6 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
     }
   }
   
-  /* (non-Javadoc)
-   * @see com.maxjthomas.dumpster.Ingester.Iface#ingest(com.maxjthomas.dumpster.Document)
-   */
   @Override
   public void ingest(Communication d) throws TException {
     try {
