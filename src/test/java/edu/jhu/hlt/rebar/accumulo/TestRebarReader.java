@@ -3,8 +3,7 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -173,7 +172,7 @@ public class TestRebarReader extends AbstractAccumuloTest {
     assertEquals("Should get n annotated docs: (n = " + nDocs + ")", nDocs, annotatedDocs);
 
     fetchedDocs = this.rr.getAnnotatedCommunications(stageB);
-    assertEquals("Documents with LID should be the same.", new ArrayList<>(docsWithLid), fetchedDocs);
+    assertTrue("Documents with LID should be the same.", fetchedDocs.containsAll(docsWithLid));
   }
   
   /**
