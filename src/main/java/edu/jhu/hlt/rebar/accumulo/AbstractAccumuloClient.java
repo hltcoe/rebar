@@ -4,19 +4,15 @@
 package edu.jhu.hlt.rebar.accumulo;
 
 import org.apache.accumulo.core.cli.BatchWriterOpts;
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
 
 /**
  * @author max
@@ -29,9 +25,6 @@ public abstract class AbstractAccumuloClient implements AutoCloseable {
   protected final TSerializer serializer;
   protected final TDeserializer deserializer;
   
-  protected static final String colFamilyRoot = "root";
-  protected static final String colFamilyAnnotations = "anno";
-  protected static final String documentTableName = "documents";
   protected static final BatchWriterOpts defaultBwOpts;
   
   protected BatchWriter bw;
@@ -55,29 +48,18 @@ public abstract class AbstractAccumuloClient implements AutoCloseable {
    * 
    */
   public AbstractAccumuloClient() throws RebarException {
-    this(getConnector());
+    this(Constants.getConnector());
   }
 
   public AbstractAccumuloClient(Connector conn) throws RebarException {
     this.conn = conn;
     this.tableOps = new RebarTableOps(this.conn);
-    this.tableOps.createTableIfNotExists(documentTableName);
+    this.tableOps.createTableIfNotExists(Constants.DOCUMENT_TABLE_NAME);
     this.serializer = new TSerializer(new TBinaryProtocol.Factory());
     this.deserializer = new TDeserializer(new TBinaryProtocol.Factory());
     try {
-      this.bw = this.conn.createBatchWriter(documentTableName, defaultBwOpts.getBatchWriterConfig());
+      this.bw = this.conn.createBatchWriter(Constants.DOCUMENT_TABLE_NAME, defaultBwOpts.getBatchWriterConfig());
     } catch (TableNotFoundException e) {
-      throw new RebarException(e);
-    }
-  }
-  
-  public static Connector getConnector() throws RebarException {
-    Instance zki = new ZooKeeperInstance(RebarConfiguration.getAccumuloInstanceName(), RebarConfiguration.getZookeeperServer());
-    try {
-      return zki.getConnector(RebarConfiguration.getAccumuloUser(), RebarConfiguration.getPasswordToken());
-    } catch (AccumuloException e) {
-      throw new RebarException(e);
-    } catch (AccumuloSecurityException e) {
       throw new RebarException(e);
     }
   }

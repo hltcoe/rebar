@@ -27,23 +27,18 @@ import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
-import com.maxjthomas.dumpster.Document;
-import com.maxjthomas.dumpster.RebarThriftException;
-
-import edu.jhu.hlt.rebar.config.RebarConfiguration;
+import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.RebarThriftException;
+import edu.jhu.hlt.rebar.Constants;
+import edu.jhu.hlt.rebar.Util;
 
 /**
  * @author max
  *
  */
-public class TestRebarCorpusHandler {
+public class TestRebarCorpusHandler extends AbstractAccumuloTest {
 
   private static final Logger logger = LoggerFactory.getLogger(TestRebarCorpusHandler.class);
-  
-  private Instance inst;
-  private Connector conn;
-  private RebarTableOps tableOps;
-  private TSerializer serializer;
   
   private RebarCorpusHandler rch;
   
@@ -52,10 +47,7 @@ public class TestRebarCorpusHandler {
    */
   @Before
   public void setUp() throws Exception {
-    this.inst = new MockInstance();
-    this.conn = this.inst.getConnector("max", new PasswordToken(""));
-    this.tableOps = new RebarTableOps(conn);
-    this.serializer = new TSerializer(new TBinaryProtocol.Factory());
+    this.initialize();
     this.rch = new RebarCorpusHandler(this.conn);
   }
 
@@ -64,66 +56,55 @@ public class TestRebarCorpusHandler {
    */
   @After
   public void tearDown() throws Exception {
-    this.tableOps.deleteTable(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME);
-  }
-  
-  public Set<Document> createDocumentSet() {
-    Set<Document> docSet = new HashSet<>();
-    
-    for (int i = 0; i < 10; i++) {
-      Document d = TestRebarIngester.generateMockDocument();
-      docSet.add(d);
-    }
-    
-    return docSet;
+    //this.tableOps.deleteTable(Constants.AVAILABLE_CORPUS_TABLE_NAME);
   }
   
   @Test(expected=RebarThriftException.class)
   public void testCreateBadNameCorpus() throws Exception {
     String testCorpus = "foo";
-    assertTrue(this.tableOps.tableExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME));
-    rch.createCorpus(testCorpus, createDocumentSet());
+    assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
+    rch.createCorpus(testCorpus, AbstractAccumuloTest.generateMockDocumentSet(10));
     rch.close();
   }
   
   @Test(expected=RebarThriftException.class)
   public void testCreateBadDocsCorpus() throws Exception {
     String testCorpus = "corpus_foo";
-    assertTrue(this.tableOps.tableExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME));
-    rch.createCorpus(testCorpus, new HashSet<Document>());
+    assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
+    rch.createCorpus(testCorpus, new HashSet<Communication>());
     rch.close();
   }
   
   @Test(expected=RebarThriftException.class)
   public void testCreateDupeCorpus() throws Exception {
     String testCorpus = "corpus_foo";
-    assertTrue(this.tableOps.tableExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME));
-    rch.createCorpus(testCorpus, createDocumentSet());
-    rch.createCorpus(testCorpus, createDocumentSet());
+    assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
+    rch.createCorpus(testCorpus, AbstractAccumuloTest.generateMockDocumentSet(10));
+    rch.createCorpus(testCorpus, AbstractAccumuloTest.generateMockDocumentSet(10));
     rch.close();
   }
 
   @Test
   public void testCreateCorpus() throws Exception {
     String testCorpus = "corpus_foo";
-    assertTrue(this.tableOps.tableExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME));
-    Set<Document> docSet = createDocumentSet();
+    assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
+    Set<Communication> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     rch.createCorpus(testCorpus, docSet);
     rch.close();
     
     //Scanner sc = this.conn.createScanner("available_corpora", Constants.NO_AUTHS);
-    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME, new Range());
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.AVAILABLE_CORPUS_TABLE_NAME, new Range());
     assertTrue("Should find results in the corpus table, but didn't.", iter.hasNext());
     
     iter = TestRebarIngester.generateIterator(conn, testCorpus, new Range());
-    assertEquals("Should find an equal number of documents and ids in the corpus.", docSet.size(), TestRebarIngester.countIteratorResults(iter));
+    assertEquals("Should find an equal number of documents and ids in the corpus.", docSet.size(), Util.countIteratorResults(iter));
   }
   
   @Test
   public void testDeleteCorpus() throws Exception {
     String testCorpus = "corpus_foo";
-    assertTrue(this.tableOps.tableExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME));
-    Set<Document> docSet = createDocumentSet();
+    assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
+    Set<Communication> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     rch.createCorpus(testCorpus, docSet);
     rch.deleteCorpus(testCorpus);
     rch.close();
@@ -131,7 +112,7 @@ public class TestRebarCorpusHandler {
     assertFalse("Should NOT find this corpus table!", this.tableOps.tableExists(testCorpus));
     
     //Scanner sc = this.conn.createScanner("available_corpora", Constants.NO_AUTHS);
-    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME, new Range());
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.AVAILABLE_CORPUS_TABLE_NAME, new Range());
     boolean hasResults = iter.hasNext();
     while (iter.hasNext()) {
       Entry<Key, Value> e = iter.next();
@@ -151,28 +132,28 @@ public class TestRebarCorpusHandler {
   @Test
   public void testCorpusExists() throws Exception {
     String testCorpus = "corpus_foo";
-    assertTrue(this.tableOps.tableExists(RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME));
-    Set<Document> docSet = createDocumentSet();
+    assertTrue(this.tableOps.tableExists(Constants.AVAILABLE_CORPUS_TABLE_NAME));
+    Set<Communication> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     rch.createCorpus(testCorpus, docSet);
     rch.close();
 
     assertTrue("Did not find the corpus table.", this.tableOps.tableExists(testCorpus));
     //Scanner sc = this.conn.createScanner("available_corpora", Constants.NO_AUTHS);
-    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, RebarConfiguration.AVAILABLE_CORPUS_TABLE_NAME, new Range());
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.AVAILABLE_CORPUS_TABLE_NAME, new Range());
     assertTrue("Should find results in the corpus table, but did.", iter.hasNext());
   }
   
   @Test
   public void testListCorpora() throws Exception {
     String testCorpus = "corpus_foo";
-    Set<Document> docSet = createDocumentSet();
+    Set<Communication> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     assertEquals("Shouldn't find any corpora initially.", 0, rch.listCorpora().size());
     
     rch.createCorpus(testCorpus, docSet);
     assertEquals("Should find 1 corpus", 1, rch.listCorpora().size());
     
-    rch.createCorpus("corpus_foo_bar", createDocumentSet());
-    rch.createCorpus("corpus_qux_bar", createDocumentSet());
+    rch.createCorpus("corpus_foo_bar", AbstractAccumuloTest.generateMockDocumentSet(10));
+    rch.createCorpus("corpus_qux_bar", AbstractAccumuloTest.generateMockDocumentSet(10));
     assertEquals("Should find 3 corpora", 3, rch.listCorpora().size());
     
     rch.deleteCorpus(testCorpus);
@@ -183,15 +164,15 @@ public class TestRebarCorpusHandler {
   @Test
   public void testGetCorpusDocSet() throws Exception {
     String testCorpus = "corpus_foo";
-    Set<Document> docSet = createDocumentSet();
+    Set<Communication> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
     try (RebarIngester ri = new RebarIngester(this.conn);) {
-      for (Document d : docSet)
+      for (Communication d : docSet)
         ri.ingest(d);
     }
     
     rch.createCorpus(testCorpus, docSet);
     rch.flush();
-    Set<Document> retDocSet = rch.getCorpusDocumentSet(testCorpus);
+    Set<Communication> retDocSet = rch.getCorpusCommunicationSet(testCorpus);
     rch.close();
     
     assertEquals("Should get the same docs in and out, but didn't.", docSet, retDocSet);

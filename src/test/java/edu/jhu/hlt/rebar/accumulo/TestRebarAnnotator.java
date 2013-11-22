@@ -3,47 +3,60 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
-import java.util.Random;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.Instance;
-import org.apache.accumulo.core.client.mock.MockInstance;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TBinaryProtocol;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.apache.accumulo.core.client.Scanner;
+import org.apache.accumulo.core.data.Key;
+import org.apache.accumulo.core.data.Range;
+import org.apache.accumulo.core.data.Value;
+import org.apache.hadoop.io.Text;
+import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.maxjthomas.dumpster.Document;
+import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.LangId;
+import edu.jhu.hlt.concrete.Stage;
+import edu.jhu.hlt.concrete.StageType;
+import edu.jhu.hlt.rebar.Constants;
+import edu.jhu.hlt.rebar.Configuration;
+import edu.jhu.hlt.rebar.Util;
 
 /**
  * @author max
- *
+ * 
  */
-public class TestRebarAnnotator {
+public class TestRebarAnnotator extends AbstractAccumuloTest {
 
-  private Instance inst;
-  private Connector conn;
-  private TSerializer serializer;
+  private Set<Communication> docSet;
+  private RebarAnnotator ra;
 
-  private static final Random rand = new Random();
-  
   /**
    * @throws java.lang.Exception
    */
   @Before
   public void setUp() throws Exception {
-    this.inst = new MockInstance();
-    this.conn = this.inst.getConnector("max", new PasswordToken(""));
-    this.serializer = new TSerializer(new TBinaryProtocol.Factory());
-    
+    this.initialize();
+    this.ra = new RebarAnnotator(conn);
+
+    docSet = new HashSet<>();
     RebarIngester ri = new RebarIngester(this.conn);
     for (int i = 0; i < 10; i++) {
-      Document d = TestRebarIngester.generateMockDocument();
-      ri.ingest(d);      
+      Communication d = TestRebarIngester.generateMockDocument();
+      ri.ingest(d);
+      docSet.add(d);
     }
-    
+
     ri.close();
   }
 
@@ -52,12 +65,118 @@ public class TestRebarAnnotator {
    */
   @After
   public void tearDown() throws Exception {
+    this.ra.close();
+  }
+  
+  @Test
+  public void testAnnotateDocumentNoStage() throws Exception {
+//    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
+    Stage newStage = TestRebarStageHandler.generateTestStage();
+
+    List<LangId> lidList = new ArrayList<>();
+    for (Communication d : this.docSet) {
+      LangId lid = generateLangId(d);
+      lidList.add(lid);
+      this.ra.addLanguageId(d, newStage, lid);
+    }
+
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
+    assertEquals("Should get 20 total rows.", 20, Util.countIteratorResults(iter));
+    try (RebarStageHandler ashy = new RebarStageHandler(this.conn);) {
+      Set<Stage> stageSet = ashy.getStages();
+      assertTrue("Should get a stage added.", stageSet.size() > 0);
+    }
+  }
+  
+  @Test(expected=TException.class)
+  public void testAnnotateDocumentTwice() throws Exception {
+//    
+    Stage newStage = TestRebarStageHandler.generateTestStage();
+
+    List<LangId> lidList = new ArrayList<>();
+    for (Communication d : this.docSet) {
+      LangId lid = generateLangId(d);
+      lidList.add(lid);
+      this.ra.addLanguageId(d, newStage, lid);
+      this.ra.addLanguageId(d, newStage, lid);
+    }
+  }
+  
+  @Test(expected=TException.class)
+  public void testAnnotateWrongType() throws Exception {
+//    
+    Stage newStage = TestRebarStageHandler.generateTestStage();
+    newStage.type = StageType.LANG_PRED;
+
+    List<LangId> lidList = new ArrayList<>();
+    for (Communication d : this.docSet) {
+      LangId lid = generateLangId(d);
+      lidList.add(lid);
+      this.ra.addLanguageId(d, newStage, lid);
+    }
   }
 
   @Test
   public void testAnnotateDocument() throws Exception {
-    RebarAnnotator ra = new RebarAnnotator(this.conn);
-    //ra.addLanguageId(document, stage, lid);
-    ra.close();
+//    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
+    Stage newStage = TestRebarStageHandler.generateTestStage();
+    
+    try (RebarStageHandler ash = new RebarStageHandler(conn);) {
+      ash.createStage(newStage);
+    }
+
+    List<LangId> lidList = new ArrayList<>();
+    for (Communication d : this.docSet) {
+      LangId lid = generateLangId(d);
+      lidList.add(lid);
+      this.ra.addLanguageId(d, newStage, lid);
+    }
+    
+    Stage stageTwo = generateTestStage();
+    stageTwo.name = "stage_two_test";
+    List<LangId> lidListTwo = new ArrayList<>();
+    for (Communication d : this.docSet) {
+      LangId lid = generateLangId(d);
+      lidListTwo.add(lid);
+      this.ra.addLanguageId(d, stageTwo, lid);
+    }
+
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
+    assertEquals("Should get 30 total rows.", 30, Util.countIteratorResults(iter));
+    
+    Scanner sc = this.conn.createScanner(Constants.DOCUMENT_TABLE_NAME, Configuration.getAuths());
+    sc.setRange(new Range());
+    sc.fetchColumn(new Text(Constants.DOCUMENT_ANNOTATION_COLF), new Text(newStage.name));
+    iter = sc.iterator();
+    assertEquals("Should get 10 annotations: ", 10, Util.countIteratorResults(iter));
+
+    List<Communication> docList = new ArrayList<>(docSet);
+    for (int i = 0; i < 10; i++) {
+      Communication d = docList.get(i);
+      LangId lid = lidList.get(i);
+      LangId lidTwo = lidListTwo.get(i);
+      String id = d.id;
+      Range r = new Range(id);
+      iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, r);
+      while (iter.hasNext()) {
+        Entry<Key, Value> e = iter.next();
+        Key k = e.getKey();
+        if (k.compareColumnFamily(new Text(Constants.DOCUMENT_COLF)) == 0) {
+          Communication dser = new Communication();
+          this.deserializer.deserialize(dser, e.getValue().get());
+          assertEquals("Should get a document from document colf.", d, dser);
+        } else if (k.compareColumnQualifier(new Text(newStage.name)) == 0) {
+          LangId dser = new LangId();
+          this.deserializer.deserialize(dser, e.getValue().get());
+          assertEquals("Should get a LID from annotation colf.", lid, dser);
+        } else if (k.compareColumnQualifier(new Text(stageTwo.name)) == 0) {
+          LangId dser = new LangId();
+          this.deserializer.deserialize(dser, e.getValue().get());
+          assertEquals("Should get a LID from annotation colf.", lidTwo, dser);
+        } else {
+          fail("Column family was bad: " + k.getColumnFamily().toString());
+        }
+      }
+    }
   }
 }
