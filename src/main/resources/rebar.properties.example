@@ -1,0 +1,30 @@
+### Backend / Server / Service settings
+# use a mock instance of Accumulo - if true, next 4 properties are ignored
+accumuloMock = false
+
+# default Accumulo instance name
+accumuloInstanceName=your_accumulo_instance
+
+# default zookeeper server(s)
+zookeeperServer=your_zookeeper_servers
+
+# Root of the HDFS filesystem
+hdfsRoot=your_hdfs_root
+
+# default Accumulo instance username
+accumuloUser=your_accumulo_username
+
+# default Accumulo password
+accumuloPassword=your_accumulo_password
+
+# Path to write FileBacked corpora
+fileCorpusDirectory=/export/common/rebar/corpora
+
+# Tell accumulo (zookeeper) to be less verbose in its logging.
+# log4j.logger.org.apache.zookeeper=ERROR
+# log4j.logger.org.apache.hadoop.hbase=INFO
+# log4j.logger.org.apache.hadoop.hbase.zookeeper=WARN
+
+### Application settings
+# TwitterTokenizer setting - from Jerboa
+TwitterTokenizer.rw = false
