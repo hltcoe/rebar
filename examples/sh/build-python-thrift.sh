@@ -1,6 +1,12 @@
 #!/bin/bash
 
 #
+# Copyright 2012-2013 Johns Hopkins University HLTCOE. All rights reserved.
+# This software is released under the 2-clause BSD license.
+# See LICENSE in the project root directory.
+#
+
+#
 # This script will build a 'gen-py' directory with compiled concrete-thrift python code.
 #
 # Usage: build-python-thrift.sh </absolute/path/to/thrift/files>
