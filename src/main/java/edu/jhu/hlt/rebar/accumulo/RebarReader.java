@@ -181,14 +181,14 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
    * @see edu.jhu.hlt.concrete.Reader.Iface#getAnnotatedCommunications(edu.jhu.hlt.concrete.Stage)
    */
   @Override
-  public Set<Communication> getAnnotatedCommunications(Stage stage) throws RebarThriftException, TException {
+  public List<Communication> getAnnotatedCommunications(Stage stage) throws RebarThriftException, TException {
     if (!this.ash.stageExists(stage.name))
       throw new RebarThriftException("Stage " + stage.name + " doesn't exist; can't get its documents.");
 
     try {
       Set<String> docIds = this.ash.getAnnotatedDocumentIds(stage);
       Set<Communication> docSet = this.constructCommunicationSet(stage, docIds);
-      return docSet;
+      return new ArrayList<>(docSet);
     } catch (RebarException | IOException e) {
       throw new TException(e);
     }

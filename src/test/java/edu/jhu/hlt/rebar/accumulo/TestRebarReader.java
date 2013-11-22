@@ -104,8 +104,8 @@ public class TestRebarReader extends AbstractAccumuloTest {
     assertEquals("Should get " + nDocs + " entries in this batch scanner.", 3, Util.countIteratorResults(bsc.iterator()));
     bsc.close();
 
-    Set<Communication> fetchedDocs = this.rr.getAnnotatedCommunications(s);
-    assertEquals("Documents with LID should be the same.", docsWithLid, fetchedDocs);
+    List<Communication> fetchedDocs = this.rr.getAnnotatedCommunications(s);
+    assertEquals("Documents with LID should be the same.", new ArrayList<>(docsWithLid), fetchedDocs);
   }
 
   /**
@@ -134,7 +134,7 @@ public class TestRebarReader extends AbstractAccumuloTest {
       }
     }
 
-    Set<Communication> fetchedDocs = this.rr.getAnnotatedCommunications(stageA);
+    List<Communication> fetchedDocs = this.rr.getAnnotatedCommunications(stageA);
 
     Set<Communication> docsWithLid = new HashSet<>();
     try (RebarAnnotator ra = new RebarAnnotator(this.conn);) {
@@ -173,7 +173,7 @@ public class TestRebarReader extends AbstractAccumuloTest {
     assertEquals("Should get n annotated docs: (n = " + nDocs + ")", nDocs, annotatedDocs);
 
     fetchedDocs = this.rr.getAnnotatedCommunications(stageB);
-    assertEquals("Documents with LID should be the same.", docsWithLid, fetchedDocs);
+    assertEquals("Documents with LID should be the same.", new ArrayList<>(docsWithLid), fetchedDocs);
   }
   
   /**
@@ -208,7 +208,7 @@ public class TestRebarReader extends AbstractAccumuloTest {
       }
     }
 
-    Set<Communication> fetchedDocs = this.rr.getAnnotatedCommunications(stageA);
+    List<Communication> fetchedDocs = this.rr.getAnnotatedCommunications(stageA);
 
     Set<Communication> docsWithLid = new HashSet<>();
     Set<Communication> docsWithLidSetD = new HashSet<>();
@@ -264,9 +264,9 @@ public class TestRebarReader extends AbstractAccumuloTest {
     assertEquals("Should get n annotated docs: (n = " + nDocs + ")", nDocs, annotatedDocs);
 
     fetchedDocs = this.rr.getAnnotatedCommunications(stageB);
-    assertEquals("Documents with LID should be the same.", docsWithLid, fetchedDocs);
+    assertEquals("Documents with LID should be the same.", new ArrayList<>(docsWithLid), fetchedDocs);
     
     fetchedDocs = this.rr.getAnnotatedCommunications(stageD);
-    assertEquals("Documents with LID in set D should be the same.", docsWithLidSetD, fetchedDocs);
+    assertEquals("Documents with LID in set D should be the same.", new ArrayList<>(docsWithLidSetD), fetchedDocs);
   }
 }

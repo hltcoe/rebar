@@ -56,7 +56,7 @@ public class RebarIngesterServer extends AbstractThriftServer {
     }
     
     try (RebarIngesterServer ris = new RebarIngesterServer(port);) {
-      logger.info("Preparing to start RebarIngesterService.");
+      logger.info("Preparing to start RebarIngesterServer on port: " + port);
       ris.start();
     }
   }

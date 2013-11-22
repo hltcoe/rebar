@@ -7,25 +7,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.Instance;
-import org.apache.accumulo.core.client.mock.MockInstance;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TBinaryProtocol;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.RebarThriftException;
@@ -164,17 +160,13 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
   @Test
   public void testGetCorpusDocSet() throws Exception {
     String testCorpus = "corpus_foo";
-    Set<Communication> docSet = AbstractAccumuloTest.generateMockDocumentSet(10);
-    try (RebarIngester ri = new RebarIngester(this.conn);) {
-      for (Communication d : docSet)
-        ri.ingest(d);
-    }
+    List<Communication> docSet = this.ingestDocuments(25);
     
-    rch.createCorpus(testCorpus, docSet);
+    rch.createCorpus(testCorpus, new HashSet<>(docSet));
     rch.flush();
-    Set<Communication> retDocSet = rch.getCorpusCommunicationSet(testCorpus);
+    List<Communication> retDocSet = rch.getCorpusCommunicationSet(testCorpus);
     rch.close();
     
-    assertEquals("Should get the same docs in and out, but didn't.", docSet, retDocSet);
+    assertTrue("Should get the same docs in and out, but didn't.", retDocSet.containsAll(docSet));
   }
 }

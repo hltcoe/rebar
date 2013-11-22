@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.Ingester;
 import edu.jhu.hlt.rebar.Constants;
@@ -36,8 +37,9 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
   private static Set<String> existingIds;
   static {
     try {
+      // this can throw a JedisConnectionException if we can't connect to redis.
       existingIds = RedisCache.getIngestedIds();
-    } catch (RebarException e) {
+    } catch (RebarException | JedisConnectionException e) {
       throw new RuntimeException("Couldn't initialize the redis cache.", e);
     }
   }

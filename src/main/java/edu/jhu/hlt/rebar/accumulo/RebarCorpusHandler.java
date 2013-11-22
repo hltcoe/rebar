@@ -3,8 +3,10 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -125,9 +127,11 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
    * @see com.maxjthomas.dumpster.CorpusHandler.Iface#getCorpusDocumentSet(java.lang.String)
    */
   @Override
-  public Set<Communication> getCorpusCommunicationSet(String corpusName) throws RebarThriftException, TException {
+  public List<Communication> getCorpusCommunicationSet(String corpusName) throws RebarThriftException, TException {
     Set<Communication> docSet = new HashSet<>();
     try {
+      this.flush();
+      
       // first hit the corpus table itself, to get the ids for the ranges.
       Scanner sc = this.conn.createScanner(corpusName, Configuration.getAuths());
       Range r = new Range();
@@ -161,8 +165,8 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
             + " but got: " + docSet.size());
       }
       
-      return docSet;
-    } catch (TableNotFoundException e) {
+      return new ArrayList<>(docSet);
+    } catch (TableNotFoundException | RebarException e) {
       throw new RebarThriftException(e.getMessage());
     }
   }
@@ -182,7 +186,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
       Set<String> corporaSet = new HashSet<>();
       while (iter.hasNext()) {
         Key k = iter.next().getKey();
-        corporaSet.add(k.toString());
+        corporaSet.add(k.getRow().toString());
       }
       
       return corporaSet;

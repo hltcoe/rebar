@@ -15,7 +15,7 @@ thrift -gen py <path-to-communication.thrift>
 
 2) Move the 'gen-py' folder one level above this script (or, alter the appended path appropriately).
 
-3) Ensure the RebarIngesterService is running on port 9990 on your machine (or, alter the code below).
+3) Ensure the RebarIngesterService is running on port 30000 on your machine (or, alter the code below).
 
 4) Run the script:
 python sample-ingest.py
@@ -33,18 +33,21 @@ from concrete.communication import *
 from concrete.communication.ttypes import *
 
 try:
-    transport = TSocket.TSocket('localhost', 9990)
+    transport = TSocket.TSocket('localhost', 30000)
     transport = TTransport.TBufferedTransport(transport)
     protocol = TBinaryProtocol.TBinaryProtocol(transport)
 
     cli = Ingester.Client(protocol)
     transport.open()
-    comm = Communication()
-    comm.id = "foo"
-    comm.type = DocType.OTHER
-    comm.text = "hello world!"
+    for x in range(1, 10):
+        comm = Communication()
+        comm.id = "foo_{}".format(str(x))
+        print "Ingesting comm: {}".format(comm.id)
+        comm.type = DocType.OTHER
+        comm.text = "hello world!"
+        cli.ingest(comm)
 
-    cli.ingest(comm)
+    transport.close()
 
 except Thrift.TException, tx:
-    print "Got an error: %s" % (tx.message)
+    print "Got an error: %s : perhaps the server isn't running there?" % (tx.message)

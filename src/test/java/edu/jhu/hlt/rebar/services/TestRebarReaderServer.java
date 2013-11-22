@@ -73,12 +73,12 @@ public class TestRebarReaderServer extends AbstractServiceTest {
       }
     }
     
-    Set<Communication> apiComms;
+    List<Communication> apiComms;
     try (RebarReader rr = new RebarReader(this.conn);) {
       apiComms = rr.getAnnotatedCommunications(newStage);
     }
     
-    Set<Communication> cliComms = this.client.getAnnotatedCommunications(newStage);
+    List<Communication> cliComms = this.client.getAnnotatedCommunications(newStage);
     assertEquals("Two comm sets should be equal.", apiComms, cliComms);
   }
 
