@@ -104,7 +104,7 @@ public class TestRebarReader extends AbstractAccumuloTest {
     bsc.close();
 
     List<Communication> fetchedDocs = this.rr.getAnnotatedCommunications(s);
-    assertEquals("Documents with LID should be the same.", new ArrayList<>(docsWithLid), fetchedDocs);
+    assertTrue("Documents with LID should be the same.", fetchedDocs.containsAll(docsWithLid));
   }
 
   /**
