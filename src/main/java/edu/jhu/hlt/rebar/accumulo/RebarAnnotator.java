@@ -4,6 +4,7 @@
 package edu.jhu.hlt.rebar.accumulo;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,8 +20,11 @@ import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.LangId;
 import edu.jhu.hlt.concrete.LanguagePrediction;
 import edu.jhu.hlt.concrete.RebarThriftException;
+import edu.jhu.hlt.concrete.Section;
+import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.Stage;
 import edu.jhu.hlt.concrete.StageType;
+import edu.jhu.hlt.concrete.Tokenization;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.IllegalAnnotationException;
 import edu.jhu.hlt.rebar.RebarException;
@@ -131,5 +135,39 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
     } catch (MutationsRejectedException | RebarException | IllegalAnnotationException e) {
       throw new TException(e);
     }
+  }
+
+  /* (non-Javadoc)
+   * @see edu.jhu.hlt.concrete.Annotator.Iface#addSectionSegmentation(edu.jhu.hlt.concrete.Communication, edu.jhu.hlt.concrete.Stage, edu.jhu.hlt.concrete.SectionSegmentation)
+   */
+  @Override
+  public void addSectionSegmentation(Communication comm, Stage stage, SectionSegmentation sectionSegmentation) throws RebarThriftException, TException {
+    if (!isValidSectionSegmentation(sectionSegmentation))
+      throw new RebarThriftException("This is not a valid SectionSegmentation object; it has no sections.");
+    
+    if (stage.type != StageType.SECTION)
+      throw new RebarThriftException("The type of this stage must be Section, not: " + stage.type.toString());
+    
+    try {
+      this.addAnnotation(comm, stage, sectionSegmentation);
+    } catch (MutationsRejectedException | RebarException | IllegalAnnotationException e) {
+      throw new RebarThriftException("There was an error during ingest: " + e.getMessage());
+    }
+  }
+  
+  public static boolean isValidSectionSegmentation(SectionSegmentation ss) {
+    List<Section> secList = ss.getSectionList();
+    if (secList.size() == 0)
+      return false;
+    return true; 
+  }
+
+  /* (non-Javadoc)
+   * @see edu.jhu.hlt.concrete.Annotator.Iface#addTokenization(edu.jhu.hlt.concrete.Communication, edu.jhu.hlt.concrete.Stage, edu.jhu.hlt.concrete.Tokenization)
+   */
+  @Override
+  public void addTokenization(Communication comm, Stage stage, Tokenization tokenization) throws RebarThriftException, TException {
+    // TODO Auto-generated method stub
+    
   }
 }
