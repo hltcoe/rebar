@@ -19,17 +19,26 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
-import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import concrete.examples.RebarTokenizer;
+import concrete.examples.SillySentenceSplitter;
+import concrete.examples.SingleSectionSegmentator;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.LangId;
+import edu.jhu.hlt.concrete.RebarThriftException;
+import edu.jhu.hlt.concrete.Section;
+import edu.jhu.hlt.concrete.SectionSegmentation;
+import edu.jhu.hlt.concrete.Sentence;
+import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.Stage;
 import edu.jhu.hlt.concrete.StageType;
-import edu.jhu.hlt.rebar.Constants;
+import edu.jhu.hlt.concrete.TokenizationCollection;
 import edu.jhu.hlt.rebar.Configuration;
+import edu.jhu.hlt.rebar.Constants;
+import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
 
 /**
@@ -67,10 +76,10 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
   public void tearDown() throws Exception {
     this.ra.close();
   }
-  
+
   @Test
   public void testAnnotateDocumentNoStage() throws Exception {
-//    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
+    // Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
     Stage newStage = TestRebarStageHandler.generateTestStage();
 
     List<LangId> lidList = new ArrayList<>();
@@ -87,10 +96,9 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
       assertTrue("Should get a stage added.", stageSet.size() > 0);
     }
   }
-  
-  @Test(expected=TException.class)
+
+  @Test(expected = RebarThriftException.class)
   public void testAnnotateDocumentTwice() throws Exception {
-//    
     Stage newStage = TestRebarStageHandler.generateTestStage();
 
     List<LangId> lidList = new ArrayList<>();
@@ -101,10 +109,9 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
       this.ra.addLanguageId(d, newStage, lid);
     }
   }
-  
-  @Test(expected=TException.class)
+
+  @Test(expected = RebarThriftException.class)
   public void testAnnotateWrongType() throws Exception {
-//    
     Stage newStage = TestRebarStageHandler.generateTestStage();
     newStage.type = StageType.LANG_PRED;
 
@@ -117,10 +124,10 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
   }
 
   @Test
-  public void testAnnotateDocument() throws Exception {
-//    Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
+  public void testAnnotateDocumentWithLID() throws Exception {
+    // Stage newStage = new Stage("stage_max_lid_test", "Testing stage for LID", Util.getCurrentUnixTime(), new HashSet<String>());
     Stage newStage = TestRebarStageHandler.generateTestStage();
-    
+
     try (RebarStageHandler ash = new RebarStageHandler(conn);) {
       ash.createStage(newStage);
     }
@@ -131,7 +138,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
       lidList.add(lid);
       this.ra.addLanguageId(d, newStage, lid);
     }
-    
+
     Stage stageTwo = generateTestStage();
     stageTwo.name = "stage_two_test";
     List<LangId> lidListTwo = new ArrayList<>();
@@ -143,7 +150,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
 
     Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
     assertEquals("Should get 30 total rows.", 30, Util.countIteratorResults(iter));
-    
+
     Scanner sc = this.conn.createScanner(Constants.DOCUMENT_TABLE_NAME, Configuration.getAuths());
     sc.setRange(new Range());
     sc.fetchColumn(new Text(Constants.DOCUMENT_ANNOTATION_COLF), new Text(newStage.name));
@@ -178,5 +185,73 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
         }
       }
     }
+  }
+
+  @Test
+  public void addSectionsSentencesTokenizations() throws RebarException, Exception {
+    String secStageName = "stage_sections_v1";
+    Stage secStage = TestRebarStageHandler.generateTestStage(secStageName, "Sections stage", new HashSet<String>(), StageType.SECTION);
+    SingleSectionSegmentator sss = new SingleSectionSegmentator();
+    for (Communication c : this.docSet) {
+      SectionSegmentation ss = sss.generateSectionSegmentation(c);
+      this.ra.addSectionSegmentation(c, secStage, ss);
+    }
+
+    Set<String> sentDeps = new HashSet<>();
+    sentDeps.add(secStageName);
+    String sentStageName = "stage_sentences_v1";
+    Stage sentStage = TestRebarStageHandler.generateTestStage(sentStageName, "Sentences stage", sentDeps, StageType.SENTENCE);
+
+    SillySentenceSplitter splitta = new SillySentenceSplitter();
+    List<Communication> commsWithSections;
+    try (RebarReader rr = new RebarReader(conn);) {
+      commsWithSections = new ArrayList<>(rr.getAnnotatedCommunications(secStage));
+    }
+
+    for (Communication c : commsWithSections) {
+      // SectionSegmentation ss = sss.generateSectionSegmentation(c);
+      SentenceSegmentationCollection sentSegs = splitta.split(c);
+      this.ra.addSentenceSegmentations(c, sentStage, sentSegs);
+    }
+
+    Iterator<Entry<Key, Value>> iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
+    assertEquals("Should get 30 total rows.", 30, Util.countIteratorResults(iter));
+
+    List<Communication> commsWithSents;
+    try (RebarReader rr = new RebarReader(conn);) {
+      commsWithSents = rr.getAnnotatedCommunications(sentStage);
+    }
+
+    assertEquals("Should get n comms with sentences: ", this.docSet.size(), commsWithSents.size());
+    for (Communication c : commsWithSents) {
+      SectionSegmentation ss = c.getSectionSegmentation();
+      List<Section> sList = ss.getSectionList();
+      assertEquals(1, sList.size());
+
+      for (Section s : sList) {
+        String id = s.getUuid().getId();
+        assertEquals(id, s.getSentenceSegmentation().getSectionId().getId());
+      }
+    }
+    
+    Set<String> tokDeps = new HashSet<>();
+    sentDeps.add(sentStageName);
+    String tokStageName = "stage_tokens_v1";
+    Stage tokStage = TestRebarStageHandler.generateTestStage(tokStageName, "Tokens stage", tokDeps, StageType.TOKENIZATION);
+
+    RebarTokenizer rt = new RebarTokenizer();
+    for (Communication c : commsWithSents) {
+      // SectionSegmentation ss = sss.generateSectionSegmentation(c);
+      TokenizationCollection tc = rt.tokenize(c);
+      this.ra.addTokenizations(c, tokStage, tc);
+    }
+    
+    List<Communication> commsWithToks;
+    try (RebarReader rr = new RebarReader(conn);) {
+      commsWithToks = rr.getAnnotatedCommunications(tokStage);
+    }
+    
+    iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
+    assertEquals("Should get 40 total rows.", 40, Util.countIteratorResults(iter));
   }
 }

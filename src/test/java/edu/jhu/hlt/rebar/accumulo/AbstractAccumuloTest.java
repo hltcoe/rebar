@@ -123,6 +123,10 @@ public class AbstractAccumuloTest {
   protected static Stage generateTestStage() {
     return new Stage("stage_foo", "Foo stage for testing", Util.getCurrentUnixTime(), new HashSet<String>(), StageType.LANG_ID);
   }
+  
+  protected static Stage generateTestStage(String name, String desc, Set<String> deps, StageType sType) {
+    return new Stage(name, desc, Util.getCurrentUnixTime(), deps, sType);
+  }
 
   protected List<Communication> ingestDocuments(int nDocs) throws RebarException, TException {
     List<Communication> docList = new ArrayList<>(generateMockDocumentSet(nDocs));
