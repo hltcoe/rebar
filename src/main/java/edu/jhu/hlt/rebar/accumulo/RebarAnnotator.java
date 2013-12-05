@@ -17,6 +17,8 @@ import org.apache.thrift.TException;
 
 import edu.jhu.hlt.concrete.Annotator;
 import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.EntityMentionSet;
+import edu.jhu.hlt.concrete.EntitySet;
 import edu.jhu.hlt.concrete.LangId;
 import edu.jhu.hlt.concrete.LanguagePrediction;
 import edu.jhu.hlt.concrete.RebarThriftException;
@@ -76,6 +78,10 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
     }
   }
 
+  private RebarThriftException generateAnnotationException(StageType type, Exception ex) {
+    return new RebarThriftException("There was an error adding an annotation of stage: " + type.toString() + ": " + ex.getMessage());
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -107,8 +113,9 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
 
     return ingestedIds;
   }
-  
-  public void addAnnotation(Communication comm, Stage stage, TBase<?,?> annotation) throws RebarException, IllegalAnnotationException, TException, MutationsRejectedException {
+
+  public void addAnnotation(Communication comm, Stage stage, TBase<?, ?> annotation) throws RebarException, IllegalAnnotationException, TException,
+      MutationsRejectedException {
     Set<String> ingestedIds = this.prepareAnnotation(comm, stage);
     byte[] lidBytes = this.serializer.serialize(annotation);
     final Mutation m = new Mutation(comm.id);
@@ -128,7 +135,7 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
       throw new RebarThriftException(e.getMessage());
     }
   }
-  
+
   @Override
   public void addLanguagePrediction(Communication comm, Stage stage, LanguagePrediction lp) throws RebarThriftException, TException {
     if (stage.type != StageType.LANG_PRED)
@@ -140,33 +147,34 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
     }
   }
 
-  /* (non-Javadoc)
-   * @see edu.jhu.hlt.concrete.Annotator.Iface#addSectionSegmentation(edu.jhu.hlt.concrete.Communication, edu.jhu.hlt.concrete.Stage, edu.jhu.hlt.concrete.SectionSegmentation)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see edu.jhu.hlt.concrete.Annotator.Iface#addSectionSegmentation(edu.jhu.hlt.concrete.Communication, edu.jhu.hlt.concrete.Stage,
+   * edu.jhu.hlt.concrete.SectionSegmentation)
    */
   @Override
   public void addSectionSegmentation(Communication comm, Stage stage, SectionSegmentation sectionSegmentation) throws RebarThriftException, TException {
     if (!isValidSectionSegmentation(sectionSegmentation))
       throw new RebarThriftException("This is not a valid SectionSegmentation object; it has no sections.");
-    
+
     if (stage.type != StageType.SECTION)
       throw new RebarThriftException("The type of this stage must be Section, not: " + stage.type.toString());
-    
+
     try {
       this.addAnnotation(comm, stage, sectionSegmentation);
     } catch (MutationsRejectedException | RebarException | IllegalAnnotationException e) {
       throw new RebarThriftException("There was an error during ingest: " + e.getMessage());
     }
   }
-  
+
   public static boolean isValidSectionSegmentation(SectionSegmentation ss) {
     List<Section> secList = ss.getSectionList();
     if (secList == null || secList.size() == 0)
       return false;
-    return true; 
+    return true;
   }
-  
-  
-  
+
   public static BooleanToStringTuple isValidSentenceSegmentationCollection(Communication c, SentenceSegmentationCollection ssc) {
     List<SentenceSegmentation> ssList = ssc.getSentSegList();
     Map<String, SentenceSegmentation> sectionIdToSentSegMap = new HashMap<>();
@@ -179,7 +187,8 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
     int sectListSize = sectList.size();
     int sentSegListSize = ssList.size();
     if (sectList.size() != ssList.size()) {
-      return new BooleanToStringTuple(false, "The number of sections [" + sectListSize + "] did not equal the number of sentence segmentations [" + sentSegListSize + "].");
+      return new BooleanToStringTuple(false, "The number of sections [" + sectListSize + "] did not equal the number of sentence segmentations ["
+          + sentSegListSize + "].");
     }
 
     // attempt to match each section segmentation with a section.
@@ -199,10 +208,10 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
         sb.append(" ");
         sb.append(idStr);
       }
-      
+
       return new BooleanToStringTuple(false, "One or more sentence segmentation IDs did not map to the list of sections. They are: [" + sb.toString() + " ]");
     }
-    
+
     return new BooleanToStringTuple(true, "OK");
   }
 
@@ -211,28 +220,53 @@ public class RebarAnnotator extends AbstractAccumuloClient implements AutoClosea
       TException {
     if (stage.type != StageType.SENTENCE)
       throw new RebarThriftException("The type of this stage must be Sentence, not: " + stage.type.toString());
-    
+
     BooleanToStringTuple t = isValidSentenceSegmentationCollection(comm, sentenceSegmentationList);
     if (!t.getBoolean())
       throw new RebarThriftException("Your sentence segmentation had an issue: " + t.getMessage());
-    
+
     try {
       this.addAnnotation(comm, stage, sentenceSegmentationList);
     } catch (MutationsRejectedException | RebarException | IllegalAnnotationException e) {
-      throw new RebarThriftException("There was an error adding section segmentations: " + e.getMessage());
+      throw generateAnnotationException(StageType.SENTENCE, e);
     }
-    
   }
 
   @Override
   public void addTokenizations(Communication comm, Stage stage, TokenizationCollection tokenizations) throws RebarThriftException, TException {
     if (stage.type != StageType.TOKENIZATION)
       throw new RebarThriftException("The type of this stage must be Tokenization, not: " + stage.type.toString());
-    
+
     try {
       this.addAnnotation(comm, stage, tokenizations);
     } catch (MutationsRejectedException | RebarException | IllegalAnnotationException e) {
-      throw new RebarThriftException("There was an error adding section segmentations: " + e.getMessage());
+      throw generateAnnotationException(StageType.TOKENIZATION, e);
+    }
+  }
+
+  @Override
+  public void addEntities(Communication comm, Stage stage, EntitySet es) throws RebarThriftException, TException {
+    // TODO Auto-generated method stub
+    if (stage.type != StageType.ENTITIES)
+      throw new RebarThriftException("The type of this stage must be " + StageType.ENTITIES.toString() + ", not: " + stage.type.toString());
+
+    try {
+      this.addAnnotation(comm, stage, es);
+    } catch (MutationsRejectedException | RebarException | IllegalAnnotationException e) {
+      throw generateAnnotationException(StageType.ENTITIES, e);
+    }
+  }
+
+  @Override
+  public void addEntityMentions(Communication comm, Stage stage, EntityMentionSet ems) throws RebarThriftException, TException {
+    // TODO Auto-generated method stub
+    if (stage.type != StageType.ENTITY_MENTIONS)
+      throw new RebarThriftException("The type of this stage must be " + StageType.ENTITY_MENTIONS.toString() + ", not: " + stage.type.toString());
+
+    try {
+      this.addAnnotation(comm, stage, ems);
+    } catch (MutationsRejectedException | RebarException | IllegalAnnotationException e) {
+      throw generateAnnotationException(StageType.ENTITY_MENTIONS, e);
     }
   }
 }

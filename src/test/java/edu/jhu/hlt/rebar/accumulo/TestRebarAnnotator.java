@@ -235,7 +235,8 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
     }
     
     Set<String> tokDeps = new HashSet<>();
-    sentDeps.add(sentStageName);
+    tokDeps.add(sentStageName);
+    tokDeps.add(secStageName);
     String tokStageName = "stage_tokens_v1";
     Stage tokStage = TestRebarStageHandler.generateTestStage(tokStageName, "Tokens stage", tokDeps, StageType.TOKENIZATION);
 
@@ -246,12 +247,14 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
       this.ra.addTokenizations(c, tokStage, tc);
     }
     
+    iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
+    assertEquals("Should get 40 total rows.", 40, Util.countIteratorResults(iter));
+    
     List<Communication> commsWithToks;
     try (RebarReader rr = new RebarReader(conn);) {
       commsWithToks = rr.getAnnotatedCommunications(tokStage);
     }
     
-    iter = TestRebarIngester.generateIterator(conn, Constants.DOCUMENT_TABLE_NAME, new Range());
-    assertEquals("Should get 40 total rows.", 40, Util.countIteratorResults(iter));
+    
   }
 }
