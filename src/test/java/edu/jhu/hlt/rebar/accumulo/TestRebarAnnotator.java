@@ -188,7 +188,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
   }
 
   @Test
-  public void addSectionsSentencesTokenizations() throws RebarException, Exception {
+  public void addSectionsSentencesTokenizationsMentionsEntities() throws RebarException, Exception {
     String secStageName = "stage_sections_v1";
     Stage secStage = TestRebarStageHandler.generateTestStage(secStageName, "Sections stage", new HashSet<String>(), StageType.SECTION);
     SingleSectionSegmentator sss = new SingleSectionSegmentator();
