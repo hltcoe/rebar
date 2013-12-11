@@ -9,8 +9,14 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-testkit" % "2.2.1",
   "org.scalatest" %% "scalatest" % "2.0" % "test",
   "com.typesafe" %% "scalalogging-slf4j" % "1.0.1",
-  "edu.jhu.hlt.concrete" % "concrete-core" % "1.0.0-SNAPSHOT"
-)
+  "edu.jhu.hlt.concrete" % "concrete-core" % "1.0.0-SNAPSHOT",
+  "org.apache.accumulo" % "accumulo-core" % "1.5.0",
+  "org.apache.accumulo" % "accumulo-server" % "1.5.0",
+  "org.apache.zookeeper" % "zookeeper" % "3.4.5" exclude ("org.slf4j", "slf4j-log4j12"),
+  "log4j" % "log4j" % "1.2.15"
+  ).map(_.exclude ("javax.jms", "jms"))
+   .map(_.exclude ("com.sun.jmx", "jmxri"))
+   .map(_.exclude ("com.sun.jdmk", "jmxtools"))
 
 resolvers += "Local Maven Repository" at "file:///"+Path.userHome+"/.m2/repository"
 
