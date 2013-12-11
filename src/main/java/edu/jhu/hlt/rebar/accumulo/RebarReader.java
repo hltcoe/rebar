@@ -114,11 +114,10 @@ public class RebarReader extends AbstractAccumuloClient implements Reader.Iface 
   }
 
   /**
-   * TODO: move some of htis validation logic to the ingester
    * 
    * @param c
    * @param ssc
-   * @return
+   * @return a {@link Communication} object with {@link SentenceSegmentation}s merged in.
    * @throws IllegalAnnotationException
    */
   private static Communication mergeSentenceSegmentationCollection(Communication c, SentenceSegmentationCollection ssc) throws IllegalAnnotationException {
