@@ -24,14 +24,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import concrete.examples.RebarTokenizer;
-import concrete.examples.SillySentenceSplitter;
 import concrete.examples.SingleSectionSegmentator;
+import concrete.examples.scala.SillySentenceSplitter;
+import concrete.examples.scala.SingleSectionSegmenter;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.LangId;
 import edu.jhu.hlt.concrete.RebarThriftException;
 import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.SectionSegmentation;
-import edu.jhu.hlt.concrete.Sentence;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.Stage;
 import edu.jhu.hlt.concrete.StageType;
@@ -191,9 +191,9 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
   public void addSectionsSentencesTokenizationsMentionsEntities() throws RebarException, Exception {
     String secStageName = "stage_sections_v1";
     Stage secStage = TestRebarStageHandler.generateTestStage(secStageName, "Sections stage", new HashSet<String>(), StageType.SECTION);
-    SingleSectionSegmentator sss = new SingleSectionSegmentator();
+
     for (Communication c : this.docSet) {
-      SectionSegmentation ss = sss.generateSectionSegmentation(c);
+      SectionSegmentation ss = SingleSectionSegmenter.sectionCommunication(c);
       this.ra.addSectionSegmentation(c, secStage, ss);
     }
 
@@ -210,7 +210,7 @@ public class TestRebarAnnotator extends AbstractAccumuloTest {
 
     for (Communication c : commsWithSections) {
       // SectionSegmentation ss = sss.generateSectionSegmentation(c);
-      SentenceSegmentationCollection sentSegs = splitta.split(c);
+      SentenceSegmentationCollection sentSegs = splitta.splitSentences(c);
       this.ra.addSentenceSegmentations(c, sentStage, sentSegs);
     }
 
