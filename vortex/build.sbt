@@ -1,15 +1,18 @@
-name := "Rebar Akka Ingester"
+name := "vortex"
 
 version := "1.0.0-SNAPSHOT"
 
-organization := "edu.jhu"
+organization := "edu.jhu.rebar"
 
 libraryDependencies ++= Seq(
+  "edu.jhu.rebar" %% "rebar-config" % "1.0.0-SNAPSHOT",
+  "edu.jhu.hlt.rebar" % "rebar" % "2.0.0-SNAPSHOT",
   "com.typesafe.akka" %% "akka-actor" % "2.2.1",
   "com.typesafe.akka" %% "akka-testkit" % "2.2.1",
   "org.scalatest" %% "scalatest" % "2.0" % "test",
   "com.typesafe" %% "scalalogging-slf4j" % "1.0.1",
   "edu.jhu.hlt.concrete" % "concrete-core" % "1.0.0-SNAPSHOT",
+  "org.apache.hadoop" % "hadoop-core" % "1.1.1",
   "org.apache.accumulo" % "accumulo-core" % "1.5.0",
   "org.apache.accumulo" % "accumulo-server" % "1.5.0",
   "org.apache.zookeeper" % "zookeeper" % "3.4.5" exclude ("org.slf4j", "slf4j-log4j12"),

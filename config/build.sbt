@@ -1,4 +1,4 @@
-name := "rebar-config"
+name := "config"
 
 version := "1.0.0-SNAPSHOT"
 
