@@ -5,7 +5,7 @@
   */
 package edu.jhu.rebar.scarbre
 
-import com.github.nscala_time.time.Imports._
+// import com.github.nscala_time.time.Imports._
 
 /**
   * Utility methods useful in Rebar.
@@ -14,10 +14,10 @@ object Util {
   /**
     * Returns the current unix time as an `Int`.
     */
-  def getCurrentUnixTime : Int = {
-    (DateTime.now.millis / 1000).toInt
-  }
+  // def getCurrentUnixTime : Int = {
+  //   (DateTime.now.millis / 1000).toInt
+  // }
 
-  
+
 }
 

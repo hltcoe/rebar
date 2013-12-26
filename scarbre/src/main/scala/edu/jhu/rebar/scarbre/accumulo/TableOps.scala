@@ -3,16 +3,15 @@
   *  This software is released under the 2-clause BSD license.
   *  See LICENSE in the project root directory.
   */
-package edu.jhu.rebar.scarbre.accumulo;
+package edu.jhu.rebar.scarbre
+package accumulo
 
-import org.apache.accumulo.core.client._
-import org.apache.accumulo.core.client.admin.TableOperations;
+import org.apache.accumulo.core.client.admin.TableOperations
 
 /**
   * Thin wrapper around `TableOperations` for easier use.
   * 
   * @constructor pass in a `Connector` object for Accumulo usage.
-  * @author max
   */
 class TableOps(conn: Connector) {
   val tableOps = conn.tableOperations
