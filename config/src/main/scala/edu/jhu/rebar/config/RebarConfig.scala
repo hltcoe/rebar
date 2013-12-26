@@ -8,107 +8,132 @@ import com.typesafe.config.{Config, ConfigFactory}
 /**
   * A utility object that represents the configuration of the Rebar system. 
   *
-  * @constructor Load a non-default `Config` object.
-  * @param config The `Config` object to use to construct this [[Configuration]] object.
   */
-class Configuration (config: Config) {
+object Configuration {
+  private val config = ConfigFactory.load()
   config.checkValid(ConfigFactory.defaultReference(), "rebar")
   
-  def this() = this(ConfigFactory.load())
-  
-  val accumuloConfig = config getConfig "rebar.accumulo"
+  //////////////////////////////////
+  // Accumulo Configuration
+  //////////////////////////////////
+  private val AccumuloConfig = config getConfig "rebar.accumulo"
 
   /**
-    * Return a boolean - whether or not to use a mock instance of Accumulo.
+    * A boolean constant - whether or not to use a mock instance of Accumulo.
     */
-  def useMock = accumuloConfig getBoolean "useMock"
+  val UseMock = AccumuloConfig getBoolean "useMock"
 
   /**
-    * Return a string that represents the Accumulo instance that Rebar will use.
+    * A string that represents the Accumulo instance that Rebar will use.
     */
-  def accumuloInstance = accumuloConfig getString "instance"
+  val AccumuloInstance = AccumuloConfig getString "instance"
 
   /**
-    * Return a string that represents the Zookeeper servers that Rebar will use.
+    * A string that represents the Zookeeper servers that Rebar will use.
     */
-  def zookeepers = accumuloConfig getString "zookeepers"
+  val Zookeepers = AccumuloConfig getString "zookeepers"
 
   /**
-    * Return a string that represents the Accumulo user that Rebar will use.
+    * A string that represents the Accumulo user that Rebar will use.
     */
-  def accumuloUser = accumuloConfig getString "user"
+  val AccumuloUser = AccumuloConfig getString "user"
 
   /**
-    * Return a string that represents the password for the Accumulo user.
+    * A string that represents the password for the Accumulo user.
     */
-  def accumuloPass = accumuloConfig getString "password"
-  
-  val redisConfig = config getConfig "rebar.redis"
+  val AccumuloPass = AccumuloConfig getString "password"
+
+  private val BatchConfig = AccumuloConfig getConfig "batchwriter"
 
   /**
-    * Return a string that represents the Redis server that Rebar will use.
+    * The batchwriter latency, a `Long`.
     */
-  def redisServer = redisConfig getString "server"
+  val BWLatency = BatchConfig getLong "latency"
 
   /**
-    * Return a string that represents the key in Redis that Rebar will use
+    * An `Int` that represents the amount of memory the batchwriter should use.
+    */
+  val BWMemory = BatchConfig getInt "memory"
+
+  /**
+    * An `Int` that represents the number of writer threads to use on the Accumulo server by the batchwriter object.
+    */
+  val BWThreads = BatchConfig getInt "threads"
+
+  /**
+    * An `Int` that represents the timeout the batchwriter should use when communicating with the server.
+    */
+  val BWTimeout = BatchConfig getInt "timeout"
+
+  /////////////////////////
+  // Redis Configuration
+  /////////////////////////
+  private val RedisConfig = config getConfig "rebar.redis"
+
+  /**
+    * A string that represents the Redis server that Rebar will use.
+    */
+  val RedisServer = RedisConfig getString "server"
+
+  /**
+    * A string that represents the key in Redis that Rebar will use
     * for ingested document IDs.
     */
-  def ingestedIdKey = redisConfig getString "ingested-id-key"
+  val IngestedIdKey = RedisConfig getString "ingested-id-key"
 
-  val rebarConfig = config getConfig "rebar"
-
-  /**
-    * Return a `String` that indicates the name of the table that Rebar will store raw documents in.
-    */
-  def documentTableName = rebarConfig getString "document-table-name"
+  //////////////////////////////////
+  // General Rebar Configuration
+  //////////////////////////////////
+  private val RebarConfig = config getConfig "rebar"
 
   /**
-    * Return a `String` that Rebar will use as a column family to indicate a value is a raw document.
+    * A `String` that indicates the name of the table that Rebar will store raw documents in.
     */
-  def documentCF = rebarConfig getString "document-cf"
+  val DocumentTableName = RebarConfig getString "document-table-name"
 
   /**
-    * Return a `String` that Rebar will use as a column family for Rebar annotations.
+    * A `String` that Rebar will use as a column family to indicate a value is a raw document.
     */
-  def documentAnnotationCF = rebarConfig getString "document-annotation-cf"
+  val DocumentCF = RebarConfig getString "document-cf"
 
   /**
-    * Return a `String` that Rebar will use as a table name for corpora.
+    * A `String` that Rebar will use as a column family for Rebar annotations.
     */
-  def corpusTableName = rebarConfig getString "corpus-table-name"
+  val DocumentAnnotationCF = RebarConfig getString "document-annotation-cf"
 
   /**
-    * Return a `String` that Rebar will use as a prefix for created corpora.
+    * A `String` that Rebar will use as a table name for corpora.
     */
-
-  def corpusPrefix = rebarConfig getString "corpus-prefix"
-
-  /**
-    * Return a `String` that Rebar will use as a table name for `Stage`s.
-    */
-def stagesTableName = rebarConfig getString "stages-table-name"
+  val CorpusTableName = RebarConfig getString "corpus-table-name"
 
   /**
-    * Return a `String` that Rebar will use as a prefix for created `Stage`s.
+    * A `String` that Rebar will use as a prefix for created corpora.
     */
-  def stagesPrefix = rebarConfig getString "stages-prefix"
+
+  val CorpusPrefix = RebarConfig getString "corpus-prefix"
 
   /**
-    * Return a `String` that Rebar will use as a column family to represent actual stages in the stages table.
+    * A `String` that Rebar will use as a table name for `Stage`s.
     */
-  def stagesObjectCF = rebarConfig getString "stages-object-cf"
+  val StagesTableName = RebarConfig getString "stages-table-name"
 
   /**
-    * Return a `String` that Rebar will use as a column family for stages in annotated documents.
+    * A `String` that Rebar will use as a prefix for created `Stage`s.
     */
-  def stagesDocumentsCF = rebarConfig getString "stages-docs-cf"
+  val StagesPrefix = RebarConfig getString "stages-prefix"
 
   /**
-    * Return a `String` that Rebar will use as a column family for document IDs that have been annotated in the stages table.
+    * A `String` that Rebar will use as a column family to represent actual stages in the stages table.
     */
-  def stagesDocumentsAnnotationIdCF = rebarConfig getString "stages-docs-annotation-ids-cf"
+  val StagesObjectCF = RebarConfig getString "stages-object-cf"
+
+  /**
+    * A `String` that Rebar will use as a column family for stages in annotated documents.
+    */
+  val StagesDocumentsCF = RebarConfig getString "stages-docs-cf"
+
+  /**
+    * A `String` that Rebar will use as a column family for document IDs that have been annotated in the stages table.
+    */
+  val StagesDocumentsAnnotationIdCF = RebarConfig getString "stages-docs-annotation-ids-cf"
 }
-
-
-
