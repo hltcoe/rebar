@@ -3,9 +3,9 @@
   *  This software is released under the 2-clause BSD license.
   *  See LICENSE in the project root directory.
   */
-package edu.jhu.rebar.scarbre
+package edu.jhu.rebar.scarbre.accumulo
 
-package object accumulo {
+object `package` {
   type BatchWriterOpts = org.apache.accumulo.core.cli.BatchWriterOpts
   type Connector = org.apache.accumulo.core.client.Connector
 

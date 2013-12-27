@@ -7,8 +7,12 @@ package edu.jhu.rebar.scarbre
 package accumulo
 
 import edu.jhu.rebar.config.Configuration
+import org.apache.thrift.protocol.TBinaryProtocol
 
 abstract class AccumuloClient(conn: Connector) {
+  protected val serializer = new TSerializer(new TBinaryProtocol.Factory())
+  protected val deserializer = new TDeserializer(new TBinaryProtocol.Factory())
+
   protected val tableOps = new TableOps(conn)
   protected val bwOpts = new BatchWriterOpts
 
@@ -16,8 +20,7 @@ abstract class AccumuloClient(conn: Connector) {
   bwOpts.batchMemory = Configuration.BWMemory
   bwOpts.batchThreads = Configuration.BWThreads
   bwOpts.batchTimeout = Configuration.BWTimeout
-  protected val bwOptsCfg = bwOpts.getBatchWriterConfig
 
-  protected val bw = conn.createBatchWriter(Configuration.DocumentTableName, bwOptsCfg)
+  protected val bwOptsCfg = bwOpts.getBatchWriterConfig
 
 }
