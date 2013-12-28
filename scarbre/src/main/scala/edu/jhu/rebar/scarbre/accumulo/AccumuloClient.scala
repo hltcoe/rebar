@@ -33,12 +33,17 @@ object AccumuloClient {
   /**
     * The `PasswordToken` for this user. 
     */
-  val PasswordToken = new org.apache.accumulo.core.client.security.tokens.PasswordToken(Configuration.AccumuloPass)
+  val DefaultPasswordToken = new PasswordToken(Configuration.AccumuloPass)
 
+  /**
+    * Return a `Connector` object for use in rebar.
+    * 
+    * @return a `Connector` to either an in-memory or configured Accumulo cluster, depending on the configuration. 
+    */
   def getConnector() : Connector = {
     Configuration.UseMock match {
       case true => new MockInstance().getConnector("max", new PasswordToken(""))
-      case false => new ZooKeeperInstance(Configuration.AccumuloInstance, Configuration.Zookeepers).getConnector(Configuration.AccumuloUser, PasswordToken)
+      case false => new ZooKeeperInstance(Configuration.AccumuloInstance, Configuration.Zookeepers).getConnector(Configuration.AccumuloUser, DefaultPasswordToken)
     }
   }
 }
