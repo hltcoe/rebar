@@ -22,5 +22,23 @@ abstract class AccumuloClient(conn: Connector) {
   bwOpts.batchTimeout = Configuration.BWTimeout
 
   protected val bwOptsCfg = bwOpts.getBatchWriterConfig
+}
 
+object AccumuloClient {
+  /**
+    * The default `Authorizations`.
+    */
+  val DefaultAuths = org.apache.accumulo.core.Constants.NO_AUTHS
+
+  /**
+    * The `PasswordToken` for this user. 
+    */
+  val PasswordToken = new org.apache.accumulo.core.client.security.tokens.PasswordToken(Configuration.AccumuloPass)
+
+  def getConnector() : Connector = {
+    Configuration.UseMock match {
+      case true => new MockInstance().getConnector("max", new PasswordToken(""))
+      case false => new ZooKeeperInstance(Configuration.AccumuloInstance, Configuration.Zookeepers).getConnector(Configuration.AccumuloUser, PasswordToken)
+    }
+  }
 }

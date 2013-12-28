@@ -11,4 +11,11 @@ object `package` {
 
   type Mutation = org.apache.accumulo.core.data.Mutation
   type Value = org.apache.accumulo.core.data.Value
+
+  type MockInstance = org.apache.accumulo.core.client.mock.MockInstance
+  type ZooKeeperInstance = org.apache.accumulo.core.client.ZooKeeperInstance
+  type Instance = org.apache.accumulo.core.client.Instance
+
+  type PasswordToken = org.apache.accumulo.core.client.security.tokens.PasswordToken
+
 }
