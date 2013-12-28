@@ -8,9 +8,14 @@ package edu.jhu.rebar.scarbre.accumulo
 object `package` {
   type BatchWriterOpts = org.apache.accumulo.core.cli.BatchWriterOpts
   type Connector = org.apache.accumulo.core.client.Connector
+  type Scanner = org.apache.accumulo.core.client.Scanner;
+  type BatchScanner = org.apache.accumulo.core.client.BatchScanner;
+  type BatchWriter = org.apache.accumulo.core.client.BatchWriter;
 
   type Mutation = org.apache.accumulo.core.data.Mutation
+  type Key = org.apache.accumulo.core.data.Key;
   type Value = org.apache.accumulo.core.data.Value
+  type Range = org.apache.accumulo.core.data.Range;
 
   type MockInstance = org.apache.accumulo.core.client.mock.MockInstance
   type ZooKeeperInstance = org.apache.accumulo.core.client.ZooKeeperInstance

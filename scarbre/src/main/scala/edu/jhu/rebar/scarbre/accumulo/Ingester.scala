@@ -9,9 +9,17 @@ package accumulo
 import edu.jhu.hlt.concrete._
 import edu.jhu.rebar.config.Configuration
 
+/**
+  * A class that represents a basic Rebar "ingester", e.g., an interface to ingest `Communication` objects without annotations.
+  * 
+  * @param conn The `Connector` object to use to connect to Accumulo.
+  */
 class BasicIngester(conn: Connector) extends AccumuloClient(conn) {
-  private val bw = this.conn.createBatchWriter(Configuration.DocumentTableName, bwOptsCfg)
-
+  /**
+    * Ingests a `Communication` object into Rebar.
+    * 
+    * @param comm The `Communication` to ingest. 
+    */
   def ingest(comm: Communication) = {
     val m = new Mutation(comm.id)
     val v = new Value(this.serializer.serialize(comm))
