@@ -21,7 +21,12 @@ class CorpusHandler(conn: Connector) extends AccumuloClient(conn) {
     scan.setRange(range)
     scan.iterator().hasNext()
   }
+}
 
+/**
+  * Contains utility methods for Corpora.
+  */
+object CorpusHandler {
   /**
     * Returns `True` if the corpus is a valid corpus name, e.g., starts with the prefix specified by `Configuration`.`CorpusPrefix`.
     * 
