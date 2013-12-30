@@ -28,6 +28,30 @@ abstract class AccumuloClient(conn: Connector) {
   protected lazy val corporaTableBW = conn.createBatchWriter(Configuration.CorpusTableName, bwOptsCfg)
 }
 
+/**
+  * Small wrapper around `Connector` to simplify usage. 
+  */
+class PowerConnector(conn: Connector) {
+  def scanner(tableName: String) : Scanner = {
+    conn.createScanner(tableName, AccumuloClient DefaultAuths)
+  }
+
+  def batchWriter(tableName: String)(implicit cfg: BatchWriterConfig) {
+    conn.createBatchWriter(tableName, cfg)
+  }
+}
+
+/**
+  * A mutable wrapper around Scanner that provides scala friendly resuts.
+  */
+class PowerScanner(scan: Scanner) {
+  import scala.collection.JavaConverters._
+
+  def withRange(range: Range) = scan.setRange(range)
+
+  def getResults : Seq[Entry[Key, Value]] = scan.iterator().asScala.toSeq
+}
+
 object AccumuloClient {
   /**
     * The default `Authorizations`.
@@ -40,11 +64,16 @@ object AccumuloClient {
   val DefaultPasswordToken = new PasswordToken(Configuration.AccumuloPass)
 
   /**
+    * The default system `Connector` object.
+    */
+  val DefaultConnector = getConnector
+
+  /**
     * Return a `Connector` object for use in rebar.
     * 
     * @return a `Connector` to either an in-memory or configured Accumulo cluster, depending on the configuration. 
     */
-  def getConnector() : Connector = {
+  private def getConnector() : Connector = {
     Configuration.UseMock match {
       case true => new MockInstance().getConnector("max", new PasswordToken(""))
       case false => new ZooKeeperInstance(Configuration.AccumuloInstance, Configuration.Zookeepers).getConnector(Configuration.AccumuloUser, DefaultPasswordToken)

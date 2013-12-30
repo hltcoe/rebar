@@ -7,12 +7,14 @@ package edu.jhu.rebar.scarbre.accumulo
 
 object `package` {
   type BatchWriterOpts = org.apache.accumulo.core.cli.BatchWriterOpts
+  type BatchWriterConfig = org.apache.accumulo.core.client.BatchWriterConfig
   type Connector = org.apache.accumulo.core.client.Connector
   type Scanner = org.apache.accumulo.core.client.Scanner;
   type BatchScanner = org.apache.accumulo.core.client.BatchScanner;
   type BatchWriter = org.apache.accumulo.core.client.BatchWriter;
 
   type Mutation = org.apache.accumulo.core.data.Mutation
+  type Entry[K, V] = java.util.Map.Entry[K, V]
   type Key = org.apache.accumulo.core.data.Key;
   type Value = org.apache.accumulo.core.data.Value
   type Range = org.apache.accumulo.core.data.Range;
@@ -23,4 +25,7 @@ object `package` {
 
   type PasswordToken = org.apache.accumulo.core.client.security.tokens.PasswordToken
 
+  implicit def connectorToPowerConnector(conn: Connector) = {
+    new PowerConnector(conn)
+  }
 }
