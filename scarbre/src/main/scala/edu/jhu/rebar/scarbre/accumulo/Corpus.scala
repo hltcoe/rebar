@@ -30,6 +30,11 @@ class Corpus(name: String) {
     scan.iterator().hasNext()
   }
 
+  /**
+    * Create a [[Corpus]] object in Rebar.
+    * 
+    * @param commSet a `Set` of `Communication`s that this corpus will point to.
+    */
   def create (commSet : Set[String]) = {
     val m = new Mutation(internalName)
     m.put("", "", new Value(new Array[Byte](0)))
