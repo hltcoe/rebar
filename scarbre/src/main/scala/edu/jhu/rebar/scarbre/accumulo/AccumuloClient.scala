@@ -53,6 +53,8 @@ class PowerScanner(scan: Scanner) {
 }
 
 object AccumuloClient {
+  import scala.util.matching.Regex
+
   /**
     * The default `Authorizations`.
     */
@@ -67,6 +69,8 @@ object AccumuloClient {
     * The default system `Connector` object.
     */
   val DefaultConnector = getConnector
+
+  val AccumuloTableRE = """[^a-zA-Z0-9_]+""".r
 
   /**
     * Return a `Connector` object for use in rebar.

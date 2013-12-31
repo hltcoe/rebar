@@ -28,4 +28,6 @@ object `package` {
   implicit def connectorToPowerConnector(conn: Connector) = {
     new PowerConnector(conn)
   }
+
+  implicit def scanToPS(scan: Scanner) = new PowerScanner(scan)
 }

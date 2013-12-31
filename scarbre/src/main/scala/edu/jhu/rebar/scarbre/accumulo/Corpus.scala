@@ -29,18 +29,26 @@ class Corpus(name: String) {
     scan.setRange(range)
     scan.iterator().hasNext()
   }
+
+  def create (commSet : Set[String]) = {
+    val m = new Mutation(internalName)
+    m.put("", "", new Value(new Array[Byte](0)))
+
+  }
 }
 
 /**
   * Factory / utility object for [[Corpus]].
   */
 object Corpus {
+  import scala.util.matching.Regex.Match
+
   /**
     * Returns `True` if the corpus is a valid corpus name, e.g., starts with the prefix specified by `Configuration`.`CorpusPrefix`.
     * 
     * @param corpusName The name of the corpus to check. 
     */
   def validCorpusName(corpusName: String) : Boolean = {
-    corpusName.startsWith(Configuration.CorpusPrefix)
+    AccumuloClient.AccumuloTableRE findAllMatchIn corpusName isEmpty
   }
 }
