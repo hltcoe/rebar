@@ -10,21 +10,33 @@ import org.apache.accumulo.core.client.admin.TableOperations
 
 /**
   * Thin wrapper around `TableOperations` for easier use.
-  * 
-  * @constructor pass in a `Connector` object for Accumulo usage.
   */
-class TableOps(conn: Connector) {
-  val tableOps = conn.tableOperations
+object TableOps {
+  import scala.util.{Try, Success, Failure}
 
-  def createTable(tableName: String) = {
-    tableOps.create(tableName)
-  }
+  private val tableOps = AccumuloClient.DefaultConnector.tableOperations
 
-  def deleteTable(tableName: String) = {
-    tableOps.delete(tableName)
-  }
+  /**
+    * Create an accumulo table.
+    *
+    * @param tableName The name of the table to create.
+    * @return A `Try` with any exceptions.
+    */
+  def create(tableName: String) : Try[Unit] = Try(tableOps.create(tableName))
 
-  def tableExists(tableName: String) = {
-    tableOps.exists(tableName)
-  }
+  /**
+    * Delete an accumulo table.
+    *
+    * @param tableName The name of the table to create.
+    * @return A `Try` with any exceptions.
+    */
+  def delete(tableName: String) : Try[Unit] = Try(tableOps.delete(tableName))
+
+  /**
+    * Check to see if an accumulo table exists.
+    *
+    * @param tableName The name of the table to create.
+    * @return A `Try` with the enclosed `Boolean`.
+    */
+  def exists(tableName: String) : Try[Boolean] = Try(tableOps.exists(tableName))
 }

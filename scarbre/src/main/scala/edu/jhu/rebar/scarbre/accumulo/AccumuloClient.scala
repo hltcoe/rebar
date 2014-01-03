@@ -13,36 +13,48 @@ abstract class AccumuloClient(conn: Connector) {
   protected lazy val serializer = new TSerializer(new TBinaryProtocol.Factory())
   protected lazy val deserializer = new TDeserializer(new TBinaryProtocol.Factory())
 
-  protected val tableOps = new TableOps(conn)
-  protected val bwOpts = new BatchWriterOpts
+  protected lazy val bw = this.conn.createBatchWriter(Configuration.DocumentTableName, AccumuloClient.DefaultBWConfig)
 
-  bwOpts.batchLatency = Configuration.BWLatency
-  bwOpts.batchMemory = Configuration.BWMemory
-  bwOpts.batchThreads = Configuration.BWThreads
-  bwOpts.batchTimeout = Configuration.BWTimeout
-
-  protected val bwOptsCfg = bwOpts.getBatchWriterConfig
-
-  protected lazy val bw = this.conn.createBatchWriter(Configuration.DocumentTableName, bwOptsCfg)
-
-  protected lazy val corporaTableBW = conn.createBatchWriter(Configuration.CorpusTableName, bwOptsCfg)
+  protected lazy val corporaTableBW = conn.createBatchWriter(Configuration.CorpusTableName, AccumuloClient.DefaultBWConfig)
 }
 
 /**
-  * Small wrapper around `Connector` to simplify usage. 
+  * Small wrapper around `Connector` to simplify usage.
   */
 class PowerConnector(conn: Connector) {
-  def scanner(tableName: String) : Scanner = {
-    conn.createScanner(tableName, AccumuloClient DefaultAuths)
+  def scanner(tableName: String)(implicit auths: Authorizations) : Scanner = {
+    conn.createScanner(tableName, auths)
   }
 
-  def batchWriter(tableName: String)(implicit cfg: BatchWriterConfig) {
+  private def batchWriter(tableName: String)(implicit cfg: BatchWriterConfig) : BatchWriter = {
     conn.createBatchWriter(tableName, cfg)
+  }
+
+  private def batchScanner(tableName: String, threads: Int)(implicit auths: Authorizations) : BatchScanner = {
+    conn.createBatchScanner(tableName, auths, threads)
+  }
+
+  def withBatchWriter(tableName: String)(fx : BatchWriter => Unit) : Unit = {
+    val bw = batchWriter(tableName)
+    try {
+      fx(bw)
+    } finally {
+      bw.close()
+    }
+  }
+
+  def withBatchScanner(tableName: String)(fx: BatchScanner => Unit) : Unit = {
+    val bs = batchScanner(tableName, 8)
+    try {
+      fx(bs)
+    } finally {
+      bs.close()
+    }
   }
 }
 
 /**
-  * A mutable wrapper around Scanner that provides scala friendly resuts.
+  * A mutable wrapper around Scanner that provides scala friendly results.
   */
 class PowerScanner(scan: Scanner) {
   import scala.collection.JavaConverters._
@@ -52,8 +64,26 @@ class PowerScanner(scan: Scanner) {
   def getResults : Seq[Entry[Key, Value]] = scan.iterator().asScala.toSeq
 }
 
+class PowerMutation(m: Mutation) {
+  def putEmpty = m.put("", "", new Value(new Array[Byte](0)))
+}
+
+/**
+  * A "pimped" `String` class that facilitates naming of Accumulo tables.
+  */
+class AccumuloTableNameString(orig: String) {
+  /**
+    * Returns `True` if the `String` is a valid Accumulo table name.
+    */
+  def isValidTableName : Boolean = AccumuloClient.AccumuloTableRE findAllMatchIn orig isEmpty
+}
+
+/**
+  * Contains Accumulo-specific constants and default values.
+  */
 object AccumuloClient {
   import scala.util.matching.Regex
+  import scala.util.{Try, Success, Failure}
 
   /**
     * The default `Authorizations`.
@@ -61,7 +91,7 @@ object AccumuloClient {
   val DefaultAuths = org.apache.accumulo.core.Constants.NO_AUTHS
 
   /**
-    * The `PasswordToken` for this user. 
+    * The `PasswordToken` for this user.
     */
   val DefaultPasswordToken = new PasswordToken(Configuration.AccumuloPass)
 
@@ -70,17 +100,43 @@ object AccumuloClient {
     */
   val DefaultConnector = getConnector
 
+  /**
+    * The `Regex` to use for Accumulo table names.
+    */
   val AccumuloTableRE = """[^a-zA-Z0-9_]+""".r
+
+  private val bwOpts = new BatchWriterOpts
+
+  bwOpts.batchLatency = Configuration.BWLatency
+  bwOpts.batchMemory = Configuration.BWMemory
+  bwOpts.batchThreads = Configuration.BWThreads
+  bwOpts.batchTimeout = Configuration.BWTimeout
+
+  /**
+    * The default `BatchWriterConfig` for `BatchWriter` objects.
+    */
+  val DefaultBWConfig = bwOpts.getBatchWriterConfig
 
   /**
     * Return a `Connector` object for use in rebar.
-    * 
-    * @return a `Connector` to either an in-memory or configured Accumulo cluster, depending on the configuration. 
+    *
+    * @return a `Connector` to either an in-memory or configured Accumulo cluster, depending on the configuration.
     */
   private def getConnector() : Connector = {
-    Configuration.UseMock match {
-      case true => new MockInstance().getConnector("max", new PasswordToken(""))
-      case false => new ZooKeeperInstance(Configuration.AccumuloInstance, Configuration.Zookeepers).getConnector(Configuration.AccumuloUser, DefaultPasswordToken)
-    }
+    if (Configuration UseMock)
+      new MockInstance().getConnector("max", new PasswordToken(""))
+    else
+      new ZooKeeperInstance(Configuration.AccumuloInstance, Configuration.Zookeepers).getConnector(Configuration.AccumuloUser, DefaultPasswordToken)
+  }
+
+  /**
+    * A small wrapping function that ensures a valid Accumulo table name. This function should
+    * only be called with Accumulo-table functions, but no way (currently) to enforce this.
+    */
+  def withAccumuloTableName(tableName: String)(fx: String => Any) : Try[Any] = {
+    if (!tableName.isValidTableName)
+      Failure(new IllegalArgumentException("Your table name contained an invalid character."))
+
+    Try(fx(tableName))
   }
 }
