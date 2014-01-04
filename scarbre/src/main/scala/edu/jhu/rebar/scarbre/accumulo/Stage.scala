@@ -9,6 +9,9 @@ package accumulo
 import edu.jhu.hlt.concrete._
 import edu.jhu.rebar.config.Configuration
 
+import scala.collection.JavaConverters._
+import scala.collection.mutable.ArrayBuffer
+
 /**
   * An object that represents Stages in Rebar. Stages are like dependencies for
   * analytics. For example, analytic A can output stage A. If tools require
@@ -17,8 +20,6 @@ import edu.jhu.rebar.config.Configuration
   */
 object Stage {
   import scala.util.{Try, Success, Failure}
-  import scala.collection.JavaConverters._
-  import scala.collection.mutable.ArrayBuffer
 
   private val conn = AccumuloClient.DefaultConnector
 
@@ -75,5 +76,27 @@ object Stage {
 
   private def validStageName(name: String) : Boolean = {
     name.startsWith(Configuration.StagesPrefix)
+  }
+}
+
+class RebarStage (stage: Stage) {
+  def addAnnotatedDocument (comm: Communication) : Unit = {
+    val m = new Mutation(stage.name)
+    m.put(Configuration.StagesDocumentsAnnotationIdCF, comm.id, AccumuloClient.EmptyValue)
+    AccumuloClient.DefaultConnector.withBatchWriter(Configuration.StagesTableName) { bw =>
+      bw.addMutation(m)
+    }
+  }
+
+  def getAnnotatedIds() : Set[String] = {
+    val scan = AccumuloClient.DefaultConnector.scanner(Configuration.StagesTableName)
+    scan.setRange(new Range(stage.name))
+    scan.fetchColumnFamily(new Text(Configuration.StagesDocumentsAnnotationIdCF))
+    val buf = new ArrayBuffer[String]
+    scan.iterator().asScala.foreach { entry =>
+      buf += entry.getKey.getColumnQualifier.toString
+    }
+
+    buf.toSet
   }
 }

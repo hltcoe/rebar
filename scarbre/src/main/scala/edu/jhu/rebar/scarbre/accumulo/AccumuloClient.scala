@@ -118,6 +118,11 @@ object AccumuloClient {
   val DefaultBWConfig = bwOpts.getBatchWriterConfig
 
   /**
+    * An empty Accumulo `Value` object, backed by a byte array of length 0.
+    */
+  val EmptyValue = new Value(new Array[Byte](0))
+
+  /**
     * Return a `Connector` object for use in rebar.
     *
     * @return a `Connector` to either an in-memory or configured Accumulo cluster, depending on the configuration.
