@@ -6,9 +6,10 @@ organization := "edu.jhu.rebar"
 
 libraryDependencies ++= Seq(
   "edu.jhu.rebar" %% "config" % "1.0.0-SNAPSHOT",
-  "org.scalatest" %% "scalatest" % "2.0" % "test",
+  // "org.scalatest" %% "scalatest" % "2.0" % "test",
+  "org.specs2" %% "specs2" % "2.3.7" % "test",
   "com.typesafe" %% "scalalogging-slf4j" % "1.0.1",
-  "edu.jhu.hlt.concrete" % "concrete-core" % "2.0.0-SNAPSHOT",
+  "edu.jhu.hlt.concrete" % "concrete-core" % "2.0.2-SNAPSHOT",
   "org.apache.hadoop" % "hadoop-core" % "1.1.1",
   "org.apache.accumulo" % "accumulo-core" % "1.5.0",
   "org.apache.accumulo" % "accumulo-server" % "1.5.0",
