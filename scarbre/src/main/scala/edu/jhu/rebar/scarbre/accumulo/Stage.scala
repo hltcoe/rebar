@@ -12,13 +12,15 @@ import edu.jhu.rebar.config.Configuration
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 
+import com.twitter.scrooge.BinaryThriftStructSerializer
+
 /**
   * An object that represents Stages in Rebar. Stages are like dependencies for
   * analytics. For example, analytic A can output stage A. If tools require
   * the output of analytic A, subsequent stages can require stage A
   * in their dependency list.
   */
-object Stage {
+object StageHandler {
   import scala.util.{Try, Success, Failure}
 
   private val conn = AccumuloClient.DefaultConnector
@@ -44,7 +46,7 @@ object Stage {
     if (!validStageName(name))
       Failure(new IllegalArgumentException(s"'$name' is not a valid stage name. Stage names must begin with '$Configuration.StagesPrefix'."))
 
-    val deps = s.dependencies.asScala
+    val deps = s.dependencies
     val nonExistent = deps filter (dep => !exists(dep))
     if (!nonExistent.isEmpty)
       Failure(new IllegalArgumentException("One or more dependencies did not exist."))
@@ -58,9 +60,7 @@ object Stage {
     scan.setRange(new Range())
     scan.fetchColumnFamily(new Text(Configuration.StagesObjectCF))
     scan.iterator().asScala.foreach { entry =>
-      val stage = new Stage()
-      Util.DefaultDeserializer.deserialize(stage, entry.getValue.get)
-      buf += stage
+      buf += BinaryThriftStructSerializer(Stage).fromBytes(entry.getValue.get)
     }
 
     buf.toSet
@@ -69,7 +69,7 @@ object Stage {
   private def createInternal(s: Stage) : Unit = {
     conn.withBatchWriter(Configuration.StagesTableName) {bw =>
       val m = new Mutation(s.name)
-      m.put(Configuration.StagesObjectCF, "", new Value(Util.DefaultSerializer.serialize(s)))
+      m.put(Configuration.StagesObjectCF, "", new Value(BinaryThriftStructSerializer(Stage).toBytes(s)))
       bw.addMutation(m)
     }
   }

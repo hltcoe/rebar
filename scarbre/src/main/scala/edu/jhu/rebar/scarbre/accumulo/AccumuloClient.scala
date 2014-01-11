@@ -7,12 +7,8 @@ package edu.jhu.rebar.scarbre
 package accumulo
 
 import edu.jhu.rebar.config.Configuration
-import org.apache.thrift.protocol.TBinaryProtocol
 
 abstract class AccumuloClient(conn: Connector) {
-  protected lazy val serializer = new TSerializer(new TBinaryProtocol.Factory())
-  protected lazy val deserializer = new TDeserializer(new TBinaryProtocol.Factory())
-
   protected lazy val bw = this.conn.createBatchWriter(Configuration.DocumentTableName, AccumuloClient.DefaultBWConfig)
 
   protected lazy val corporaTableBW = conn.createBatchWriter(Configuration.CorpusTableName, AccumuloClient.DefaultBWConfig)

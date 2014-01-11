@@ -8,6 +8,7 @@ package accumulo
 
 import edu.jhu.hlt.concrete._
 import edu.jhu.rebar.config.Configuration
+import com.twitter.scrooge.BinaryThriftStructSerializer
 
 /**
   * A class that represents a collection of `Communication` objects ingested
@@ -49,9 +50,7 @@ class Corpus(name: String, internalName: String) {
     AccumuloClient.DefaultConnector.withBatchScanner(Configuration DocumentTableName) { bsc =>
       bsc.setRanges(rangeBuffer.toSet.asJava)
       bsc.iterator.asScala.foreach { entry =>
-        val comm = new Communication()
-        Util.DefaultDeserializer.deserialize(comm, entry.getValue.get)
-        resultBuffer += comm
+        resultBuffer += BinaryThriftStructSerializer(Communication).fromBytes(entry.getValue.get)
       }
     }
 

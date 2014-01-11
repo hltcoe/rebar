@@ -1,25 +1,28 @@
-name := "scarbre"
+name := "rebar-scarbre"
 
 version := "1.0.0-SNAPSHOT"
 
-organization := "edu.jhu.rebar"
+organization := "edu.jhu.hlt"
+
+scalaVersion := "2.10.3"
 
 libraryDependencies ++= Seq(
-  "edu.jhu.rebar" %% "config" % "1.0.0-SNAPSHOT",
-  // "org.scalatest" %% "scalatest" % "2.0" % "test",
+  "edu.jhu.hlt" %% "concrete-core" % "2.0.3-SNAPSHOT",
+  "edu.jhu.hlt" %% "concrete-util" % "2.0.3-SNAPSHOT",
+  "edu.jhu.hlt" %% "rebar-config" % "1.0.0-SNAPSHOT",
   "org.specs2" %% "specs2" % "2.3.7" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.11.1",
   "com.typesafe" %% "scalalogging-slf4j" % "1.0.1",
-  "edu.jhu.hlt.concrete" % "concrete-core" % "2.0.2-SNAPSHOT",
   "org.apache.hadoop" % "hadoop-core" % "1.1.1",
   "org.apache.accumulo" % "accumulo-core" % "1.5.0",
   "org.apache.accumulo" % "accumulo-server" % "1.5.0",
   "com.github.nscala-time" %% "nscala-time" % "0.6.0",
   "org.apache.zookeeper" % "zookeeper" % "3.4.5" exclude ("org.slf4j", "slf4j-log4j12"),
   "log4j" % "log4j" % "1.2.15"
-  ).map(_.exclude ("javax.jms", "jms"))
+).map(_.exclude ("javax.jms", "jms"))
    .map(_.exclude ("com.sun.jmx", "jmxri"))
    .map(_.exclude ("com.sun.jdmk", "jmxtools"))
 
-resolvers += "Local Maven Repository" at "file:///"+Path.userHome+"/.m2/repository"
+// resolvers += "Local Maven Repository" at "file:///"+Path.userHome+"/.m2/repository"
 
-publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
+// publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
