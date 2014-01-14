@@ -1,9 +1,9 @@
 /**
-  *  Copyright 2012-2013 Johns Hopkins University HLTCOE. All rights reserved.
+  *  Copyright 2012-2014 Johns Hopkins University HLTCOE. All rights reserved.
   *  This software is released under the 2-clause BSD license.
   *  See LICENSE in the project root directory.
   */
-package edu.jhu.rebar.scarbre
+package edu.jhu.hlt.rebar
 package accumulo
 
 import org.apache.accumulo.core.client.admin.TableOperations

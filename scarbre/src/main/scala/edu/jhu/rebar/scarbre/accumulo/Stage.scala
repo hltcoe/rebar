@@ -3,16 +3,14 @@
   *  This software is released under the 2-clause BSD license.
   *  See LICENSE in the project root directory.
   */
-package edu.jhu.rebar.scarbre
+package edu.jhu.hlt.rebar
 package accumulo
 
 import edu.jhu.hlt.concrete._
-import edu.jhu.rebar.config.Configuration
+import edu.jhu.hlt.rebar.Configuration
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
-
-import com.twitter.scrooge.BinaryThriftStructSerializer
 
 /**
   * An object that represents Stages in Rebar. Stages are like dependencies for

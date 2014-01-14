@@ -3,7 +3,7 @@
   *  This software is released under the 2-clause BSD license.
   *  See LICENSE in the project root directory.
   */
-package edu.jhu.rebar.scarbre
+package edu.jhu.hlt.scarbre
 
 /**
   * Utility methods useful in Rebar.
@@ -15,10 +15,4 @@ object Util {
   // def getCurrentUnixTime : Int = {
   //   (DateTime.now.millis / 1000).toInt
   // }
-
-  val DefaultSerializer =
-    new TSerializer(new org.apache.thrift.protocol.TBinaryProtocol.Factory())
-
-  val DefaultDeserializer =
-    new TDeserializer(new org.apache.thrift.protocol.TBinaryProtocol.Factory())
 }

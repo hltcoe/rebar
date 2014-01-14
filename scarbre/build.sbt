@@ -7,7 +7,7 @@ organization := "edu.jhu.hlt"
 scalaVersion := "2.10.3"
 
 libraryDependencies ++= Seq(
-  "edu.jhu.hlt" %% "concrete-core" % "2.0.3-SNAPSHOT",
+  "edu.jhu.hlt" % "concrete-core" % "2.0.3-SNAPSHOT",
   "edu.jhu.hlt" %% "concrete-util" % "2.0.3-SNAPSHOT",
   "edu.jhu.hlt" %% "rebar-config" % "1.0.0-SNAPSHOT",
   "org.specs2" %% "specs2" % "2.3.7" % "test",
@@ -23,6 +23,6 @@ libraryDependencies ++= Seq(
    .map(_.exclude ("com.sun.jmx", "jmxri"))
    .map(_.exclude ("com.sun.jdmk", "jmxtools"))
 
-// resolvers += "Local Maven Repository" at "file:///"+Path.userHome+"/.m2/repository"
+resolvers += "Local Maven Repository" at "file://"+Path.userHome+"/.m2/repository"
 
-// publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
+publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))

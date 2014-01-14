@@ -1,12 +1,12 @@
 /**
-  *  Copyright 2012-2013 Johns Hopkins University HLTCOE. All rights reserved.
+  *  Copyright 2012-2014 Johns Hopkins University HLTCOE. All rights reserved.
   *  This software is released under the 2-clause BSD license.
   *  See LICENSE in the project root directory.
   */
-package edu.jhu.rebar.scarbre
+package edu.jhu.hlt.rebar
 package accumulo
 
-import edu.jhu.rebar.config.Configuration
+import edu.jhu.hlt.rebar.Configuration
 
 abstract class AccumuloClient(conn: Connector) {
   protected lazy val bw = this.conn.createBatchWriter(Configuration.DocumentTableName, AccumuloClient.DefaultBWConfig)
@@ -22,13 +22,11 @@ class PowerConnector(conn: Connector) {
     conn.createScanner(tableName, auths)
   }
 
-  private def batchWriter(tableName: String)(implicit cfg: BatchWriterConfig) : BatchWriter = {
+  private def batchWriter(tableName: String)(implicit cfg: BatchWriterConfig) : BatchWriter =
     conn.createBatchWriter(tableName, cfg)
-  }
 
-  private def batchScanner(tableName: String, threads: Int)(implicit auths: Authorizations) : BatchScanner = {
+  private def batchScanner(tableName: String, threads: Int)(implicit auths: Authorizations) : BatchScanner =
     conn.createBatchScanner(tableName, auths, threads)
-  }
 
   def withBatchWriter(tableName: String)(fx : BatchWriter => Unit) : Unit = {
     val bw = batchWriter(tableName)
@@ -131,8 +129,9 @@ object AccumuloClient {
   }
 
   /**
-    * A small wrapping function that ensures a valid Accumulo table name. This function should
-    * only be called with Accumulo-table functions, but no way (currently) to enforce this.
+    * A small wrapping function that ensures a valid Accumulo table
+    * name. This function should only be called with Accumulo-table
+    * functions, but no way (currently) to enforce this.
     */
   def withAccumuloTableName(tableName: String)(fx: String => Any) : Try[Any] = {
     if (!tableName.isValidTableName)

@@ -3,12 +3,11 @@
   *  This software is released under the 2-clause BSD license.
   *  See LICENSE in the project root directory.
   */
-package edu.jhu.rebar.scarbre
+package edu.jhu.hlt.rebar
 package accumulo
 
 import edu.jhu.hlt.concrete._
-import edu.jhu.rebar.config.Configuration
-import com.twitter.scrooge.BinaryThriftStructSerializer
+import edu.jhu.hlt.rebar.Configuration
 
 /**
   * A class that represents a collection of `Communication` objects ingested
@@ -22,14 +21,16 @@ class Corpus(name: String, internalName: String) {
   import scala.collection.mutable.ArrayBuffer
 
   /**
-    * An overloaded constructor that automatically creates the internalName field.
+    * An overloaded constructor that automatically creates the
+    * internalName field.
     *
     * @param name The name of the [[Corpus]].
     */
   def this(name:String) = this(name, Corpus.getInternalName(name))
 
   /**
-    * Return a `Seq` of `Communication` objects that this [[Corpus]] object represents.
+    * Return a `Seq` of `Communication` objects that this [[Corpus]]
+    * object represents.
     */
   def getCommunicationSeq : Seq[Communication] = {
     // Create a buffer of `Range` objects to use for the main scanner.

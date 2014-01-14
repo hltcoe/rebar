@@ -3,9 +3,8 @@
   *  This software is released under the 2-clause BSD license.
   *  See LICENSE in the project root directory.
   */
-package edu.jhu.rebar.scarbre
+package edu.jhu.hlt.rebar
 
 object `package` {
-  type TSerializer = org.apache.thrift.TSerializer
-  type TDeserializer = org.apache.thrift.TDeserializer
+
 }

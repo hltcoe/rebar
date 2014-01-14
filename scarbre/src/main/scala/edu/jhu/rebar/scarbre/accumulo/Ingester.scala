@@ -1,14 +1,13 @@
 /**
-  *  Copyright 2012-2013 Johns Hopkins University HLTCOE. All rights reserved.
+  *  Copyright 2012-2014 Johns Hopkins University HLTCOE. All rights reserved.
   *  This software is released under the 2-clause BSD license.
   *  See LICENSE in the project root directory.
   */
-package edu.jhu.rebar.scarbre
+package edu.jhu.hlt.rebar
 package accumulo
 
 import edu.jhu.hlt.concrete._
-import edu.jhu.rebar.config.Configuration
-import com.twitter.scrooge.BinaryThriftStructSerializer
+import edu.jhu.hlt.rebar.Configuration
 
 /**
   * A class that represents a basic Rebar "ingester", e.g., an
