@@ -1,18 +1,18 @@
 /**
- * 
- */
-package edu.jhu.rebar.config
+  *
+  */
+package edu.jhu.hlt.rebar
 
 import com.typesafe.config.{Config, ConfigFactory}
 
 /**
-  * A utility object that represents the configuration of the Rebar system. 
+  * A utility object that represents the configuration of the Rebar system.
   *
   */
 object Configuration {
   private val config = ConfigFactory.load()
   config.checkValid(ConfigFactory.defaultReference(), "rebar")
-  
+
   //////////////////////////////////
   // Accumulo Configuration
   //////////////////////////////////
@@ -56,12 +56,14 @@ object Configuration {
   val BWMemory = BatchConfig getInt "memory"
 
   /**
-    * An `Int` that represents the number of writer threads to use on the Accumulo server by the batchwriter object.
+    * An `Int` that represents the number of writer threads to use on
+    * the Accumulo server by the batchwriter object.
     */
   val BWThreads = BatchConfig getInt "threads"
 
   /**
-    * An `Int` that represents the timeout the batchwriter should use when communicating with the server.
+    * An `Int` that represents the timeout the batchwriter should use
+    * when communicating with the server.
     */
   val BWTimeout = BatchConfig getInt "timeout"
 
@@ -87,12 +89,14 @@ object Configuration {
   private val RebarConfig = config getConfig "rebar"
 
   /**
-    * A `String` that indicates the name of the table that Rebar will store raw documents in.
+    * A `String` that indicates the name of the table that Rebar will
+    * store raw documents in.
     */
   val DocumentTableName = RebarConfig getString "document-table-name"
 
   /**
-    * A `String` that Rebar will use as a column family to indicate a value is a raw document.
+    * A `String` that Rebar will use as a column family to indicate a
+    * value is a raw document.
     */
   val DocumentCF = RebarConfig getString "document-cf"
 
@@ -123,17 +127,20 @@ object Configuration {
   val StagesPrefix = RebarConfig getString "stages-prefix"
 
   /**
-    * A `String` that Rebar will use as a column family to represent actual stages in the stages table.
+    * A `String` that Rebar will use as a column family to represent
+    * actual stages in the stages table.
     */
   val StagesObjectCF = RebarConfig getString "stages-object-cf"
 
   /**
-    * A `String` that Rebar will use as a column family for stages in annotated documents.
+    * A `String` that Rebar will use as a column family for stages in
+    * annotated documents.
     */
   val StagesDocumentsCF = RebarConfig getString "stages-docs-cf"
 
   /**
-    * A `String` that Rebar will use as a column family for document IDs that have been annotated in the stages table.
+    * A `String` that Rebar will use as a column family for document
+    * IDs that have been annotated in the stages table.
     */
   val StagesDocumentsAnnotationIdCF = RebarConfig getString "stages-docs-annotation-ids-cf"
 }
