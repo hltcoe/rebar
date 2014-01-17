@@ -8,12 +8,6 @@ package accumulo
 
 import edu.jhu.hlt.rebar.Configuration
 
-abstract class AccumuloClient(conn: Connector) {
-  protected lazy val bw = this.conn.createBatchWriter(Configuration.DocumentTableName, AccumuloClient.DefaultBWConfig)
-
-  protected lazy val corporaTableBW = conn.createBatchWriter(Configuration.CorpusTableName, AccumuloClient.DefaultBWConfig)
-}
-
 /**
   * Small wrapper around `Connector` to simplify usage.
   */
@@ -121,7 +115,7 @@ object AccumuloClient {
     *
     * @return a `Connector` to either an in-memory or configured Accumulo cluster, depending on the configuration.
     */
-  private def getConnector() : Connector = {
+  def getConnector() : Connector = {
     if (Configuration UseMock)
       new MockInstance().getConnector("max", new PasswordToken(""))
     else

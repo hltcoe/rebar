@@ -3,13 +3,15 @@
   *  This software is released under the 2-clause BSD license.
   *  See LICENSE in the project root directory.
   */
-package edu.jhu.rebar.scarbre
+package edu.jhu.hlt.rebar
 
 import org.specs2.mutable._
-import edu.jhu.rebar.scarbre.accumulo.TableOps
+import edu.jhu.hlt.rebar.accumulo._
 import scala.util.{Success, Failure, Try}
 
 class TableOpsSpec extends Specification {
+  implicit val conn = AccumuloClient.getConnector
+
   "TableOps" should {
     "Allow valid table names to be created" in {
       TableOps.create("foo") must beSuccessfulTry

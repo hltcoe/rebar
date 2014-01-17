@@ -22,7 +22,8 @@ object TableOps {
     * @param tableName The name of the table to create.
     * @return A `Try` with any exceptions.
     */
-  def create(tableName: String) : Try[Unit] = Try(tableOps.create(tableName))
+  def create(tableName: String)(implicit conn: Connector) : Try[Unit] =
+    Try(conn.tableOperations.create(tableName))
 
   /**
     * Delete an accumulo table.
@@ -30,7 +31,8 @@ object TableOps {
     * @param tableName The name of the table to create.
     * @return A `Try` with any exceptions.
     */
-  def delete(tableName: String) : Try[Unit] = Try(tableOps.delete(tableName))
+  def delete(tableName: String)(implicit conn: Connector) : Try[Unit] =
+    Try(conn.tableOperations.delete(tableName))
 
   /**
     * Check to see if an accumulo table exists.
@@ -38,5 +40,6 @@ object TableOps {
     * @param tableName The name of the table to create.
     * @return A `Try` with the enclosed `Boolean`.
     */
-  def exists(tableName: String) : Try[Boolean] = Try(tableOps.exists(tableName))
+  def exists(tableName: String)(implicit conn: Connector) : Try[Boolean] =
+    Try(conn.tableOperations.exists(tableName))
 }
