@@ -42,4 +42,12 @@ object TableOps {
     */
   def exists(tableName: String)(implicit conn: Connector) : Try[Boolean] =
     Try(conn.tableOperations.exists(tableName))
+
+
+  def checkExistsAndCreate(tableName: String)(implicit conn: Connector) : Try[Unit] = {
+    if (!exists(tableName).getOrElse(false))
+      create(tableName)
+    else
+      Success()
+  }
 }

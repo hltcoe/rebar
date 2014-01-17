@@ -31,6 +31,9 @@ object `package` {
   implicit def scanToPS(scan: Scanner) = new PowerScanner(scan)
   implicit def sToATNS(orig:String) = new AccumuloTableNameString(orig)
   implicit def m2pm (m: Mutation) = new PowerMutation(m)
+  implicit def je2se[K, V] (je: java.util.Map.Entry[K, V]) : (K, V) = {
+    (je.getKey, je.getValue)
+  }
 
   implicit val iBWC : BatchWriterConfig = AccumuloClient DefaultBWConfig
   implicit val iAuths : Authorizations = AccumuloClient DefaultAuths

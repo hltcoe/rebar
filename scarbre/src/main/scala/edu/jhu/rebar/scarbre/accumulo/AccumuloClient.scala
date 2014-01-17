@@ -31,7 +31,8 @@ class PowerConnector(conn: Connector) {
     }
   }
 
-  def withBatchScanner(tableName: String)(fx: BatchScanner => Unit) : Unit = {
+  def withBatchScanner[T](tableName: String)(fx: BatchScanner => TraversableOnce[T])
+      : TraversableOnce[T] = {
     val bs = batchScanner(tableName, 8)
     try {
       fx(bs)
@@ -47,7 +48,17 @@ class PowerConnector(conn: Connector) {
 class PowerScanner(scan: Scanner) {
   import scala.collection.JavaConverters._
 
-  def withRange(range: Range) = scan.setRange(range)
+  def emptyRange : Scanner = {
+    scan.setRange(new Range())
+    scan
+  }
+
+  def scalaIterator = scan.iterator.asScala
+
+  def withRange(range: Range) : Scanner = {
+    scan.setRange(range)
+    scan
+  }
 
   def getResults : Seq[Entry[Key, Value]] = scan.iterator().asScala.toSeq
 }

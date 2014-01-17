@@ -6,6 +6,12 @@ organization := "edu.jhu.hlt"
 
 scalaVersion := "2.10.3"
 
+initialCommands := """
+import edu.jhu.hlt.concrete._
+import edu.jhu.hlt.rebar._
+import edu.jhu.hlt.rebar.accumulo._
+"""
+
 libraryDependencies ++= Seq(
   "edu.jhu.hlt" % "concrete-core" % "2.0.3-SNAPSHOT",
   "edu.jhu.hlt" %% "concrete-util" % "2.0.3-SNAPSHOT",

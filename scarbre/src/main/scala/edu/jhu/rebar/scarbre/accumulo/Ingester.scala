@@ -18,8 +18,7 @@ import edu.jhu.hlt.rebar.Configuration
 class BasicIngester(implicit conn: Connector) {
   import scala.util.{Try, Success, Failure}
 
-  if (!TableOps.exists(Configuration.DocumentTableName).getOrElse(false))
-    TableOps.create(Configuration.DocumentTableName)
+  TableOps.checkExistsAndCreate(Configuration.DocumentTableName)
 
   lazy val bw = this.conn.createBatchWriter(Configuration.DocumentTableName, AccumuloClient.DefaultBWConfig)
 
