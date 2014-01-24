@@ -16,6 +16,10 @@ class PowerConnector(conn: Connector) {
     conn.createScanner(tableName, auths)
   }
 
+  def stageScanner(implicit auths: Authorizations) : Scanner = {
+    conn.createScanner(Configuration.StagesTableName, auths)
+  }
+
   private def batchWriter(tableName: String)(implicit cfg: BatchWriterConfig) : BatchWriter =
     conn.createBatchWriter(tableName, cfg)
 
@@ -48,7 +52,7 @@ class PowerConnector(conn: Connector) {
 class PowerScanner(scan: Scanner) {
   import scala.collection.JavaConverters._
 
-  def emptyRange : Scanner = {
+  def withEmptyRange : Scanner = {
     scan.setRange(new Range())
     scan
   }
@@ -57,6 +61,11 @@ class PowerScanner(scan: Scanner) {
 
   def withRange(range: Range) : Scanner = {
     scan.setRange(range)
+    scan
+  }
+
+  def withRange(rangeString : String) : Scanner = {
+    scan.setRange(new Range(rangeString))
     scan
   }
 

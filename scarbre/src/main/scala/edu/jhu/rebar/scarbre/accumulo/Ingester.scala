@@ -39,12 +39,12 @@ class BasicIngester(implicit conn: Connector) {
   private def trimCommunication (comm : Communication) : Communication = {
     val trimComm = new Communication(comm)
 
-    trimComm.lid = null
-    trimComm.sectionSegmentation = null
-    trimComm.entityMentionSet = null
-    trimComm.entitySet = null
-    trimComm.situationMentionSet = null
-    trimComm.situationSet = null
+    trimComm.lids = null
+    trimComm.sectionSegmentations = null
+    trimComm.entityMentionSets = null
+    trimComm.entitySets = null
+    trimComm.situationMentionSets = null
+    trimComm.situationSets = null
 
     trimComm
   }

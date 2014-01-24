@@ -9,6 +9,7 @@ package accumulo
 import edu.jhu.hlt.concrete._
 import edu.jhu.hlt.rebar.Configuration
 
+import scala.util.{Try, Success, Failure}
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 
@@ -18,11 +19,7 @@ import scala.collection.mutable.ArrayBuffer
   * the output of analytic A, subsequent stages can require stage A
   * in their dependency list.
   */
-object StageHandler {
-  import scala.util.{Try, Success, Failure}
-
-  private val conn = AccumuloClient.DefaultConnector
-
+class StageHandler(implicit conn: Connector) {
   /**
     * Return `True` if the stage exists.
     *
@@ -36,33 +33,8 @@ object StageHandler {
 
   def exists(s: Stage) : Boolean = exists(s.name)
 
-  def create(s: Stage) : Try[Unit] = {
-    val name = s.name
-    if (!exists(name))
-      Failure(new IllegalArgumentException(s"Corpus '$name' already exists."))
 
-    if (!validStageName(name))
-      Failure(new IllegalArgumentException(s"'$name' is not a valid stage name. Stage names must begin with '$Configuration.StagesPrefix'."))
 
-    val deps = s.dependencies
-    val nonExistent = deps filter (dep => !exists(dep))
-    if (!nonExistent.isEmpty)
-      Failure(new IllegalArgumentException("One or more dependencies did not exist."))
-
-    Try(createInternal(s))
-  }
-
-  def getStages : Set[Stage] = {
-    val buf = new ArrayBuffer[Stage]
-    val scan = conn.scanner(Configuration.StagesTableName)
-    scan.setRange(new Range())
-    scan.fetchColumnFamily(new Text(Configuration.StagesObjectCF))
-    scan.iterator().asScala.foreach { entry =>
-      buf += BinaryThriftStructSerializer(Stage).fromBytes(entry.getValue.get)
-    }
-
-    buf.toSet
-  }
 
   private def createInternal(s: Stage) : Unit = {
     conn.withBatchWriter(Configuration.StagesTableName) {bw =>
