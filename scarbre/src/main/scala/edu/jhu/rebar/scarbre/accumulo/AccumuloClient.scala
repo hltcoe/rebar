@@ -17,7 +17,7 @@ class PowerConnector(conn: Connector) {
   }
 
   def stageScanner(implicit auths: Authorizations) : Scanner = {
-    conn.createScanner(Configuration.StagesTableName, auths)
+    scanner(Configuration.StagesTableName)(auths)
   }
 
   private def batchWriter(tableName: String)(implicit cfg: BatchWriterConfig) : BatchWriter =

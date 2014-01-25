@@ -6,7 +6,7 @@
 package edu.jhu.hlt.rebar
 package accumulo
 
-import edu.jhu.hlt.concrete._
+import edu.jhu.hlt.miser._
 import edu.jhu.hlt.rebar.Configuration
 
 import scala.util.{Try, Success, Failure}
@@ -34,12 +34,12 @@ class AsyncReader(implicit conn: Connector) {
       .withRange(new Range(id))
     val iter = scan.iterator
     if (iter.hasNext)
-      Option(CommunicationSerializer.fromBytes(iter.next._2.get))
+      Option(BinaryThriftStructSerializer(Communication).fromBytes(iter.next._2.get))
     else
       None
 
     // Option[(Key, Value)](res) match {
-    //   case Some((k, v)) => Option(CommunicationSerializer.fromBytes(v.get))
+    //   case Some((k, v)) => Option(BinaryThriftStructSerializer(Communication).fromBytes(v.get))
     //   case None => None
     // }
   }
@@ -57,7 +57,7 @@ class AsyncReader(implicit conn: Connector) {
     conn.withBatchScanner[Communication](Configuration.DocumentTableName) { bsc =>
       bsc.setRanges(ranges.toList.asJava)
       bsc.iterator().asScala.map { entry =>
-        CommunicationSerializer.fromBytes(entry.getValue.get)
+        BinaryThriftStructSerializer(Communication).fromBytes(entry.getValue.get)
       }
     }.toVector
   }

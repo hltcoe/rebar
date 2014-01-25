@@ -15,6 +15,7 @@ import edu.jhu.hlt.rebar.accumulo._
 libraryDependencies ++= Seq(
   "edu.jhu.hlt" %% "concrete-scala" % "2.0.3-SNAPSHOT",
   "edu.jhu.hlt" %% "rebar-config" % "1.0.0-SNAPSHOT",
+  "com.twitter" %% "scrooge-serializer" % "3.12.1",
   "org.specs2" %% "specs2" % "2.3.7" % "test",
   "org.scalacheck" %% "scalacheck" % "1.11.1",
   "com.typesafe" %% "scalalogging-slf4j" % "1.0.1",

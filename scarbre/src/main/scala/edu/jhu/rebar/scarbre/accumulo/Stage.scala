@@ -6,7 +6,7 @@
 package edu.jhu.hlt.rebar
 package accumulo
 
-import edu.jhu.hlt.concrete._
+import edu.jhu.hlt.miser._
 import edu.jhu.hlt.rebar._
 import edu.jhu.hlt.rebar.Configuration
 

@@ -27,6 +27,8 @@ object `package` {
 
   type PasswordToken = org.apache.accumulo.core.client.security.tokens.PasswordToken
 
+  val BinaryThriftStructSerializer = com.twitter.scrooge.BinaryThriftStructSerializer
+
   implicit def connectorToPowerConnector(conn: Connector) = new PowerConnector(conn)
   implicit def scanToPS(scan: Scanner) = new PowerScanner(scan)
   implicit def sToATNS(orig:String) = new AccumuloTableNameString(orig)

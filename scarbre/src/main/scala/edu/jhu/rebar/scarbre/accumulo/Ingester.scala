@@ -6,7 +6,7 @@
 package edu.jhu.hlt.rebar
 package accumulo
 
-import edu.jhu.hlt.concrete._
+import edu.jhu.hlt.miser._
 import edu.jhu.hlt.rebar.Configuration
 
 /**
@@ -27,7 +27,7 @@ class BasicIngester(implicit conn: Connector) {
     */
   private def processCommunication(comm : Communication) : Unit = {
     val m = new Mutation(comm.id)
-    val v = new Value(CommunicationSerializer.toBytes(comm))
+    val v = new Value(BinaryThriftStructSerializer(Communication).toBytes(comm))
 
     m.put(Configuration.DocumentCF, "", v)
     this.bw.addMutation(m)
@@ -37,16 +37,13 @@ class BasicIngester(implicit conn: Connector) {
     * Return a new `Communication` object with annotations removed.
     */
   private def trimCommunication (comm : Communication) : Communication = {
-    val trimComm = new Communication(comm)
-
-    trimComm.lids = null
-    trimComm.sectionSegmentations = null
-    trimComm.entityMentionSets = null
-    trimComm.entitySets = null
-    trimComm.situationMentionSets = null
-    trimComm.situationSets = null
-
-    trimComm
+    comm
+      .unsetSectionSegmentations
+      .unsetLids
+      .unsetEntityMentionSets
+      .unsetEntitySets
+      .unsetSituationMentionSets
+      .unsetSituationSets
   }
 
   /**
