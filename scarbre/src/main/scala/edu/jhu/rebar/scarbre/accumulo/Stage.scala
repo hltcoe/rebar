@@ -8,7 +8,6 @@ package accumulo
 
 import edu.jhu.hlt.miser._
 import edu.jhu.hlt.rebar._
-import edu.jhu.hlt.rebar.Configuration
 
 /**
   * A class that represents a basic Rebar "ingester", e.g., an
@@ -16,42 +15,22 @@ import edu.jhu.hlt.rebar.Configuration
   *
   * @param conn The `Connector` object to use to connect to Accumulo.
   */
-class StageManager(implicit conn: Connector) {
+
+class RebarStage(s: Stage)(implicit conn: Connector) {
   import scala.util.{Try, Success, Failure}
 
-  TableOps.checkExistsAndCreate(Configuration.StagesTableName)
+  if (!s.name.startsWith(Configuration.StagesPrefix))
+    throw new IllegalArgumentException(s"'$s.name' is not a valid stage name. Stage names must begin with '$Configuration.StagesPrefix'.")
 
-  lazy val bw = this.conn.createBatchWriter(Configuration.StagesTableName, AccumuloClient.DefaultBWConfig)
+  if (!dependenciesExist)
+    throw new IllegalArgumentException(s"One or more dependencies for stage '$s.name' did not exist.")
 
-  def exists(name: String) : Try[Boolean] = Try(conn.stageScanner.withRange(name).iterator().hasNext)
-  def exists(s: Stage) : Try[Boolean] = exists(s.name)
-
-  def create(s: Stage) : Try[Unit] = {
-    val name = s.name
-    if (!exists(name))
-      Failure(new IllegalArgumentException(s"Corpus '$name' already exists."))
-
-    if (!validStageName(name))
-      Failure(new IllegalArgumentException(s"'$name' is not a valid stage name. Stage names must begin with '$Configuration.StagesPrefix'."))
-
-    val nonExistent = s.dependencies filter (dep => !exists(dep))
-    if (!nonExistent.isEmpty)
-      Failure(new IllegalArgumentException("One or more dependencies did not exist."))
-
-    Try(createInternal(s))
+  def create : Try[Unit] = {
+    if (exists) Failure(new IllegalArgumentException(s"'$s.name already exists.'"))
+    Try(createInternal)
   }
 
-  def getStages : Set[Stage] = {
-    val scan = conn.stageScanner.withEmptyRange
-    scan.fetchColumnFamily(new Text(Configuration.StagesObjectCF))
-    scan.iterator().asScala.foreach { entry =>
-      buf += BinaryThriftStructSerializer(Stage).fromBytes(entry.getValue.get)
-    }
-
-    buf.toSet
-  }
-
-  private def createInternal(s: Stage) : Unit = {
+  private def createInternal : Unit = {
     conn.withBatchWriter(Configuration.StagesTableName) {bw =>
       val m = new Mutation(s.name)
       m.put(Configuration.StagesObjectCF, "", new Value(BinaryThriftStructSerializer(Stage).toBytes(s)))
@@ -59,13 +38,31 @@ class StageManager(implicit conn: Connector) {
     }
   }
 
-  /**
-    * Close the underlying `BatchWriter` associated with this [[StageManager]].
-    */
-  def close = this.bw.close
+  def exists : Boolean = StageManager.exists(s.name)
+
+  private def dependenciesExist : Boolean = {
+    s.dependencies.map(StageManager.exists).forall(x => true)
+  }
 }
 
-class PowerStage(s: Stage) {
-  lazy val validName = s.name.startsWith(Configuration.StagesPrefix)
+object StageManager {
+  import scala.collection.JavaConverters._
 
+  implicit val conn = AccumuloClient.DefaultConnector
+
+  TableOps.checkExistsAndCreate(Configuration.StagesTableName)
+
+  def exists(name: String) : Boolean = {
+    conn.stageScanner.withRange(name).iterator().hasNext
+  }
+
+  def getStages : Set[Stage] = {
+    val scan = conn.stageScanner.withEmptyRange
+    scan.fetchColumnFamily(new Text(Configuration.StagesObjectCF))
+    scan
+      .iterator()
+      .asScala
+      .map(e => BinaryThriftStructSerializer(Stage).fromBytes(e.getValue.get))
+      .toSet
+  }
 }

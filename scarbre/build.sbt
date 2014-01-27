@@ -7,7 +7,7 @@ organization := "edu.jhu.hlt"
 scalaVersion := "2.10.3"
 
 initialCommands := """
-import edu.jhu.hlt.concrete._
+import edu.jhu.hlt.miser._
 import edu.jhu.hlt.rebar._
 import edu.jhu.hlt.rebar.accumulo._
 """

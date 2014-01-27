@@ -7,7 +7,7 @@ package edu.jhu.hlt.rebar
 
 import org.specs2.mutable._
 import org.specs2.specification.{AllExpectations, Scope}
-import edu.jhu.hlt.concrete._
+import edu.jhu.hlt.miser._
 import edu.jhu.hlt.rebar.accumulo._
 import scala.util.{Success, Failure, Try}
 import scala.collection.JavaConverters._

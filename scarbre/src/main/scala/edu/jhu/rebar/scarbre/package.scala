@@ -5,6 +5,8 @@
   */
 package edu.jhu.hlt.rebar
 
-object `package` {
+import edu.jhu.hlt.miser.{Communication}
 
+object `package` {
+  implicit def c2pc(orig: Communication) = new PowerCommunication(orig)
 }
