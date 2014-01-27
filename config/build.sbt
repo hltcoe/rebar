@@ -1,6 +1,6 @@
 name := "rebar-config"
 
-version := "1.0.0-SNAPSHOT"
+version := "1.0.0"
 
 organization := "edu.jhu.hlt"
 
@@ -10,6 +10,15 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.0.2"
 )
 
-// resolvers += "Local Maven Repository" at "file:///"+Path.userHome+"/.m2/repository"
+resolvers += "Local Maven Repository" at "file://"+Path.userHome+"/.m2/repository"
 
-// publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
+credentials += Credentials(Path.userHome / ".sbt" / "coe-credentials")
+
+publishTo <<= version { v: String =>
+  val artifactory = "http://test4:8081/artifactory/"
+  if (v.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at artifactory + "libs-snapshot-local")
+  else
+    Some("releases" at artifactory + "libs-release-local")
+}
+
