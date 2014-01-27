@@ -8,6 +8,10 @@ package accumulo
 
 import edu.jhu.hlt.rebar.Configuration
 
+trait Connected {
+  implicit val conn = AccumuloClient.DefaultConnector
+}
+
 /**
   * Small wrapper around `Connector` to simplify usage.
   */

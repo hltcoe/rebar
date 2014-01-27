@@ -15,7 +15,7 @@ import edu.jhu.hlt.rebar.Configuration
   *
   * @param conn The `Connector` object to use to connect to Accumulo.
   */
-class BasicIngester(implicit conn: Connector) {
+class BasicIngester extends Connected {
   import scala.util.{Try, Success, Failure}
 
   TableOps.checkExistsAndCreate(Configuration.DocumentTableName)

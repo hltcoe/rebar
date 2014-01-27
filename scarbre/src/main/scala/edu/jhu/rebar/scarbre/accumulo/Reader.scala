@@ -13,7 +13,7 @@ import scala.util.{Try, Success, Failure}
 import scala.concurrent.{ future, promise, Future, Promise}
 import scala.collection.JavaConverters._
 
-class AsyncReader(implicit conn: Connector) {
+class AsyncReader extends Connected {
   import java.util.concurrent.Executors
   import concurrent.ExecutionContext
   private val executorService = Executors.newFixedThreadPool(4)

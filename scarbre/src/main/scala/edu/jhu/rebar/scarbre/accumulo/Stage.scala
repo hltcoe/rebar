@@ -16,7 +16,7 @@ import edu.jhu.hlt.rebar._
   * @param conn The `Connector` object to use to connect to Accumulo.
   */
 
-class RebarStage(s: Stage)(implicit conn: Connector) {
+class RebarStage(s: Stage) extends Connected {
   import scala.util.{Try, Success, Failure}
 
   if (!s.name.startsWith(Configuration.StagesPrefix))
