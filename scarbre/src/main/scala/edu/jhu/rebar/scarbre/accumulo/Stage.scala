@@ -23,9 +23,16 @@ trait StageTableBacked extends TableBacked {
 class RebarStage(stage: Stage) extends StageTableBacked {
   val name = stage.name
 
+  if (!name.startsWith(stagePrefix))
+    throw new IllegalArgumentException(s"'$name' is not a valid stage name. Stage names must begin with '$stagePrefix'.")
+
   def create : Try[Unit] = {
     if (exists) 
       Failure(new IllegalArgumentException(s"Stage '$name' already exists."))
+
+    if (!dependenciesExist)
+      Failure(new IllegalArgumentException(s"Stage '$name' has dependencies that have not been created."))
+
     Try(createInternal)
   }
 
@@ -38,10 +45,9 @@ class RebarStage(stage: Stage) extends StageTableBacked {
   }
 
   def exists : Boolean = StageManager.exists(name)
-  // def addAnnotation (a: T, c: Communication) : Try[Unit] = {
-  //   Failure(new IllegalArgumentException("TODO"))
-  // }
-
+  private def dependenciesExist : Boolean = {
+    stage.dependencies.map(StageManager.exists).forall(x => true)
+  }
 }
 
 object StageManager {
@@ -95,48 +101,38 @@ object StageManager {
 
 //   
 
-//   private def dependenciesExist : Boolean = {
-//     s.dependencies.map(StageManager.exists).forall(x => true)
-//   }
+
 // }
 
-// class IngestedStage[+T <: ThriftStruct](s: Stage) extends StageTableBacked {
-//   import scala.collection.JavaConverters._
+class IngestedStage(s: Stage) extends StageTableBacked {
+  import scala.collection.JavaConverters._
 
-//   val name = s.name
-//   val dependencies = s.dependencies
-//   val `type` = s.`type`
-//   val description = s.description
-//   val createTime = s.createTime
+  val name = s.name
+  val dependencies = s.dependencies
+  val `type` = s.`type`
+  val description = s.description
+  val createTime = s.createTime
 
-//   private def addAnnotatedDocumentId(comm: Communication) : Unit =
-//     addAnnotatedDocumentId(comm.id)
+  private def addAnnotatedDocumentId(comm: Communication) : Unit =
+    addAnnotatedDocumentId(comm.id)
 
-//   private def addAnnotatedDocumentId(id: String) : Unit = {
-//     conn.withBatchWriter(tableName) { bw =>
-//       val m = new Mutation(name)
-//       m.put(Configuration.StagesDocumentsAnnotationIdCF, id, AccumuloClient.EmptyValue)
-//       bw.addMutation(m)
-//     }
-//   }
+  private def addAnnotatedDocumentId(id: String) : Unit = {
+    conn.withBatchWriter(tableName) { bw =>
+      val m = new Mutation(name)
+      m.put(Configuration.StagesDocumentsAnnotationIdCF, id, AccumuloClient.EmptyValue)
+      bw.addMutation(m)
+    }
+  }
 
-//   def getAnnotatedDocumentIds : Set[String] = {
-//     val scan = conn.scanner(tableName).withRange(name)
-//     scan.fetchColumnFamily(new Text(Configuration.StagesDocumentsAnnotationIdCF))
-//     scan.iterator().asScala.map { e =>
-//       e.getKey.getColumnQualifier.toString
-//     }.toSet
-//   }
+  def getAnnotatedDocumentIds : Set[String] = {
+    val scan = conn.scanner(tableName).withRange(name)
+    scan.fetchColumnFamily(new Text(Configuration.StagesDocumentsAnnotationIdCF))
+    scan.iterator().asScala.map { e =>
+      e.getKey.getColumnQualifier.toString
+    }.toSet
+  }
 
-//   def isAnnotated(c: Communication) : Boolean = {
-//     conn.scanner(tableName).withRange(c.id).iterator().hasNext()
-//   }
-
-//   def annotate[K <: Annotation[T]](a: K) : Try[Unit] = {
-//     if (isAnnotated(a.comm)) 
-//       Failure(new IllegalArgumentException("TODO"))
-
-//     Success()
-//   }
-// }
-
+  def isAnnotated(c: Communication) : Boolean = {
+    conn.scanner(tableName).withRange(c.id).iterator().hasNext()
+  }
+}
