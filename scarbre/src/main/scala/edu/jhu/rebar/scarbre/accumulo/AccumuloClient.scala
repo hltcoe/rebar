@@ -12,6 +12,15 @@ trait Connected {
   implicit val conn = AccumuloClient.DefaultConnector
 }
 
+trait TableBacked extends Connected {
+  val tableName : String
+
+  /**
+    * Ensure the table for this [[TableBacked]] trait exists. 
+    */
+  TableOps.checkExistsAndCreate(tableName)
+}
+
 /**
   * Small wrapper around `Connector` to simplify usage.
   */
@@ -77,7 +86,7 @@ class PowerScanner(scan: Scanner) {
 }
 
 class PowerMutation(m: Mutation) {
-  def putEmpty = m.put("", "", new Value(new Array[Byte](0)))
+  def putEmpty = m.put("", "", AccumuloClient.EmptyValue)
 }
 
 /**

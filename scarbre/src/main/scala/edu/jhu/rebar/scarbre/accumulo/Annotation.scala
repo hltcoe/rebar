@@ -8,19 +8,25 @@ package accumulo
 
 import edu.jhu.hlt.miser._
 import edu.jhu.hlt.rebar._
+import com.twitter.scrooge.{ThriftStruct, ThriftStructCodec}
+import scala.util.{Try, Success, Failure}
 
-trait Annotation[T] {
+trait DocumentTableBacked extends TableBacked {
+  override val tableName = Configuration.DocumentTableName
+}
+
+sealed trait Annotation[T <: ThriftStruct] extends DocumentTableBacked {
+  val anno : T
   def comm : Communication
-  def toBytes(x: T) : Array[Byte] = BinaryThriftStructSerializer[T].toBytes(x)
+  def toBytes[T <: ThriftStruct](x: ThriftStructCodec[T], y: T) : Array[Byte] = 
+    BinaryThriftStructSerializer(x).toBytes(y)
 }
 
-class SectionAnnotation (_comm: Communication, _section: SectionSegmentation) 
-    extends Annotation[SectionSegmentation] with Connected {
-  import scala.util.{Try, Success, Failure}
+case class SectionAnnotation (comm: Communication, anno: SectionSegmentation) 
+    extends Annotation[SectionSegmentation]
 
-  override def comm = _comm
+case class SentenceAnnotation(comm: Communication, anno: SentenceSegmentation)
+    extends Annotation[SentenceSegmentation]
 
-  def annotate (s: Stage) : Try[Unit] = {
-    Failure(new IllegalArgumentException("TODO"))
-  }
-}
+case class TokenizationAnnotation(comm: Communication, anno: Tokenization)
+    extends Annotation[Tokenization]

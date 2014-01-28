@@ -15,10 +15,10 @@ import edu.jhu.hlt.rebar.Configuration
   *
   * @param conn The `Connector` object to use to connect to Accumulo.
   */
-class BasicIngester extends Connected {
+class BasicIngester extends TableBacked {
   import scala.util.{Try, Success, Failure}
 
-  TableOps.checkExistsAndCreate(Configuration.DocumentTableName)
+  override val tableName = Configuration.DocumentTableName
 
   lazy val bw = this.conn.createBatchWriter(Configuration.DocumentTableName, AccumuloClient.DefaultBWConfig)
 

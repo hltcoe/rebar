@@ -13,13 +13,13 @@ import scala.util.{Try, Success, Failure}
 import scala.concurrent.{ future, promise, Future, Promise}
 import scala.collection.JavaConverters._
 
-class AsyncReader extends Connected {
+class AsyncReader extends TableBacked {
+  override val tableName = Configuration.DocumentTableName
+
   import java.util.concurrent.Executors
   import concurrent.ExecutionContext
   private val executorService = Executors.newFixedThreadPool(4)
   private val executionContext = ExecutionContext.fromExecutorService(executorService)
-
-  TableOps.checkExistsAndCreate(Configuration.DocumentTableName)
 
   def query(id: String) : Future[Option[Communication]] = {
     promise[Option[Communication]]
