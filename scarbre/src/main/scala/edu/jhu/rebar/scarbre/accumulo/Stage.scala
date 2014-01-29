@@ -16,18 +16,71 @@ trait StageTableBacked extends TableBacked {
   val stagePrefix = Configuration.StagesPrefix
 }
 
-/**
-  * A useful trait wrapping around a `Stage`.
-  * Contains annotation methods. 
-  */
-class RebarStage(stage: Stage) extends StageTableBacked {
+object StageManager {
+  import scala.collection.JavaConverters._
+
+  implicit val conn = AccumuloClient.DefaultConnector
+
+  /**
+    * Needed as we may not necessarily have seen objects that will
+    * have created the table.
+    */
+  TableOps.checkExistsAndCreate(Configuration.StagesTableName)
+
+  def exists(name: String) : Boolean = {
+    conn.stageScanner.withRange(name).iterator().hasNext
+  }
+
+  def getStages : Set[Stage] = {
+    val scan = conn.stageScanner.withEmptyRange
+    scan.fetchColumnFamily(new Text(Configuration.StagesObjectCF))
+    scan
+      .iterator()
+      .asScala
+      .map(e => BinaryThriftStructSerializer(Stage)
+        .fromBytes(e.getValue.get))
+      .toSet
+  }
+}
+
+sealed trait TypedStage[T <: ThriftStruct] extends StageTableBacked {
+  import scala.collection.JavaConverters._
+
+  val stage : Stage
   val name = stage.name
 
   if (!name.startsWith(stagePrefix))
     throw new IllegalArgumentException(s"'$name' is not a valid stage name. Stage names must begin with '$stagePrefix'.")
 
+  def annotate (a: Annotation[T]) = { 
+
+  }
+
+  def isAnnotated(c: Communication) : Boolean = {
+    conn.scanner(tableName).withRange(c.id).iterator().hasNext()
+  }
+
+  private def addAnnotatedDocumentId(comm: Communication) : Unit =
+    addAnnotatedDocumentId(comm.id)
+
+  private def addAnnotatedDocumentId(id: String) : Unit = {
+    conn.withBatchWriter(tableName) { bw =>
+      val m = new Mutation(name)
+      m.put(Configuration.StagesDocumentsAnnotationIdCF, id, AccumuloClient.EmptyValue)
+      bw.addMutation(m)
+    }
+  }
+
+  def getAnnotatedDocumentIds : Set[String] = {
+    val scan = conn.scanner(tableName).withRange(name)
+    scan.fetchColumnFamily(new Text(Configuration.StagesDocumentsAnnotationIdCF))
+    scan.iterator().asScala.map { e =>
+      e.getKey.getColumnQualifier.toString
+    }.toSet
+  }
+
   def create : Try[Unit] = {
-    if (exists) 
+    if (exists)
       Failure(new IllegalArgumentException(s"Stage '$name' already exists."))
 
     if (!dependenciesExist)
@@ -50,89 +103,8 @@ class RebarStage(stage: Stage) extends StageTableBacked {
   }
 }
 
-object StageManager {
-  import scala.collection.JavaConverters._
+case class SectionStage (stage: Stage) extends TypedStage[SectionSegmentation]
+case class SentenceStage (stage: Stage) extends TypedStage[SentenceSegmentation]
+case class TokenizationStage (stage: Stage) extends TypedStage[Tokenization]
+case class LanguageIdStage(stage: Stage) extends TypedStage[LanguageIdentification]
 
-  implicit val conn = AccumuloClient.DefaultConnector
-
-  /**
-    * Needed as we may not necessarily have seen objects that will
-    * have created the table.
-    */
-  TableOps.checkExistsAndCreate(Configuration.StagesTableName)
-
-  def exists(name: String) : Boolean = {
-    conn.stageScanner.withRange(name).iterator().hasNext
-  }
-
-  // def getStages[T <: ThriftStruct] : Set[IngestedStage[T]] = {
-  //   val scan = conn.stageScanner.withEmptyRange
-  //   scan.fetchColumnFamily(new Text(Configuration.StagesObjectCF))
-  //   scan
-  //     .iterator()
-  //     .asScala
-  //     .map(e => stageToRebarStage(BinaryThriftStructSerializer(Stage)
-  //       .fromBytes(e.getValue.get)))
-  //     .toSet
-  // }
-
-}
-
-// class RebarStage[+T <: ThriftStruct](s: Stage) 
-//     extends StageTableBacked {
-
-//   val name = s.name
-//   if (!name.startsWith(stagePrefix))
-//     throw new IllegalArgumentException(s"'$name' is not a valid stage name. Stage names must begin with '$stagePrefix'.")
-
-//   if (!dependenciesExist)
-//     throw new IllegalArgumentException(s"One or more dependencies for stage '$s.name' did not exist.")
-
-//   def create : Try[IngestedStage[T]] = {
-//     
-//     Try(createInternal)
-//   }
-
-//   private def createInternal : IngestedStage[T] = {
-
-
-//     new IngestedStage[T](s)
-//   }
-
-//   
-
-
-// }
-
-class IngestedStage(s: Stage) extends StageTableBacked {
-  import scala.collection.JavaConverters._
-
-  val name = s.name
-  val dependencies = s.dependencies
-  val `type` = s.`type`
-  val description = s.description
-  val createTime = s.createTime
-
-  private def addAnnotatedDocumentId(comm: Communication) : Unit =
-    addAnnotatedDocumentId(comm.id)
-
-  private def addAnnotatedDocumentId(id: String) : Unit = {
-    conn.withBatchWriter(tableName) { bw =>
-      val m = new Mutation(name)
-      m.put(Configuration.StagesDocumentsAnnotationIdCF, id, AccumuloClient.EmptyValue)
-      bw.addMutation(m)
-    }
-  }
-
-  def getAnnotatedDocumentIds : Set[String] = {
-    val scan = conn.scanner(tableName).withRange(name)
-    scan.fetchColumnFamily(new Text(Configuration.StagesDocumentsAnnotationIdCF))
-    scan.iterator().asScala.map { e =>
-      e.getKey.getColumnQualifier.toString
-    }.toSet
-  }
-
-  def isAnnotated(c: Communication) : Boolean = {
-    conn.scanner(tableName).withRange(c.id).iterator().hasNext()
-  }
-}

@@ -11,35 +11,37 @@ import edu.jhu.hlt.rebar._
 import com.twitter.scrooge.{ThriftStruct, ThriftStructCodec}
 import scala.util.{Try, Success, Failure}
 
-// trait DocumentTableBacked extends TableBacked {
-//   override val tableName = Configuration.DocumentTableName
-// }
+trait DocumentTableBacked extends TableBacked {
+  override val tableName = Configuration.DocumentTableName
+}
 
-// sealed trait Annotation extends DocumentTableBacked {
-//   val anno[T <: ThriftStruct] : T
-//   def comm : Communication
-// }
-
-// case class SectionAnnotation (comm: Communication, anno: SectionSegmentation)
-//     extends Annotation[SectionSegmentation]
-
-// case class SentenceAnnotation(comm: Communication, anno: SentenceSegmentation)
-//     extends Annotation[SentenceSegmentation]
-
-// case class TokenizationAnnotation(comm: Communication, anno: Tokenization)
-//     extends Annotation[Tokenization]
-
-sealed trait Annotation[T <: ThriftStruct] {
+sealed trait Annotation[T <: ThriftStruct] extends DocumentTableBacked {
   val anno : T
   val comm : Communication
 
-  def toBytes[T <: ThriftStruct](x: ThriftStructCodec[T], y: T) : Array[Byte] =
-    BinaryThriftStructSerializer(x).toBytes(y)
+  def toBytes : Array[Byte]
+
+  def annotate(s: TypedStage[T]) : Try[Unit] = {
+    Failure(new RuntimeException("TBD"))
+  }
 }
-case class SectionAnnotation(anno: SectionSegmentation, comm: Communication) extends Annotation[SectionSegmentation]
 
-case class SentenceAnnotation(anno: SentenceSegmentation, comm: Communication) extends Annotation[SentenceSegmentation]
+case class SectionAnnotation(anno: SectionSegmentation, comm: Communication) 
+    extends Annotation[SectionSegmentation] {
+  def toBytes = BinaryThriftStructSerializer(SectionSegmentation).toBytes(anno)
+}
 
-case class TokenizationAnnotation(anno: Tokenization, comm: Communication) extends Annotation[Tokenization]
+case class SentenceAnnotation(anno: SentenceSegmentation, comm: Communication) 
+    extends Annotation[SentenceSegmentation] {
+  def toBytes = BinaryThriftStructSerializer(SentenceSegmentation).toBytes(anno)
+}
 
-case class LangIdAnnotation(anno: LanguageIdentification, comm: Communication) extends Annotation[LanguageIdentification]
+case class TokenizationAnnotation(anno: Tokenization, comm: Communication) 
+    extends Annotation[Tokenization] {
+  def toBytes = BinaryThriftStructSerializer(Tokenization).toBytes(anno)
+}
+
+case class LanguageIdAnnotation(anno: LanguageIdentification, comm: Communication) 
+    extends Annotation[LanguageIdentification] {
+  def toBytes = BinaryThriftStructSerializer(LanguageIdentification).toBytes(anno)
+}
