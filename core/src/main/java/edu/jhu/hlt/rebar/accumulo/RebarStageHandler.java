@@ -3,8 +3,10 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -20,11 +22,11 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
 import org.apache.thrift.TException;
 
+import edu.jhu.hlt.asphalt.Stage;
+import edu.jhu.hlt.asphalt.services.StageHandler;
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.StageHandler;
-import edu.jhu.hlt.concrete.Stage;
-import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.Configuration;
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
 
@@ -146,9 +148,9 @@ public class RebarStageHandler extends AbstractAccumuloClient implements StageHa
    * @see com.maxjthomas.dumpster.StageHandler.Iface#getStages()
    */
   @Override
-  public Set<Stage> getStages() throws TException {
+  public List<Stage> getStages() throws TException {
     try {
-      return this.getStagesInternal();
+      return new ArrayList<>(this.getStagesInternal());
     } catch (RebarException e) {
       throw new TException(e);
     }
@@ -188,19 +190,19 @@ public class RebarStageHandler extends AbstractAccumuloClient implements StageHa
    * 
    * @see com.maxjthomas.dumpster.StageHandler.Iface#getAnnotatedDocumentCount(com.maxjthomas.dumpster.Stage)
    */
-  @Override
-  public int getAnnotatedDocumentCount(Stage stage) throws TException {
-    try {
-      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, Configuration.getAuths());
-      Range r = new Range(stage.name);
-      sc.setRange(r);
-      sc.fetchColumnFamily(new Text(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF));
-      Iterator<Entry<Key, Value>> iter = sc.iterator();
-      return Util.countIteratorResults(iter);
-    } catch (TableNotFoundException e) {
-      throw new TException(e);
-    }
-  }
+//  @Override
+//  public int getAnnotatedDocumentCount(Stage stage) throws TException {
+//    try {
+//      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, Configuration.getAuths());
+//      Range r = new Range(stage.name);
+//      sc.setRange(r);
+//      sc.fetchColumnFamily(new Text(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF));
+//      Iterator<Entry<Key, Value>> iter = sc.iterator();
+//      return Util.countIteratorResults(iter);
+//    } catch (TableNotFoundException e) {
+//      throw new TException(e);
+//    }
+//  }
 
   public void addAnnotatedDocument(Stage stage, Communication document) throws RebarException {
     try {

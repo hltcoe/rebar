@@ -19,8 +19,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.Ingester;
-import edu.jhu.hlt.concrete.RebarThriftException;
+import edu.jhu.hlt.asphalt.services.Ingester;
+import edu.jhu.hlt.asphalt.AsphaltException;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
@@ -61,7 +61,7 @@ public class TestRebarIngesterServer extends AbstractServiceTest {
   
 
   @Test
-  public void testBulkInsertCommunications() throws RebarThriftException, TException, TableNotFoundException, RebarException {
+  public void testBulkInsertCommunications() throws AsphaltException, TException, TableNotFoundException, RebarException {
     int nComms = 10;
     Set<Communication> commSet = AbstractAccumuloTest.generateMockDocumentSet(nComms);
     nComms = commSet.size(); // in case there were duplicate IDs.

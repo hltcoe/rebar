@@ -31,10 +31,10 @@ import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.DocType;
-import edu.jhu.hlt.concrete.LangId;
-import edu.jhu.hlt.concrete.Stage;
-import edu.jhu.hlt.concrete.StageType;
+import edu.jhu.hlt.concrete.CommunicationType;
+import edu.jhu.hlt.concrete.LanguageIdentification;
+import edu.jhu.hlt.asphalt.Stage;
+import edu.jhu.hlt.asphalt.StageType;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
 
@@ -80,7 +80,7 @@ public class AbstractAccumuloTest {
 
   public static Communication generateMockDocument() {
     Communication document = new Communication();
-    document.type = DocType.TWEET;
+    document.type = CommunicationType.TWEET;
     document.text = "hello world!";
     document.id = Integer.toString(Math.abs(rand.nextInt()));
 
@@ -94,28 +94,36 @@ public class AbstractAccumuloTest {
 
     return docSet;
   }
+  
+  public static List<Communication> generateMockDocumentList(int capacity) {
+    Set<Communication> docSet = new HashSet<>(capacity);
+    for (int i = 0; i < capacity; i++)
+      docSet.add(generateMockDocument());
 
-  protected static Map<String, Double> generateLidMap() {
-    Map<String, Double> langIdMap = new HashMap<>();
-    langIdMap.put("eng", rand.nextDouble());
-    langIdMap.put("spa", rand.nextDouble());
-    langIdMap.put("fra", rand.nextDouble());
-    return langIdMap;
+    return new ArrayList<>(docSet);
   }
 
-  protected static LangId generateLangId(Communication d) {
-    LangId lid = new LangId();
-    lid.id = d.id + "_LID";
-    lid.name = "max_lid_test";
-    lid.version = "v1";
+  protected static Map<String, Double> generateLidMap() {
+    Map<String, Double> LanguageIdentificationMap = new HashMap<>();
+    LanguageIdentificationMap.put("eng", rand.nextDouble());
+    LanguageIdentificationMap.put("spa", rand.nextDouble());
+    LanguageIdentificationMap.put("fra", rand.nextDouble());
+    return LanguageIdentificationMap;
+  }
+
+  protected static LanguageIdentification generateLanguageIdentification(Communication d) {
+    LanguageIdentification lid = new LanguageIdentification();
+    lid.uuid = d.id + "_LID";
+    //lid.name = "max_lid_test";
+    //lid.version = "v1";
     lid.languageToProbabilityMap = generateLidMap();
     return lid;
   }
 
-  protected static Set<LangId> generateLangIdSet(Set<Communication> docSet) {
-    Set<LangId> lidSet = new HashSet<>();
+  protected static Set<LanguageIdentification> generateLanguageIdentificationSet(Set<Communication> docSet) {
+    Set<LanguageIdentification> lidSet = new HashSet<>();
     for (Communication d : docSet)
-      lidSet.add(generateLangId(d));
+      lidSet.add(generateLanguageIdentification(d));
 
     return lidSet;
   }

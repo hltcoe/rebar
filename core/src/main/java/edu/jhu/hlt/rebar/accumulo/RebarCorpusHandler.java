@@ -25,8 +25,8 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.CorpusHandler;
-import edu.jhu.hlt.concrete.RebarThriftException;
+import edu.jhu.hlt.asphalt.services.CorpusHandler;
+import edu.jhu.hlt.asphalt.AsphaltException;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
@@ -85,16 +85,16 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
    * @see com.maxjthomas.dumpster.CorpusHandler.Iface#createCorpus(java.lang.String, java.util.Set)
    */
   @Override
-  public void createCorpus(String corpusName, Set<Communication> docList) throws RebarThriftException, TException {
+  public void createCorpus(String corpusName, List<Communication> docList) throws AsphaltException, TException {
     if (this.corpusExists(corpusName))
-      throw new RebarThriftException("This corpus already exists.");
+      throw new AsphaltException("This corpus already exists.");
 
     if (!isValidCorpusName(corpusName)) {
-      throw new RebarThriftException("Corpus name must begin with 'corpus_'. Corpus name: " + corpusName + " is not valid.");
+      throw new AsphaltException("Corpus name must begin with 'corpus_'. Corpus name: " + corpusName + " is not valid.");
     }
 
     if (docList.size() == 0) {
-      throw new RebarThriftException("Can't create a corpus with zero documents.");
+      throw new AsphaltException("Can't create a corpus with zero documents.");
     }
 
     // first, add this to the available corpora table.
@@ -127,7 +127,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
    * @see com.maxjthomas.dumpster.CorpusHandler.Iface#getCorpusDocumentSet(java.lang.String)
    */
   @Override
-  public List<Communication> getCorpusCommunicationSet(String corpusName) throws RebarThriftException, TException {
+  public List<Communication> getCorpusCommunicationSet(String corpusName) throws AsphaltException, TException {
     Set<Communication> docSet = new HashSet<>();
     try {
       this.flush();
@@ -160,14 +160,14 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
       bsc.close();
       
       if (docSet.size() != rangeSet.size()) {
-        throw new RebarThriftException("Did not retrieve all documents associated "
+        throw new AsphaltException("Did not retrieve all documents associated "
             + "with corpus: " + corpusName + "; expected: " + rangeSet.size()
             + " but got: " + docSet.size());
       }
       
       return new ArrayList<>(docSet);
     } catch (TableNotFoundException | RebarException e) {
-      throw new RebarThriftException(e.getMessage());
+      throw new AsphaltException(e.getMessage());
     }
   }
 
@@ -177,7 +177,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
    * @see com.maxjthomas.dumpster.CorpusHandler.Iface#listCorpora()
    */
   @Override
-  public Set<String> listCorpora() throws RebarThriftException, TException {
+  public List<String> listCorpora() throws AsphaltException, TException {
     try {
       Scanner sc = this.conn.createScanner(Constants.AVAILABLE_CORPUS_TABLE_NAME, Configuration.getAuths());
       Range r = new Range();
@@ -189,9 +189,9 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
         corporaSet.add(k.getRow().toString());
       }
       
-      return corporaSet;
+      return new ArrayList<>(corporaSet);
     } catch (TableNotFoundException e) {
-      throw new RebarThriftException(e.getMessage());
+      throw new AsphaltException(e.getMessage());
     }
   }
 
@@ -201,9 +201,9 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
    * @see com.maxjthomas.dumpster.CorpusHandler.Iface#deleteCorpus(java.lang.String)
    */
   @Override
-  public void deleteCorpus(String corpusName) throws RebarThriftException, TException {
+  public void deleteCorpus(String corpusName) throws AsphaltException, TException {
     if (!this.corpusExists(corpusName))
-      throw new RebarThriftException("Can't delete a corpus that doesn't exist.");
+      throw new AsphaltException("Can't delete a corpus that doesn't exist.");
 
     try {
       // first, delete corpus table.

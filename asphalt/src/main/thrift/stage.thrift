@@ -1,5 +1,5 @@
-namespace java edu.jhu.hlt.rebar
-namespace py rebar.stage
+namespace java edu.jhu.hlt.asphalt
+namespace py asphalt
 #@namespace scala edu.jhu.hlt.miser
 
 include "ex.thrift"

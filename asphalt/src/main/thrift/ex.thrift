@@ -1,8 +1,8 @@
-namespace java edu.jhu.hlt.rebar
-namespace py rebar.ex
+namespace java edu.jhu.hlt.asphalt
+namespace py asphalt
 #@namespace scala edu.jhu.hlt.miser
 
-exception RebarThriftException {
+exception AsphaltException {
   1: string message
   2: optional binary serEx
 }

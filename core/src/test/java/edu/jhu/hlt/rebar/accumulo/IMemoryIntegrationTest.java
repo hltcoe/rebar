@@ -11,8 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.Stage;
-import edu.jhu.hlt.concrete.StageType;
+import edu.jhu.hlt.asphalt.Stage;
+import edu.jhu.hlt.asphalt.StageType;
 import edu.jhu.hlt.rebar.RebarException;
 
 public class IMemoryIntegrationTest extends AbstractAccumuloTest {
