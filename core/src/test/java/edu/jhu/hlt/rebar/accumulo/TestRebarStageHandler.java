@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -160,7 +161,7 @@ public class TestRebarStageHandler extends AbstractAccumuloTest {
    */
   @Test
   public void testGetMultiStages() throws TException {
-    Set<Stage> ingestedStages = new HashSet<>();
+    List<Stage> ingestedStages = new ArrayList<>();
     Stage s = generateTestStage();
     this.ash.createStage(s);
     ingestedStages.add(s);
@@ -170,7 +171,7 @@ public class TestRebarStageHandler extends AbstractAccumuloTest {
     ingestedStages.add(newS);
     
     List<Stage> stages = this.ash.getStages();
-    assertEquals("Stages should be equal.", ingestedStages, stages);
+    assertTrue("Stages should be equal.", ingestedStages.containsAll(stages));
   }
   
 //  @Test
