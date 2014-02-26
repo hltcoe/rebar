@@ -34,9 +34,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.Jedis;
-
-
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.RebarException;
@@ -77,9 +74,6 @@ public class TestRebarIngester extends AbstractAccumuloTest {
     Iterator<Entry<Key, Value>> iter = generateIterator(this.conn, edu.jhu.hlt.rebar.Constants.DOCUMENT_TABLE_NAME, new Range(docId));
     assertTrue("Should find results in accumulo.", iter.hasNext());
     assertEquals(0, iter.next().getValue().compareTo(dbytes));
-    Jedis jedis = new Jedis("localhost");
-    assertTrue(jedis.smembers("ingested-ids").contains(docId));
-    jedis.srem("ingested-ids", docId);
   }
   
   @Test

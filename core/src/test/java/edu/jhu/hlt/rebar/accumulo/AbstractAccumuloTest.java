@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.AccumuloException;
@@ -83,6 +84,7 @@ public class AbstractAccumuloTest {
     document.type = CommunicationType.TWEET;
     document.text = "hello world!";
     document.id = Integer.toString(Math.abs(rand.nextInt()));
+    document.uuid = UUID.randomUUID().toString();
 
     return document;
   }
