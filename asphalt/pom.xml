@@ -14,7 +14,6 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <thrift.exe>/usr/local/bin/thrift</thrift.exe>
   </properties>
 
   <build>
@@ -32,8 +31,6 @@
         <artifactId>maven-thrift-plugin</artifactId>
         <version>0.1.11</version>
         <configuration>
-          <thriftExecutable>${thrift.exe}</thriftExecutable>
-          <!-- <additionalThriftPathElements>/home/max/git/concrete/thrift</additionalThriftPathElements> -->
         </configuration>
         <executions>
           <execution>
