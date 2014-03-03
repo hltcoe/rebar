@@ -26,7 +26,7 @@ import edu.jhu.hlt.rebar.RebarException;
  * @author max
  *
  */
-public class RebarIngester extends AbstractAccumuloClient implements AutoCloseable, Ingester.Iface {
+public class RebarIngester extends AbstractIngester implements AutoCloseable, Ingester.Iface {
 
   private static final Logger logger = LoggerFactory.getLogger(RebarIngester.class);
   
@@ -52,16 +52,6 @@ public class RebarIngester extends AbstractAccumuloClient implements AutoCloseab
   
   private boolean isDocumentPendingIngest(Communication d) {
     return this.pendingInserts.contains(d.getId());
-  }
-  
-  @Override
-  public void flush() throws RebarException {
-    try {
-      this.bw.flush();
-      this.pendingInserts.clear();
-    } catch (MutationsRejectedException e) {
-      throw new RebarException(e);
-    }
   }
   
   public void close() throws RebarException {

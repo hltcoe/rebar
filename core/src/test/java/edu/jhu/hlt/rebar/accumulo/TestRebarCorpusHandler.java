@@ -162,7 +162,6 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
     List<Communication> docSet = this.ingestDocuments(25);
     
     rch.createCorpus(testCorpus, new ArrayList<>(new HashSet<>(docSet)));
-    rch.flush();
     List<Communication> retDocSet = rch.getCorpusCommunicationSet(testCorpus);
     rch.close();
     

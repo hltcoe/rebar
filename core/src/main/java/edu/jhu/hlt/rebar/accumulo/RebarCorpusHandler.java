@@ -63,20 +63,6 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see edu.jhu.hlt.rebar.accumulo.AbstractAccumuloClient#flush()
-   */
-  @Override
-  public void flush() throws RebarException {
-    try {
-      this.corporaTableBW.flush();
-    } catch (MutationsRejectedException e) {
-      throw new RebarException(e);
-    }
-  }
-
   // private void
 
   /*
@@ -130,8 +116,6 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
   public List<Communication> getCorpusCommunicationSet(String corpusName) throws AsphaltException, TException {
     Set<Communication> docSet = new HashSet<>();
     try {
-      this.flush();
-      
       // first hit the corpus table itself, to get the ids for the ranges.
       Scanner sc = this.conn.createScanner(corpusName, Configuration.getAuths());
       Range r = new Range();
@@ -166,7 +150,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
       }
       
       return new ArrayList<>(docSet);
-    } catch (TableNotFoundException | RebarException e) {
+    } catch (TableNotFoundException e) {
       throw new AsphaltException(e.getMessage());
     }
   }
@@ -226,7 +210,6 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
   @Override
   public void close() throws Exception {
     this.corporaTableBW.close();
-    this.bw.close();
   }
 
   /*

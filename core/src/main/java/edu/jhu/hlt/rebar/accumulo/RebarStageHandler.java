@@ -68,20 +68,6 @@ public class RebarStageHandler extends AbstractAccumuloClient implements StageHa
   /*
    * (non-Javadoc)
    * 
-   * @see edu.jhu.hlt.rebar.accumulo.AbstractAccumuloClient#flush()
-   */
-  @Override
-  public void flush() throws RebarException {
-    try {
-      this.stagesTableBW.flush();
-    } catch (MutationsRejectedException e) {
-      throw new RebarException(e);
-    }
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
    * @see com.maxjthomas.dumpster.StageHandler.Iface#stageExists(java.lang.String)
    */
   @Override
