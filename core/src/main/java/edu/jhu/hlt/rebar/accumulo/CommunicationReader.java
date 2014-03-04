@@ -12,6 +12,7 @@ import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
+import org.apache.thrift.TException;
 import org.joda.time.DateTime;
 
 import edu.jhu.hlt.concrete.Communication;
@@ -84,6 +85,17 @@ public class CommunicationReader extends AbstractReader<Communication> {
 
   @Override
   protected Iterator<Communication> accumuloIterToTIter(Iterator<Entry<Key, Value>> accIter) throws RebarException {
-    return new CommunicationIterator(accIter);
+    return new AbstractThriftIterator<Communication>(accIter) {
+      @Override
+      public Communication next() {
+        try {
+          Communication c = new Communication();
+          deser.deserialize(c, iter.next().getValue().get());
+          return c;
+        } catch (TException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
   }
 }

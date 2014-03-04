@@ -13,8 +13,6 @@ import org.apache.thrift.TException;
 import edu.jhu.hlt.concrete.Communication;
 
 /**
- * Tiny iterator wrapper for API usage.
- * 
  * @author max
  */
 public class CommunicationIterator extends AbstractThriftIterator<Communication> {

@@ -11,8 +11,6 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
-import edu.jhu.hlt.rebar.RebarException;
-
 /**
  * @author max
  * 
