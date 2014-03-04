@@ -6,17 +6,14 @@ package edu.jhu.hlt.rebar.accumulo;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.MutationsRejectedException;
-import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Mutation;
-import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.util.RebarUtil;
@@ -61,24 +58,9 @@ public class CleanIngester extends AbstractIngester {
     }
   }
   
-  public boolean isDocumentIngested(Communication d) throws RebarException {
-    return this.isDocumentIngested(d.id);
-  }
-  
-  public boolean isDocumentIngested(String docId) throws RebarException {
-    try {
-      Scanner sc = this.conn.createScanner(Constants.DOCUMENT_IDX_TABLE, Configuration.getAuths());
-      Range r = new Range("doc_id:" + docId);
-      sc.setRange(r);
-      return sc.iterator().hasNext();
-    } catch (TableNotFoundException e) {
-      throw new RebarException(e);
-    }
-  }
-  
   public void ingest(Communication d) throws RebarException {
     logger.debug("Got ingest request: " + d.id);
-    if (isDocumentIngested(d))
+    if (new CleanReader().exists(d))
       return;
 
     try {

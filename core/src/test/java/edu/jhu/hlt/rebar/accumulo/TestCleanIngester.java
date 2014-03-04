@@ -34,6 +34,7 @@ public class TestCleanIngester extends AbstractAccumuloTest {
   private static final Logger logger = LoggerFactory.getLogger(TestCleanIngester.class);
   
   CleanIngester ci;
+  CleanReader cr;
   
   /**
    * @throws java.lang.Exception
@@ -42,6 +43,7 @@ public class TestCleanIngester extends AbstractAccumuloTest {
   public void setUp() throws Exception {
     this.initialize();
     this.ci = new CleanIngester(this.conn);
+    this.cr = new CleanReader(this.conn);
   }
 
   /**
@@ -60,11 +62,11 @@ public class TestCleanIngester extends AbstractAccumuloTest {
    */
   @Test
   public void testIsDocumentIngested() throws RebarException, TableNotFoundException, MutationsRejectedException {
-    assertFalse(ci.isDocumentIngested("bar"));
+    assertFalse(cr.exists("bar"));
     Communication c = generateMockDocument();
-    assertFalse(ci.isDocumentIngested(c));
+    assertFalse(cr.exists(c));
     ci.ingest(c);
-    assertTrue(ci.isDocumentIngested(c));
-    assertFalse(ci.isDocumentIngested("bar"));
+    assertTrue(cr.exists(c));
+    assertFalse(cr.exists("bar"));
   }
 }
