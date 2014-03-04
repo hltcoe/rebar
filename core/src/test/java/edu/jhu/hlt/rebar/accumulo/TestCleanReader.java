@@ -35,7 +35,7 @@ public class TestCleanReader extends AbstractAccumuloTest {
   private static final Logger logger = LoggerFactory.getLogger(TestCleanReader.class);
   
   CleanIngester ci;
-  CleanReader cr;
+  CommunicationReader cr;
   
   /**
    * @throws java.lang.Exception
@@ -44,7 +44,7 @@ public class TestCleanReader extends AbstractAccumuloTest {
   public void setUp() throws Exception {
     this.initialize();
     this.ci = new CleanIngester(this.conn);
-    this.cr = new CleanReader(this.conn);
+    this.cr = new CommunicationReader(this.conn);
     
     
   }
@@ -57,7 +57,7 @@ public class TestCleanReader extends AbstractAccumuloTest {
   }
 
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CleanReader#getCommunications(edu.jhu.hlt.concrete.CommunicationType)}.
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CommunicationReader#getCommunications(edu.jhu.hlt.concrete.CommunicationType)}.
    * 
    * @throws RebarException 
    * @throws TableNotFoundException 
@@ -85,7 +85,7 @@ public class TestCleanReader extends AbstractAccumuloTest {
   }
   
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CleanReader#getCommunications(DateTime, DateTime)}.
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CommunicationReader#getCommunications(DateTime, DateTime)}.
    * 
    * @throws RebarException 
    * @throws TableNotFoundException 

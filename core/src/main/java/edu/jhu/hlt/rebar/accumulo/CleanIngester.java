@@ -61,7 +61,7 @@ public class CleanIngester extends AbstractIngester {
   
   public void ingest(Communication d) throws RebarException {
     logger.debug("Got ingest request: " + d.id);
-    if (new CleanReader().exists(d))
+    if (new CommunicationReader().exists(d))
       return;
 
     try {

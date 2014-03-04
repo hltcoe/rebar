@@ -35,7 +35,7 @@ public class TestCleanIngester extends AbstractAccumuloTest {
   private static final Logger logger = LoggerFactory.getLogger(TestCleanIngester.class);
   
   CleanIngester ci;
-  CleanReader cr;
+  CommunicationReader cr;
   
   /**
    * @throws java.lang.Exception
@@ -44,7 +44,7 @@ public class TestCleanIngester extends AbstractAccumuloTest {
   public void setUp() throws Exception {
     this.initialize();
     this.ci = new CleanIngester(this.conn);
-    this.cr = new CleanReader(this.conn);
+    this.cr = new CommunicationReader(this.conn);
   }
 
   /**

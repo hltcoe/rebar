@@ -6,8 +6,8 @@ package edu.jhu.hlt.rebar.accumulo;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.Connector;
@@ -17,7 +17,6 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 
-import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
@@ -25,6 +24,7 @@ import edu.jhu.hlt.rebar.RebarException;
 /**
  * @author max
  *
+ * TODO: Enforce more bounds on T (e.g., extends ThriftStruct or some such)
  */
 public abstract class AbstractReader<T> extends AbstractAccumuloClient {
 
