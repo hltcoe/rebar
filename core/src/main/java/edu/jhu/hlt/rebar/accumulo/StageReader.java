@@ -7,11 +7,16 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.Scanner;
+import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
+import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TException;
 
 import edu.jhu.hlt.asphalt.Stage;
+import edu.jhu.hlt.asphalt.StageType;
+import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 
@@ -52,5 +57,24 @@ public class StageReader extends AbstractReader<Stage> {
       }
     };
   }
-
+  
+  public boolean exists(Stage s) throws RebarException {
+    return this.exists(s.name);
+  }
+  
+  public boolean exists (String stageName) throws RebarException {
+    try {
+      Scanner sc = this.conn.createScanner(this.tableName, Configuration.getAuths());
+      Range r = new Range(stageName);
+      sc.setRange(r);
+      return sc.iterator().hasNext();
+    } catch (TableNotFoundException e) {
+      throw new RebarException(e);
+    }
+  }
+  
+  public Iterator<Stage> getStages(StageType t) throws RebarException {
+    Range r = new Range("type:"+t.toString());
+    return this.rangeToIter(r);
+  }
 }

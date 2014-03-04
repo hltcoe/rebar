@@ -41,10 +41,14 @@ public class CommunicationReader extends AbstractReader<Communication> {
   public CommunicationReader(Connector conn) throws RebarException {
     super(conn, Constants.DOCUMENT_TABLE_NAME, Constants.DOCUMENT_IDX_TABLE);
   }
+  
+  public boolean exists (Communication c) throws RebarException {
+    return this.exists(c.id);
+  }
 
   public boolean exists (String docId) throws RebarException {
     try {
-      Scanner sc = this.conn.createScanner(Constants.DOCUMENT_IDX_TABLE, Configuration.getAuths());
+      Scanner sc = this.conn.createScanner(this.idxTableName, Configuration.getAuths());
       Range r = new Range("doc_id:" + docId);
       sc.setRange(r);
       return sc.iterator().hasNext();
@@ -77,10 +81,6 @@ public class CommunicationReader extends AbstractReader<Communication> {
   public Iterator<Communication> getCommunications(CommunicationType t) throws RebarException {
     Range r = new Range("type:"+t.toString());
     return this.rangeToIter(r);
-  }
-  
-  public boolean exists (Communication c) throws RebarException {
-    return this.exists(c.id);
   }
 
   @Override

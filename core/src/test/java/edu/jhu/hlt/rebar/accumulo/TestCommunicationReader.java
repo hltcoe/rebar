@@ -30,9 +30,9 @@ import edu.jhu.hlt.rebar.RebarException;
  * @author max
  *
  */
-public class TestCleanReader extends AbstractAccumuloTest {
+public class TestCommunicationReader extends AbstractAccumuloTest {
 
-  private static final Logger logger = LoggerFactory.getLogger(TestCleanReader.class);
+  private static final Logger logger = LoggerFactory.getLogger(TestCommunicationReader.class);
   
   CleanIngester ci;
   CommunicationReader cr;
