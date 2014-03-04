@@ -3,7 +3,9 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.accumulo.core.client.Connector;
@@ -12,6 +14,7 @@ import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
+import org.apache.hadoop.io.Text;
 import org.apache.thrift.TException;
 
 import edu.jhu.hlt.asphalt.Stage;
@@ -71,6 +74,10 @@ public class StageReader extends AbstractReader<Stage> {
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
     }
+  }
+
+  public Iterator<Stage> getStages() throws RebarException {
+    return this.rangeToIter(new Range());
   }
   
   public Iterator<Stage> getStages(StageType t) throws RebarException {

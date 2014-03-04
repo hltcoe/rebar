@@ -61,25 +61,13 @@ public class CleanStageHandler extends AbstractAccumuloClient {
     this.stagesTableBW.close();
   }
 
-  public boolean exists(String stageName) throws RebarException {
-    try {
-      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, Configuration.getAuths());
-      Range r = new Range(stageName);
-      sc.setRange(r);
-      Iterator<Entry<Key, Value>> iter = sc.iterator();
-      return iter.hasNext();
-    } catch (TableNotFoundException e) {
-      throw new RebarException(e);
-    }
-  }
-
   public void create(Stage stage) throws RebarException {
-    if (this.exists(stage.name))
+    if (new StageReader().exists(stage.name))
       throw new RebarException("Can't create a stage that exists.");
 
     Set<String> deps = stage.dependencies;
     for (String dep : deps) {
-      if (!this.exists(dep))
+      if (!new StageReader().exists(dep))
         throw new RebarException("Dependency: " + dep + " doesn't exist; can't create that stage.");
     }
 
@@ -92,27 +80,6 @@ public class CleanStageHandler extends AbstractAccumuloClient {
       Mutation typeIdx = RebarUtil.generateEmptyValueMutation("type:"+stage.type.toString(), stage.name, "");
       this.stagesIdxBW.addMutation(typeIdx);
     } catch (MutationsRejectedException | TException e) {
-      throw new RebarException(e);
-    }
-  }
-
-  public Set<Stage> getStages() throws RebarException {
-    Set<Stage> stagesToReturn = new HashSet<>();
-    try {
-      Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, Configuration.getAuths());
-      Range r = new Range();
-      sc.setRange(r);
-      sc.fetchColumnFamily(new Text(Constants.STAGES_OBJ_COLF));
-      Iterator<Entry<Key, Value>> iter = sc.iterator();
-      while (iter.hasNext()) {
-        Value v = iter.next().getValue();
-        Stage s = new Stage();
-        this.deserializer.deserialize(s, v.get());
-        stagesToReturn.add(s);
-      }
-
-      return stagesToReturn;
-    } catch (TableNotFoundException | TException e) {
       throw new RebarException(e);
     }
   }
