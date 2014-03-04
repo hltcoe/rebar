@@ -55,12 +55,6 @@ public class RebarStageHandler extends AbstractAccumuloClient implements StageHa
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.AutoCloseable#close()
-   */
-  @Override
   public void close() throws Exception {
     this.stagesTableBW.close();
   }

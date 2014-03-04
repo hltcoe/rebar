@@ -56,7 +56,6 @@ public abstract class AbstractThriftServer implements AutoCloseable, Runnable {
   }
   
   public final void close() throws Exception {
-    this.aac.close();
     logger.debug("AbstractThriftServer closing.");
     if (this.server.isServing())
       this.stop();

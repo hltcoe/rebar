@@ -10,6 +10,7 @@ import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
+import org.apache.accumulo.core.data.Value;
 
 /**
  * @author max
@@ -17,11 +18,10 @@ import org.apache.accumulo.core.client.security.tokens.PasswordToken;
  */
 public class Constants {
 
-  
-  
   public static final String DOCUMENT_TABLE_NAME = "documents";
   public static final String DOCUMENT_COLF = "raw_doc";
   public static final String DOCUMENT_ANNOTATION_COLF = "annotations";
+  public static final String DOCUMENT_IDX_TABLE = "doc_idx";
   
   public static final String AVAILABLE_CORPUS_TABLE_NAME = "available_corpora";
   public static final String CORPUS_PREFIX = "corpus_";
@@ -36,6 +36,8 @@ public class Constants {
   // Redis
   public static final String INGESTED_IDS_REDIS_KEY = "ingested-ids";
 
+  public static final Value EMPTY_VALUE = new Value(new byte[0]);
+  
   /**
    * 
    */

@@ -201,13 +201,7 @@ public class RebarCorpusHandler extends AbstractAccumuloClient implements Corpus
       throw new TException(e);
     }
   }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.AutoCloseable#close()
-   */
-  @Override
+  
   public void close() throws Exception {
     this.corporaTableBW.close();
   }

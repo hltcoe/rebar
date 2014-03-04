@@ -16,14 +16,14 @@ import edu.jhu.hlt.rebar.RebarException;
  * @author max
  * 
  */
-public abstract class AbstractAccumuloClient implements AutoCloseable {
+public abstract class AbstractAccumuloClient {
 
   protected final Connector conn;
   protected final RebarTableOps tableOps;
   protected final TSerializer serializer;
   protected final TDeserializer deserializer;
   
-  protected static final BatchWriterOpts defaultBwOpts;
+  public static final BatchWriterOpts defaultBwOpts;
   
   protected final static long MAX_WRITE_MEMORY = 1024L * 1024 * 5; // 5 mb
   protected final static long MAX_WRITE_LATENCY_MS = 5L; // 5 msec

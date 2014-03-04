@@ -14,7 +14,7 @@ import edu.jhu.hlt.rebar.RebarException;
  * @author max
  *
  */
-public abstract class AbstractIngester extends AbstractAccumuloClient {
+public abstract class AbstractIngester extends AbstractAccumuloClient implements AutoCloseable {
 
   protected BatchWriter bw;  
   
