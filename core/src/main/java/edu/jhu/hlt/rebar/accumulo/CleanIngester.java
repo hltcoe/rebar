@@ -10,6 +10,7 @@ import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TException;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +74,7 @@ public class CleanIngester extends AbstractIngester {
       this.idxBw.addMutation(RebarUtil.generateEmptyValueMutation("type:"+d.type.toString(), d.uuid, ""));
       
       if (d.startTime != 0)
-        this.idxBw.addMutation(RebarUtil.generateEmptyValueMutation("date:"+d.startTime, d.uuid, ""));
+        this.idxBw.addMutation(RebarUtil.generateEmptyValueMutation("date:"+new DateTime(d.startTime * 1000).toString(), d.uuid, ""));
     } catch (MutationsRejectedException | TException e) {
       throw new RebarException(e);
     }

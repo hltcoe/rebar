@@ -27,6 +27,7 @@ public class Constants {
   public static final String CORPUS_PREFIX = "corpus_";
   
   public static final String STAGES_TABLE_NAME = "available_stages";
+  public static final String STAGES_IDX_TABLE_NAME = "available_stages";
   public static final String STAGES_PREFIX = "stage_";
   public static final String STAGES_OBJ_COLF = "stage_obj";
 

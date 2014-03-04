@@ -24,6 +24,7 @@ import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.util.RebarUtil;
 
 /**
  * @author max
@@ -64,9 +65,17 @@ public class TestCleanIngester extends AbstractAccumuloTest {
   public void testIsDocumentIngested() throws RebarException, TableNotFoundException, MutationsRejectedException {
     assertFalse(cr.exists("bar"));
     Communication c = generateMockDocument();
+    Communication c2 = generateMockDocument();
+    c.startTime = 39595830;
+    c2.startTime = 395958301;
     assertFalse(cr.exists(c));
     ci.ingest(c);
     assertTrue(cr.exists(c));
     assertFalse(cr.exists("bar"));
+    ci.ingest(c);
+    ci.ingest(c2);
+    assertTrue(cr.exists(c));
+    assertTrue(cr.exists(c2));
+//    RebarUtil.printTable(Constants.DOCUMENT_IDX_TABLE, this.conn, logger);
   }
 }
