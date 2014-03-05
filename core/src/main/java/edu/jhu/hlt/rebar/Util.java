@@ -7,6 +7,7 @@ package edu.jhu.hlt.rebar;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Scanner;
@@ -63,5 +64,14 @@ public class Util {
     final Mutation m = new Mutation(rowId);
     m.put(colF, colF, Constants.EMPTY_VALUE);
     return m;
+  }
+  
+  public static boolean isValidUUIDString(String uuidStr) {
+    try {
+      UUID.fromString(uuidStr);
+      return true;
+    } catch (IllegalArgumentException iae) {
+      return false;
+    }
   }
 }

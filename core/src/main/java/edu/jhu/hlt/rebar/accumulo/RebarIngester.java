@@ -26,7 +26,7 @@ import edu.jhu.hlt.rebar.RebarException;
  * @author max
  *
  */
-public class RebarIngester extends AbstractIngester implements AutoCloseable, Ingester.Iface {
+public class RebarIngester extends AbstractCommunicationWriter implements AutoCloseable, Ingester.Iface {
 
   private static final Logger logger = LoggerFactory.getLogger(RebarIngester.class);
   

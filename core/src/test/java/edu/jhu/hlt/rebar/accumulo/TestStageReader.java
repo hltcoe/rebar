@@ -24,6 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.jhu.hlt.asphalt.Stage;
+import edu.jhu.hlt.asphalt.StageType;
+import edu.jhu.hlt.asphalt.services.StageHandler;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
@@ -36,6 +38,7 @@ import edu.jhu.hlt.rebar.Util;
 public class TestStageReader extends AbstractAccumuloTest {
 
   private StageReader sr;
+  private CleanStageHandler ing;
   
   /**
    * @throws java.lang.Exception
@@ -44,6 +47,7 @@ public class TestStageReader extends AbstractAccumuloTest {
   public void setUp() throws Exception {
     this.initialize();
     this.sr = new StageReader(this.conn);
+    this.ing = new CleanStageHandler(this.conn);
   }
   
   /**
@@ -64,8 +68,22 @@ public class TestStageReader extends AbstractAccumuloTest {
     Stage s = generateTestStage();
     String sName = s.name;
     assertFalse("Shouldn't find any stages at the start.", this.sr.exists(sName));
-    
+    ing.create(s);
+    assertTrue("Should find an ingested stage.", this.sr.exists(s));
 //    this.ash.create(s);
 //    assertTrue("Should find stage after ingest.", this.ash.exists(sName));
+  }
+  
+  /**
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CleanStageHandler#exists(java.lang.String)}.
+   * @throws TException 
+   * @throws RebarException 
+   */
+  @Test
+  public void testPrinting() throws RebarException {
+    ing.create(generateTestStage());
+    ing.create(generateTestStage("foo_test", "Good stage", new HashSet<String>(), StageType.LANG_ID));
+    
+    this.sr.printStages();
   }
 }

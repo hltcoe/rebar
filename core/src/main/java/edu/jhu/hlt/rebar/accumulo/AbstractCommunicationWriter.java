@@ -14,14 +14,14 @@ import edu.jhu.hlt.rebar.RebarException;
  * @author max
  *
  */
-public abstract class AbstractIngester extends AbstractAccumuloClient implements AutoCloseable {
+public abstract class AbstractCommunicationWriter extends AbstractAccumuloClient implements AutoCloseable {
 
   protected BatchWriter bw;  
   
   /**
    * @throws RebarException
    */
-  public AbstractIngester() throws RebarException {
+  public AbstractCommunicationWriter() throws RebarException {
     this(Constants.getConnector());
   }
 
@@ -29,7 +29,7 @@ public abstract class AbstractIngester extends AbstractAccumuloClient implements
    * @param conn
    * @throws RebarException
    */
-  public AbstractIngester(Connector conn) throws RebarException {
+  public AbstractCommunicationWriter(Connector conn) throws RebarException {
     super(conn);
     this.tableOps.createTableIfNotExists(Constants.DOCUMENT_TABLE_NAME);
     try {

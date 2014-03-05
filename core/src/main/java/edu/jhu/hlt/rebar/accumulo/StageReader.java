@@ -3,9 +3,7 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.accumulo.core.client.Connector;
@@ -14,8 +12,9 @@ import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
-import org.apache.hadoop.io.Text;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.asphalt.Stage;
 import edu.jhu.hlt.asphalt.StageType;
@@ -28,7 +27,8 @@ import edu.jhu.hlt.rebar.RebarException;
  *
  */
 public class StageReader extends AbstractReader<Stage> {
-
+  private static final Logger logger = LoggerFactory.getLogger(StageReader.class);
+  
   /**
    * 
    * @throws RebarException
@@ -83,5 +83,18 @@ public class StageReader extends AbstractReader<Stage> {
   public Iterator<Stage> getStages(StageType t) throws RebarException {
     Range r = new Range("type:"+t.toString());
     return this.rangeToIter(r);
+  }
+  
+  public void printStages() throws RebarException {
+    Iterator<Stage> iter = this.getStages();
+    while (iter.hasNext()) {
+      Stage s = iter.next();
+      System.out.println(String.format("Stage: %s\nDescription: %s\nType: %s\n", s.name, s.description, s.type.toString()));
+    }    
+  }
+  
+  public static void main (String... args) throws RebarException {
+    StageReader sr = new StageReader(Constants.getConnector());
+    sr.printStages();
   }
 }

@@ -23,7 +23,7 @@ import edu.jhu.hlt.rebar.Util;
  * @author max
  *
  */
-public class CleanIngester extends AbstractIngester {
+public class CleanIngester extends AbstractCommunicationWriter {
 
   private static final Logger logger = LoggerFactory.getLogger(CleanIngester.class);
   
