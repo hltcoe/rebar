@@ -26,7 +26,6 @@ import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
-import edu.jhu.hlt.rebar.util.RebarUtil;
 
 /**
  * @author max
@@ -77,7 +76,7 @@ public class CleanStageHandler extends AbstractAccumuloClient {
       m.put(Constants.STAGES_OBJ_COLF, "", new Value(this.serializer.serialize(stage)));
       this.stagesTableBW.addMutation(m);
       
-      Mutation typeIdx = RebarUtil.generateEmptyValueMutation("type:"+stage.type.toString(), stage.name, "");
+      Mutation typeIdx = Util.generateEmptyValueMutation("type:"+stage.type.toString(), stage.name, "");
       this.stagesIdxBW.addMutation(typeIdx);
     } catch (MutationsRejectedException | TException e) {
       throw new RebarException(e);

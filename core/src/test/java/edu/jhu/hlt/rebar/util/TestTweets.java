@@ -29,5 +29,4 @@ public class TestTweets {
   public static void main(String[] args) {
     logger.info("Tweet: " + TWEET);
   }
-
 }

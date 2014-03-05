@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.util.RebarUtil;
+import edu.jhu.hlt.rebar.Util;
 
 /**
  * @author max
@@ -70,11 +70,11 @@ public class CleanIngester extends AbstractIngester {
       m.put(Constants.DOCUMENT_COLF, "", v);
       this.bw.addMutation(m);
       
-      this.idxBw.addMutation(RebarUtil.generateEmptyValueMutation("doc_id:"+d.id, d.uuid, ""));
-      this.idxBw.addMutation(RebarUtil.generateEmptyValueMutation("type:"+d.type.toString(), d.uuid, ""));
+      this.idxBw.addMutation(Util.generateEmptyValueMutation("doc_id:"+d.id, d.uuid, ""));
+      this.idxBw.addMutation(Util.generateEmptyValueMutation("type:"+d.type.toString(), d.uuid, ""));
       
       if (d.startTime != 0)
-        this.idxBw.addMutation(RebarUtil.generateEmptyValueMutation("date:"+new DateTime(d.startTime * 1000).toString(), d.uuid, ""));
+        this.idxBw.addMutation(Util.generateEmptyValueMutation("date:"+new DateTime(d.startTime * 1000).toString(), d.uuid, ""));
     } catch (MutationsRejectedException | TException e) {
       throw new RebarException(e);
     }

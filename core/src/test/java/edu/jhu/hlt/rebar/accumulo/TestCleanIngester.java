@@ -24,7 +24,7 @@ import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.util.RebarUtil;
+
 
 /**
  * @author max
