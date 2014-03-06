@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.jhu.hlt.rebar.accumulo;
+package edu.jhu.hlt.rebar.stages;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,24 +26,26 @@ import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
+import edu.jhu.hlt.rebar.accumulo.AbstractAccumuloClient;
 
 /**
  * @author max
  * 
  */
-public class CleanStageHandler extends AbstractAccumuloClient {
+public class StageCreator extends AbstractAccumuloClient {
 
   protected final BatchWriter stagesTableBW;
   protected final BatchWriter stagesIdxBW;
+  protected final StageReader sr;
 
   /**
    * 
    */
-  public CleanStageHandler() throws RebarException {
+  public StageCreator() throws RebarException {
     this(Constants.getConnector());
   }
 
-  public CleanStageHandler(Connector conn) throws RebarException {
+  public StageCreator(Connector conn) throws RebarException {
     super(conn);
     try {
       this.tableOps.createTableIfNotExists(Constants.STAGES_TABLE_NAME);
@@ -51,22 +53,25 @@ public class CleanStageHandler extends AbstractAccumuloClient {
       
       this.tableOps.createTableIfNotExists(Constants.STAGES_IDX_TABLE_NAME);
       this.stagesIdxBW = this.conn.createBatchWriter(Constants.STAGES_IDX_TABLE_NAME, defaultBwOpts.getBatchWriterConfig());
+      this.sr = new StageReader(this.conn);
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
     }
   }
 
   public void close() throws Exception {
+    this.stagesIdxBW.close();
     this.stagesTableBW.close();
+    
   }
 
   public void create(Stage stage) throws RebarException {
-    if (new StageReader().exists(stage.name))
+    if (this.sr.exists(stage.name))
       throw new RebarException("Can't create a stage that exists.");
 
     Set<String> deps = stage.dependencies;
     for (String dep : deps) {
-      if (!new StageReader().exists(dep))
+      if (!this.sr.exists(dep))
         throw new RebarException("Dependency: " + dep + " doesn't exist; can't create that stage.");
     }
 

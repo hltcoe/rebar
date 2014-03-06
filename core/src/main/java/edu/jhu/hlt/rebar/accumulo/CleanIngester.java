@@ -42,12 +42,7 @@ public class CleanIngester extends AbstractCommunicationWriter {
    */
   public CleanIngester(Connector conn) throws RebarException {
     super(conn);
-    this.tableOps.createTableIfNotExists(Constants.DOCUMENT_IDX_TABLE);
-    try {
-      this.idxBw = this.conn.createBatchWriter(Constants.DOCUMENT_IDX_TABLE, defaultBwOpts.getBatchWriterConfig());
-    } catch (TableNotFoundException e) {
-      throw new RebarException(e);
-    }
+    this.idxBw = this.safeBatchWriter(Constants.DOCUMENT_IDX_TABLE);
   }
   
   public void close() throws RebarException {

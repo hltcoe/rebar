@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.jhu.hlt.rebar.accumulo;
+package edu.jhu.hlt.rebar.stages;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -13,22 +13,21 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.asphalt.Stage;
 import edu.jhu.hlt.asphalt.StageType;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.accumulo.AbstractReader;
+import edu.jhu.hlt.rebar.accumulo.AbstractThriftIterator;
 
 /**
  * @author max
  *
  */
 public class StageReader extends AbstractReader<Stage> {
-  private static final Logger logger = LoggerFactory.getLogger(StageReader.class);
-  
+
   /**
    * 
    * @throws RebarException

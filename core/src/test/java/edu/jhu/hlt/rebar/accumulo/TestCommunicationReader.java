@@ -6,6 +6,7 @@ package edu.jhu.hlt.rebar.accumulo;
 import static org.junit.Assert.*;
 
 import java.util.Iterator;
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import org.apache.accumulo.core.client.MutationsRejectedException;
@@ -13,6 +14,7 @@ import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
+import org.apache.thrift.TException;
 import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
@@ -45,8 +47,6 @@ public class TestCommunicationReader extends AbstractAccumuloTest {
     this.initialize();
     this.ci = new CleanIngester(this.conn);
     this.cr = new CommunicationReader(this.conn);
-    
-    
   }
 
   /**
@@ -54,6 +54,64 @@ public class TestCommunicationReader extends AbstractAccumuloTest {
    */
   @After
   public void tearDown() throws Exception {
+    this.ci.close();
+  }
+  
+  /**
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CommunicationReader#byUuid(String)}.
+   * 
+   * @throws RebarException 
+   */
+  @Test(expected=RebarException.class)
+  public void byUuidNonExistent() throws RebarException {
+    Communication c = generateMockDocument();
+    ci.ingest(c);
+    
+    this.cr.byUuid(UUID.randomUUID());
+  }
+  
+  /**
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CommunicationReader#byUuid(String)}.
+   * 
+   * @throws RebarException 
+   */
+  @Test
+  public void byUuid() throws RebarException {
+    Communication c = generateMockDocument();
+    UUID id = UUID.fromString(c.uuid);
+    ci.ingest(c);
+    for (int i = 0; i < 100; i++)
+      ci.ingest(generateMockDocument());
+    
+    assertEquals(c, this.cr.byUuid(id));
+  }
+  
+  /**
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CommunicationReader#get(String)}.
+   * 
+   * @throws RebarException 
+   */
+  @Test
+  public void get() throws RebarException {
+    Communication toCheck = generateMockDocument();
+    ci.ingest(toCheck);
+    for (int i = 0; i < 100; i++)
+      ci.ingest(generateMockDocument());
+    
+    assertEquals(toCheck, this.cr.get(toCheck.id));
+  }
+  
+  /**
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CommunicationReader#get(String)}.
+   * 
+   * @throws RebarException 
+   */
+  @Test(expected=RebarException.class)
+  public void getNonExistent() throws RebarException {
+    Communication c = generateMockDocument();
+    ci.ingest(c);
+    
+    this.cr.get("foo");
   }
 
   /**

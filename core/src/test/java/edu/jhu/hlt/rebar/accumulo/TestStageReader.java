@@ -30,6 +30,8 @@ import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
+import edu.jhu.hlt.rebar.stages.StageCreator;
+import edu.jhu.hlt.rebar.stages.StageReader;
 
 /**
  * @author max
@@ -38,7 +40,7 @@ import edu.jhu.hlt.rebar.Util;
 public class TestStageReader extends AbstractAccumuloTest {
 
   private StageReader sr;
-  private CleanStageHandler ing;
+  private StageCreator ing;
   
   /**
    * @throws java.lang.Exception
@@ -47,7 +49,7 @@ public class TestStageReader extends AbstractAccumuloTest {
   public void setUp() throws Exception {
     this.initialize();
     this.sr = new StageReader(this.conn);
-    this.ing = new CleanStageHandler(this.conn);
+    this.ing = new StageCreator(this.conn);
   }
   
   /**
@@ -59,7 +61,7 @@ public class TestStageReader extends AbstractAccumuloTest {
   }
 
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CleanStageHandler#exists(java.lang.String)}.
+   * Test method for {@link edu.jhu.hlt.rebar.stages.StageCreator#exists(java.lang.String)}.
    * @throws TException 
    * @throws RebarException 
    */
@@ -75,7 +77,7 @@ public class TestStageReader extends AbstractAccumuloTest {
   }
   
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CleanStageHandler#exists(java.lang.String)}.
+   * Test method for {@link edu.jhu.hlt.rebar.stages.StageCreator#exists(java.lang.String)}.
    * @throws TException 
    * @throws RebarException 
    */

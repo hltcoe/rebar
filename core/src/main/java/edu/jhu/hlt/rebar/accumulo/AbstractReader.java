@@ -72,6 +72,17 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
   
   protected abstract Iterator<T> accumuloIterToTIter (Iterator<Entry<Key, Value>> accIter) throws RebarException;
   
+  protected Iterator<T> fromMainTable(String rowId) throws RebarException {
+    try {
+      Scanner sc = this.conn.createScanner(this.tableName, Configuration.getAuths());
+      Range r = new Range(rowId, rowId);
+      sc.setRange(r);
+      return this.accumuloIterToTIter(sc.iterator());
+    } catch (TableNotFoundException e) {
+      throw new RebarException(e);
+    }
+  }
+  
   protected Iterator<T> rangeToIter(Range docIdxRange) throws RebarException {
     Set<Range> uuidsToGet = this.scanIndexTableColF(docIdxRange);
     // if we didn't find any IDs, there aren't any docs of this type.

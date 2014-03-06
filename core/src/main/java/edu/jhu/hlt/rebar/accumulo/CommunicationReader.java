@@ -4,6 +4,7 @@
 package edu.jhu.hlt.rebar.accumulo;
 
 import java.util.Iterator;
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import org.apache.accumulo.core.client.Connector;
@@ -55,6 +56,22 @@ public class CommunicationReader extends AbstractReader<Communication> {
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
     }
+  }
+  
+  public Communication byUuid (UUID uuid) throws RebarException {
+    Iterator<Communication> it = this.fromMainTable(uuid.toString());
+    if (it.hasNext())
+      return it.next();
+    else
+      throw new RebarException("Document: " + uuid.toString() + " does not exist.");
+  }
+  
+  public Communication get(String docId) throws RebarException {
+    String idxString = "doc_id:" + docId;
+    if (this.exists(docId))
+      return this.rangeToIter(new Range(idxString, idxString)).next();
+    else
+      throw new RebarException("Document: " + docId + " has not been ingested.");
   }
   
   public Iterator<Communication> getCommunications(int unixTimeStart, int unixTimeEnd) throws RebarException {
