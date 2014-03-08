@@ -9,6 +9,6 @@ import edu.jhu.hlt.concrete.Communication;
  * @author max
  *
  */
-public interface IValidatable {
-  public boolean validate(Communication c);
+public interface IValidatable<T> {
+  public boolean validate(T annotation, Communication c);
 }

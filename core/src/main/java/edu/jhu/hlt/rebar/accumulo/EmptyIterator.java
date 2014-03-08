@@ -4,6 +4,7 @@
 package edu.jhu.hlt.rebar.accumulo;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
  * Empty iterator.
@@ -26,7 +27,7 @@ public class EmptyIterator<T> implements Iterator<T> {
 
   @Override
   public T next() {
-    throw new UnsupportedOperationException("This iterator is empty.");
+    throw new NoSuchElementException("This iterator is empty.");
   }
 
   @Override

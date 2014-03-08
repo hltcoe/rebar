@@ -155,16 +155,16 @@ public class TestRebarCorpusHandler extends AbstractAccumuloTest {
     assertEquals("Should find 2 corpora after delete", 2, rch.listCorpora().size());
     rch.close();
   }
-  
-  @Test
-  public void testGetCorpusDocSet() throws Exception {
-    String testCorpus = "corpus_foo";
-    List<Communication> docSet = this.ingestDocuments(25);
-    
-    rch.createCorpus(testCorpus, new ArrayList<>(new HashSet<>(docSet)));
-    List<Communication> retDocSet = rch.getCorpusCommunicationSet(testCorpus);
-    rch.close();
-    
-    assertTrue("Should get the same docs in and out, but didn't.", retDocSet.containsAll(docSet));
-  }
+//  
+//  @Test
+//  public void testGetCorpusDocSet() throws Exception {
+//    String testCorpus = "corpus_foo";
+//    List<Communication> docSet = this.ingestDocuments(25);
+//    
+//    rch.createCorpus(testCorpus, new ArrayList<>(new HashSet<>(docSet)));
+//    List<Communication> retDocSet = rch.getCorpusCommunicationSet(testCorpus);
+//    rch.close();
+//    
+//    assertTrue("Should get the same docs in and out, but didn't.", retDocSet.containsAll(docSet));
+//  }
 }

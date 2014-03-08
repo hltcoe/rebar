@@ -38,7 +38,7 @@ public class Util {
     return ((int) (millis/1000));
   }
 
-  public static int countIteratorResults(Iterator<Entry<Key, Value>> iter) {
+  public static int countIteratorResults(Iterator<?> iter) {
     int resCt = 0;
     while (iter.hasNext()) {
       iter.next();

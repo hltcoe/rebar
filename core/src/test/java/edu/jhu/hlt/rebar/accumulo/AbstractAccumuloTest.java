@@ -140,7 +140,7 @@ public class AbstractAccumuloTest {
 
   protected List<Communication> ingestDocuments(int nDocs) throws RebarException, TException {
     List<Communication> docList = new ArrayList<>(generateMockDocumentSet(nDocs));
-    try (RebarIngester re = new RebarIngester(this.conn);) {
+    try (CleanIngester re = new CleanIngester(this.conn);) {
       for (Communication d : docList)
         re.ingest(d);
     }

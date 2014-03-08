@@ -15,27 +15,22 @@ import edu.jhu.hlt.rebar.Util;
  * @author max
  *
  */
-public class RebarSectionSegmentation implements IValidatable {
+public class RebarSectionSegmentation extends AbstractRebarAnnotation<SectionSegmentation> {
 
-  private final SectionSegmentation annot;
-  
   /**
    * 
    */
   public RebarSectionSegmentation(SectionSegmentation annot) throws AnnotationException {
-    this.annot = annot;
+    super(annot);
   }
 
-  /* (non-Javadoc)
-   * @see edu.jhu.hlt.rebar.annotations.IValidatable#validate(edu.jhu.hlt.concrete.Communication)
-   */
   @Override
   public boolean validate(Communication c) {
     boolean valid = 
-        this.annot.metadata != null
-        && Util.isValidUUIDString(this.annot.uuid)
-        && this.annot.isSetSectionList();
-    Iterator<Section> sects = this.annot.getSectionListIterator();
+        this.annotation.metadata != null
+        && Util.isValidUUIDString(this.annotation.uuid)
+        && this.annotation.isSetSectionList();
+    Iterator<Section> sects = this.annotation.getSectionListIterator();
     while (valid && sects.hasNext()) {
       Section s = sects.next();
       valid = 

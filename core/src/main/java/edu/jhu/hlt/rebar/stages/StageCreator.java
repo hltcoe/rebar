@@ -32,7 +32,7 @@ import edu.jhu.hlt.rebar.accumulo.AbstractAccumuloClient;
  * @author max
  * 
  */
-public class StageCreator extends AbstractAccumuloClient {
+public class StageCreator extends AbstractAccumuloClient implements AutoCloseable {
 
   protected final BatchWriter stagesTableBW;
   protected final BatchWriter stagesIdxBW;
@@ -59,10 +59,10 @@ public class StageCreator extends AbstractAccumuloClient {
     }
   }
 
+  @Override
   public void close() throws Exception {
     this.stagesIdxBW.close();
     this.stagesTableBW.close();
-    
   }
 
   public void create(Stage stage) throws RebarException {
