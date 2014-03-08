@@ -1,33 +1,33 @@
 /**
  * 
  */
-package edu.jhu.hlt.rebar;
+package edu.jhu.hlt.rebar.stages;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 
 import edu.jhu.hlt.asphalt.Stage;
-import edu.jhu.hlt.rebar.stages.SectionStage;
+import edu.jhu.hlt.rebar.RebarException;
 
 /**
  * @author max
  *
  */
-public class RebarStageFactory {
+public class StageFactory {
 
   /**
    * 
    */
-  private RebarStageFactory() {
+  private StageFactory() {
     // TODO Auto-generated constructor stub
   }
 
   // Suppress warnings: the switch statement should handle any
   // class cast mismatches.
   @SuppressWarnings("unchecked")
-  public static <T extends TBase<T, ? extends TFieldIdEnum>> AbstractRebarStage<T> fromStage(Stage s) throws RebarException {
-    AbstractRebarStage<T> stage = null;
+  public static <T extends TBase<T, ? extends TFieldIdEnum>> AbstractStage<T> fromStage(Stage s) throws RebarException {
+    AbstractStage<T> stage = null;
     switch (s.type) {
     case ENTITIES:
       break;
@@ -36,7 +36,7 @@ public class RebarStageFactory {
     case LANG_ID:
       break;
     case SECTION:
-      stage = (AbstractRebarStage<T>) new SectionStage(s);
+      stage = (AbstractStage<T>) new SectionStage(s);
       break;
     case SENTENCE:
       break;
