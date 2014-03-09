@@ -3,11 +3,18 @@
  */
 package edu.jhu.hlt.rebar.stages;
 
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Set;
 
+import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.MutationsRejectedException;
+import org.apache.accumulo.core.client.TableNotFoundException;
+import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
+import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TException;
 
@@ -16,9 +23,11 @@ import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.rebar.AnnotationException;
+import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
+import edu.jhu.hlt.rebar.accumulo.AbstractReader;
 import edu.jhu.hlt.rebar.annotations.AbstractRebarAnnotation;
 
 /**
@@ -26,6 +35,30 @@ import edu.jhu.hlt.rebar.annotations.AbstractRebarAnnotation;
  *
  */
 public class SectionStage extends AbstractStage<SectionSegmentation> {
+  
+  private class SectionCommunicationReader extends AbstractReader<Communication> {
+
+    public SectionCommunicationReader(String tableName, String idxTableName) throws RebarException {
+      this(Constants.getConnector(), tableName, idxTableName);
+    }
+    
+    public SectionCommunicationReader(Connector conn, String tableName, String idxTableName) throws RebarException {
+      super(conn, tableName, idxTableName);
+    }
+    
+    public Iterator<Communication> mergedIterator(String stageName) throws RebarException {
+      Range r = new Range("stage:"+stageName);
+      Set<Range> ranges = this.scanIndexTableColF(r);
+      return null;
+    }
+
+    @Override
+    protected Iterator<Communication> accumuloIterToTIter(Iterator<Entry<Key, Value>> accIter) throws RebarException {
+      // TODO Auto-generated method stub
+      return null;
+    }
+    
+  }
   
   public SectionStage(Connector conn, Stage stage) throws RebarException {
     super(conn, stage);
@@ -73,7 +106,11 @@ public class SectionStage extends AbstractStage<SectionSegmentation> {
 
   @Override
   public Iterator<Communication> getDocuments() throws RebarException {
+
+    // a
     // TODO Auto-generated method stub
     return null;
   }
+  
+  
 }
