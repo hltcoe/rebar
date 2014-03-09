@@ -3,18 +3,15 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 import java.util.UUID;
-import java.util.Map.Entry;
 
 import org.apache.accumulo.core.client.MutationsRejectedException;
-import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Value;
-import org.apache.thrift.TException;
 import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
@@ -24,8 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.CommunicationType;
-import edu.jhu.hlt.rebar.Configuration;
-import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 
 /**
@@ -94,9 +89,10 @@ public class TestCommunicationReader extends AbstractAccumuloTest {
   @Test
   public void get() throws RebarException {
     Communication toCheck = generateMockDocument();
-    ci.ingest(toCheck);
+
     for (int i = 0; i < 100; i++)
       ci.ingest(generateMockDocument());
+    ci.ingest(toCheck);
     
     assertEquals(toCheck, this.cr.get(toCheck.id));
   }
@@ -110,6 +106,8 @@ public class TestCommunicationReader extends AbstractAccumuloTest {
   public void getNonExistent() throws RebarException {
     Communication c = generateMockDocument();
     ci.ingest(c);
+    for (int i = 0; i < 100; i++)
+      ci.ingest(generateMockDocument());
     
     this.cr.get("foo");
   }
@@ -134,6 +132,16 @@ public class TestCommunicationReader extends AbstractAccumuloTest {
     
     Iterator<Communication> commIter = cr.getCommunications(CommunicationType.TWEET);
     int ct = 0;
+    while (commIter.hasNext()) {
+      commIter.next();
+      ct++;
+    }
+    
+    assertEquals(2, ct);
+    
+    commIter = cr.getCommunications(CommunicationType.TWEET);
+    ct = 0;
+    
     while (commIter.hasNext()) {
       commIter.next();
       ct++;

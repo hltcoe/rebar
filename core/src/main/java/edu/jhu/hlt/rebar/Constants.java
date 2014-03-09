@@ -39,6 +39,8 @@ public class Constants {
 
   public static final Value EMPTY_VALUE = new Value(new byte[0]);
   
+  private static Connector mockConnector = null;
+  
   /**
    * 
    */
@@ -49,8 +51,9 @@ public class Constants {
   public static Connector getConnector() throws RebarException {
     try {
       if (Configuration.useAccumuloMock()) {
-        MockInstance inst = new MockInstance();
-        return inst.getConnector("max", new PasswordToken(""));
+        if (mockConnector == null)
+          mockConnector = new MockInstance().getConnector("max", new PasswordToken(""));
+        return mockConnector;
       } else {
         Instance zki = new ZooKeeperInstance(Configuration.getAccumuloInstanceName(), Configuration.getZookeeperServer());
         return zki.getConnector(Configuration.getAccumuloUser(), Configuration.getPasswordToken());

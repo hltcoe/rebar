@@ -16,6 +16,7 @@ import org.apache.thrift.TException;
 
 import edu.jhu.hlt.asphalt.Stage;
 import edu.jhu.hlt.asphalt.StageType;
+import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
@@ -74,6 +75,21 @@ public class StageReader extends AbstractReader<Stage> {
       throw new RebarException(e);
     }
   }
+  
+  public Stage get (String stageName) throws RebarException {
+    if (this.exists(stageName)) {
+      try {
+        Scanner sc = this.conn.createScanner(this.tableName, Configuration.getAuths());
+        Range r = new Range(stageName);
+        sc.setRange(r);
+        return this.accumuloIterToTIter(sc.iterator()).next();
+      } catch (TableNotFoundException e) {
+        throw new RebarException(e);
+      }
+    } else {
+      throw new RebarException("Stage: " + stageName + " does not exist.");
+    }
+  }
 
   public Iterator<Stage> getStages() throws RebarException {
     return this.rangeToIter(new Range());
@@ -82,6 +98,14 @@ public class StageReader extends AbstractReader<Stage> {
   public Iterator<Stage> getStages(StageType t) throws RebarException {
     Range r = new Range("type:"+t.toString());
     return this.rangeToIter(r);
+  }
+  
+  public AbstractStage<SectionSegmentation> retrieveSectionStage (String stageName) throws RebarException {
+    Stage generic = this.get(stageName);
+    if (generic.type == StageType.SECTION)
+      return new SectionStage(this.conn, generic);
+    else
+      throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SectionStage.");
   }
   
   public void printStages() throws RebarException {

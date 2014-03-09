@@ -60,6 +60,8 @@ public class SectionStage extends AbstractStage<SectionSegmentation> {
       if (rss.validate(c)) {
         Mutation m = new Mutation(c.uuid);
         m.put("annotations", this.stage.name, new Value(this.serializer.serialize(ss)));
+
+        this.idxBw.addMutation(Util.generateEmptyValueMutation("stage:"+this.stage.name, c.uuid, ""));
         this.bw.addMutation(m);
       } else {
         throw new AnnotationException("Your SectionSegmentation object was invalid.");
@@ -67,5 +69,11 @@ public class SectionStage extends AbstractStage<SectionSegmentation> {
     } catch (TException | MutationsRejectedException e) {
       throw new RebarException(e);
     }
+  }
+
+  @Override
+  public Iterator<Communication> getDocuments() throws RebarException {
+    // TODO Auto-generated method stub
+    return null;
   }
 }
