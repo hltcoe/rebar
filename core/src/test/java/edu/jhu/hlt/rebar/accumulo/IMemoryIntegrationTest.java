@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,6 @@ import edu.jhu.hlt.asphalt.StageType;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.CommunicationType;
 import edu.jhu.hlt.concrete.SectionSegmentation;
-import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.annotations.SingleSectionSegmenter;
 import edu.jhu.hlt.rebar.stages.AbstractStage;

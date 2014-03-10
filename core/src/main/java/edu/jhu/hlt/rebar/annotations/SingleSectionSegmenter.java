@@ -21,7 +21,7 @@ import edu.jhu.hlt.rebar.AnnotationException;
  *
  */
 public class SingleSectionSegmenter extends AbstractAnnotationTool 
-    implements ISectionSegmenter {
+    implements SectionSegmenter {
 
   /**
    * Generate a {@link SectionSegmentation} with a single {@link Section} that 
