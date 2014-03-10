@@ -30,6 +30,7 @@ import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.accumulo.AbstractReader;
 import edu.jhu.hlt.rebar.accumulo.AbstractThriftIterator;
 import edu.jhu.hlt.rebar.annotations.AbstractRebarAnnotation;
+import edu.jhu.hlt.rebar.annotations.RebarSectionSegmentation;
 
 /**
  * @author max
@@ -48,18 +49,14 @@ public class SectionStage extends AbstractStage<SectionSegmentation> {
     }
     
     public Iterator<Communication> mergedIterator(String stageName) throws RebarException {
-      try {
-        Range r = new Range("stage:"+stageName);
-        Set<Range> ranges = this.scanIndexTableColF(r);
-        Iterator<Entry<Key, Value>> eIter = this.batchScanMainTableWholeRowIterator(ranges);
-        return this.accumuloIterToTIter(eIter);
-      } finally {
-        
-      }
+      Range r = new Range("stage:"+stageName);
+      Set<Range> ranges = this.scanIndexTableColF(r);
+      Iterator<Entry<Key, Value>> eIter = this.batchScanMainTableWholeRowIterator(ranges);
+      return this.accumuloIterToTIter(eIter);
     }
 
     @Override
-    protected Iterator<Communication> accumuloIterToTIter(final Iterator<Entry<Key, Value>> accIter) throws RebarException {
+    protected Iterator<Communication> accumuloIterToTIter(Iterator<Entry<Key, Value>> accIter) throws RebarException {
       return new AbstractThriftIterator<Communication>(accIter) {
 
         @Override
@@ -91,24 +88,7 @@ public class SectionStage extends AbstractStage<SectionSegmentation> {
   public void annotate(SectionSegmentation ss, String docId) throws RebarException, AnnotationException {
     try {
       Communication c = this.reader.get(docId);
-      AbstractRebarAnnotation<SectionSegmentation> rss = new AbstractRebarAnnotation<SectionSegmentation>(ss) {
-
-        @Override
-        public boolean validate(Communication c) throws RebarException {
-          boolean valid = 
-              this.annotation.metadata != null
-              && Util.isValidUUIDString(this.annotation.uuid)
-              && this.annotation.isSetSectionList();
-          Iterator<Section> sects = this.annotation.getSectionListIterator();
-          while (valid && sects.hasNext()) {
-            Section s = sects.next();
-            valid = 
-                Util.isValidUUIDString(s.uuid);
-          }
-          
-          return valid;
-        }
-      };
+      AbstractRebarAnnotation<SectionSegmentation> rss = new RebarSectionSegmentation(ss);
       
       if (rss.validate(c)) {
         Mutation m = new Mutation(c.uuid);

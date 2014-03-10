@@ -102,18 +102,6 @@ public class CommunicationReader extends AbstractReader<Communication> {
 
   @Override
   protected Iterator<Communication> accumuloIterToTIter(Iterator<Entry<Key, Value>> accIter) throws RebarException {
-    return new AbstractThriftIterator<Communication>(accIter) {
-      @Override
-      public Communication next() {
-        try {
-          Communication c = new Communication();
-          Entry<Key, Value> entry = this.iter.next();
-          deser.deserialize(c, entry.getValue().get());
-          return c;
-        } catch (TException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    };
+    return new CommunicationIterator(accIter);
   }
 }

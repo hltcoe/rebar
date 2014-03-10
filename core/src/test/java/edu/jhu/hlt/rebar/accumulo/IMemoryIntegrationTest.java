@@ -32,10 +32,12 @@ import edu.jhu.hlt.rebar.stages.StageReader;
 public class IMemoryIntegrationTest extends AbstractAccumuloTest {
 
   private static final Logger logger = LoggerFactory.getLogger(IMemoryIntegrationTest.class);
+  SingleSectionSegmenter sss;
   
   @Before
   public void setUp() throws Exception {
     this.initialize();
+    this.sss = new SingleSectionSegmenter();
   }
 
   @After
@@ -44,7 +46,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
 
   @Test
   public void bigIntegrationTest() throws Exception {
-    int nDocs = 25;
+    int nDocs = 3;
     Set<Communication> commSet = generateMockDocumentSet(nDocs);
     Map<String, Communication> idToCommMap = new HashMap<>(nDocs + 1);
     List<Communication> commList = new ArrayList<>(commSet);
@@ -76,27 +78,49 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     StageReader sr = new StageReader(this.conn);
     assertEquals("Should find the ingested stage.", st, sr.getStages().next());
     
-    AbstractStage<SectionSegmentation> retStage = sr.retrieveSectionStage(st.name);
-    SingleSectionSegmenter sss = new SingleSectionSegmenter();
     Map<String, SectionSegmentation> idToSSMap = new HashMap<>(11);
-    commIter = cr.getCommunications(CommunicationType.TWEET);
-    while(commIter.hasNext()) {
-      Communication c = commIter.next();
-      SectionSegmentation empty = sss.section(c);
-      idToSSMap.put(empty.uuid, empty);
-      retStage.annotate(empty, c.id);
+    try (AbstractStage<SectionSegmentation> retStage = sr.retrieveSectionStage(st.name);) {
+      commIter = cr.getCommunications(CommunicationType.TWEET);
+      while(commIter.hasNext()) {
+        Communication c = commIter.next();
+        SectionSegmentation empty = sss.section(c);
+        idToSSMap.put(empty.uuid, empty);
+        retStage.annotate(empty, c.id);
+      }
+      
+      Iterator<Communication> retComms = retStage.getDocuments();
+      while(retComms.hasNext()) {
+        Communication c = retComms.next();
+        assertTrue(idToCommMap.containsKey(c.id));
+        assertEquals(1, c.getSectionSegmentationsSize());
+        SectionSegmentation retrieved = c.getSectionSegmentations().get(0);
+        assertTrue(idToSSMap.containsKey(retrieved.uuid));
+      }
     }
-
 //    Util.printTable(Constants.DOCUMENT_TABLE_NAME, this.conn, logger);
-    
-    Iterator<Communication> retComms = retStage.getDocuments();
-    while(retComms.hasNext()) {
-      Communication c = retComms.next();
-      assertTrue(idToCommMap.containsKey(c.id));
-      assertEquals(1, c.getSectionSegmentationsSize());
-      SectionSegmentation retrieved = c.getSectionSegmentations().get(0);
-      assertTrue(idToSSMap.containsKey(retrieved.uuid));
-    }
+//    
+//    
+//    
+//    Stage stTwo = generateTestStage().setType(StageType.SECTION).setName("another_stage");
+//    try (StageCreator sc = new StageCreator(this.conn);) {
+//      sc.create(stTwo);
+//    }
+//    
+//    try (AbstractStage<SectionSegmentation> retStage = sr.retrieveSectionStage(stTwo.name);) {
+//      commIter = cr.getCommunications(CommunicationType.TWEET);
+//      while(commIter.hasNext()) {
+//        Communication c = commIter.next();
+//        SectionSegmentation empty = sss.section(c);
+//        retStage.annotate(empty, c.id);
+//      }
+//      
+//      Iterator<Communication> retComms = retStage.getDocuments();
+//      while(retComms.hasNext()) {
+//        Communication c = retComms.next();
+//        assertTrue(idToCommMap.containsKey(c.id));
+//        assertEquals(1, c.getSectionSegmentationsSize());
+//      }
+//    }
     
 //    
 //    Stage sectionSegmentationStage = generateTestStage("sect_seg_stage", "Section segmentation stage.", new HashSet<String>(), StageType.SECTION);
