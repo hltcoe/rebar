@@ -46,7 +46,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
 
   @Test
   public void bigIntegrationTest() throws Exception {
-    int nDocs = 3;
+    int nDocs = 5;
     Set<Communication> commSet = generateMockDocumentSet(nDocs);
     Map<String, Communication> idToCommMap = new HashMap<>(nDocs + 1);
     List<Communication> commList = new ArrayList<>(commSet);
@@ -111,12 +111,18 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     
     try (AbstractStage<SectionSegmentation> retStage = sr.retrieveSectionStage(stTwo.name);) {
       commIter = cr.getCommunications(CommunicationType.TWEET);
+      for (int i = 0; i < 2; i++)
+        if (commIter.hasNext())
+          commIter.next();
+      
       while(commIter.hasNext()) {
         Communication c = commIter.next();
         SectionSegmentation empty = sss.section(c);
         retStage.annotate(empty, c.id);
       }
       
+      assertEquals("Should only get " + (nDocs - 2) + " docs annotated in S2.", 
+          nDocs - 2, Util.countIteratorResults(retStage.getDocuments()));
       Iterator<Communication> retComms = retStage.getDocuments();
       while(retComms.hasNext()) {
         Communication c = retComms.next();
