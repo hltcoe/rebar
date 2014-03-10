@@ -77,6 +77,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     
     StageReader sr = new StageReader(this.conn);
     assertEquals("Should find the ingested stage.", st, sr.getStages().next());
+    assertEquals("Should find the ingested stage via get method.", st, sr.get(st.name));
     
     Map<String, SectionSegmentation> idToSSMap = new HashMap<>(11);
     try (AbstractStage<SectionSegmentation> retStage = sr.retrieveSectionStage(st.name);) {
@@ -105,6 +106,8 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     try (StageCreator sc = new StageCreator(this.conn);) {
       sc.create(stTwo);
     }
+    
+    assertEquals("Should find the second ingested stage via get method.", stTwo, sr.get(stTwo.name));
     
     try (AbstractStage<SectionSegmentation> retStage = sr.retrieveSectionStage(stTwo.name);) {
       commIter = cr.getCommunications(CommunicationType.TWEET);
