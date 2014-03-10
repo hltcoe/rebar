@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import edu.jhu.hlt.asphalt.StageType;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.CommunicationType;
 import edu.jhu.hlt.concrete.SectionSegmentation;
+import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.annotations.SingleSectionSegmenter;
 import edu.jhu.hlt.rebar.stages.AbstractStage;
@@ -66,8 +68,6 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
       assertTrue(idToCommMap.containsValue(c));
     }
     
-//    Util.printTable(Constants.DOCUMENT_TABLE_NAME, this.conn, logger);
-    
     Stage st = generateTestStage().setType(StageType.SECTION);
     try (StageCreator sc = new StageCreator(this.conn);) {
       sc.create(st);
@@ -78,13 +78,25 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     
     AbstractStage<SectionSegmentation> retStage = sr.retrieveSectionStage(st.name);
     SingleSectionSegmenter sss = new SingleSectionSegmenter();
+    Map<String, SectionSegmentation> idToSSMap = new HashMap<>(11);
     commIter = cr.getCommunications(CommunicationType.TWEET);
     while(commIter.hasNext()) {
       Communication c = commIter.next();
       SectionSegmentation empty = sss.section(c);
+      idToSSMap.put(empty.uuid, empty);
       retStage.annotate(empty, c.id);
     }
 
+//    Util.printTable(Constants.DOCUMENT_TABLE_NAME, this.conn, logger);
+    
+    Iterator<Communication> retComms = retStage.getDocuments();
+    while(retComms.hasNext()) {
+      Communication c = retComms.next();
+      assertTrue(idToCommMap.containsKey(c.id));
+      assertEquals(1, c.getSectionSegmentationsSize());
+      SectionSegmentation retrieved = c.getSectionSegmentations().get(0);
+      assertTrue(idToSSMap.containsKey(retrieved.uuid));
+    }
     
 //    
 //    Stage sectionSegmentationStage = generateTestStage("sect_seg_stage", "Section segmentation stage.", new HashSet<String>(), StageType.SECTION);

@@ -11,11 +11,13 @@ import java.util.Set;
 
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
@@ -99,6 +101,25 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
     try {
       docsc = this.conn.createBatchScanner(this.tableName, Configuration.getAuths(), 8);
       docsc.setRanges(ids);
+//      IteratorSetting itSettings = new IteratorSetting(1, WholeRowIterator.class);
+//      docsc.addScanIterator(itSettings);
+      return docsc.iterator();
+    } catch (TableNotFoundException e) {
+      throw new RebarException(e);
+    } finally {
+      if (docsc != null)
+        docsc.close();
+    }
+  }
+  
+  protected Iterator<Entry<Key, Value>> batchScanMainTableWholeRowIterator(Collection<Range> ids) throws RebarException {
+    // scan document table with IDs.
+    BatchScanner docsc = null;
+    try {
+      docsc = this.conn.createBatchScanner(this.tableName, Configuration.getAuths(), 8);
+      docsc.setRanges(ids);
+      IteratorSetting itSettings = new IteratorSetting(1, WholeRowIterator.class);
+      docsc.addScanIterator(itSettings);
       return docsc.iterator();
     } catch (TableNotFoundException e) {
       throw new RebarException(e);

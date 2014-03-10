@@ -107,7 +107,8 @@ public class CommunicationReader extends AbstractReader<Communication> {
       public Communication next() {
         try {
           Communication c = new Communication();
-          deser.deserialize(c, iter.next().getValue().get());
+          Entry<Key, Value> entry = this.iter.next();
+          deser.deserialize(c, entry.getValue().get());
           return c;
         } catch (TException e) {
           throw new RuntimeException(e);
