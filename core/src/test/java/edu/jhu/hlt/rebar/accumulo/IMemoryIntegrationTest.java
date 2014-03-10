@@ -101,26 +101,26 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
 //    
 //    
 //    
-//    Stage stTwo = generateTestStage().setType(StageType.SECTION).setName("another_stage");
-//    try (StageCreator sc = new StageCreator(this.conn);) {
-//      sc.create(stTwo);
-//    }
-//    
-//    try (AbstractStage<SectionSegmentation> retStage = sr.retrieveSectionStage(stTwo.name);) {
-//      commIter = cr.getCommunications(CommunicationType.TWEET);
-//      while(commIter.hasNext()) {
-//        Communication c = commIter.next();
-//        SectionSegmentation empty = sss.section(c);
-//        retStage.annotate(empty, c.id);
-//      }
-//      
-//      Iterator<Communication> retComms = retStage.getDocuments();
-//      while(retComms.hasNext()) {
-//        Communication c = retComms.next();
-//        assertTrue(idToCommMap.containsKey(c.id));
-//        assertEquals(1, c.getSectionSegmentationsSize());
-//      }
-//    }
+    Stage stTwo = generateTestStage().setType(StageType.SECTION).setName("another_stage");
+    try (StageCreator sc = new StageCreator(this.conn);) {
+      sc.create(stTwo);
+    }
+    
+    try (AbstractStage<SectionSegmentation> retStage = sr.retrieveSectionStage(stTwo.name);) {
+      commIter = cr.getCommunications(CommunicationType.TWEET);
+      while(commIter.hasNext()) {
+        Communication c = commIter.next();
+        SectionSegmentation empty = sss.section(c);
+        retStage.annotate(empty, c.id);
+      }
+      
+      Iterator<Communication> retComms = retStage.getDocuments();
+      while(retComms.hasNext()) {
+        Communication c = retComms.next();
+        assertTrue(idToCommMap.containsKey(c.id));
+        assertEquals(1, c.getSectionSegmentationsSize());
+      }
+    }
     
 //    
 //    Stage sectionSegmentationStage = generateTestStage("sect_seg_stage", "Section segmentation stage.", new HashSet<String>(), StageType.SECTION);

@@ -21,14 +21,13 @@ import org.apache.thrift.TException;
 
 import edu.jhu.hlt.asphalt.Stage;
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.rebar.AnnotationException;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
-import edu.jhu.hlt.rebar.accumulo.AbstractReader;
 import edu.jhu.hlt.rebar.accumulo.AbstractThriftIterator;
+import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
 import edu.jhu.hlt.rebar.annotations.AbstractRebarAnnotation;
 import edu.jhu.hlt.rebar.annotations.RebarSectionSegmentation;
 
@@ -38,14 +37,14 @@ import edu.jhu.hlt.rebar.annotations.RebarSectionSegmentation;
  */
 public class SectionStage extends AbstractStage<SectionSegmentation> {
   
-  private class SectionCommunicationReader extends AbstractReader<Communication> {
+  private class SectionCommunicationReader extends CommunicationReader {
 
     public SectionCommunicationReader() throws RebarException {
       this(Constants.getConnector());
     }
     
     public SectionCommunicationReader(Connector conn) throws RebarException {
-      super(conn, Constants.DOCUMENT_TABLE_NAME, Constants.DOCUMENT_IDX_TABLE);
+      super(conn);
     }
     
     public Iterator<Communication> mergedIterator(String stageName) throws RebarException {

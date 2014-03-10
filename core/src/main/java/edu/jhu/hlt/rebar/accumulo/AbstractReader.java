@@ -95,22 +95,21 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
       return this.accumuloIterToTIter(this.batchScanMainTable(uuidsToGet));
   }
   
-  protected Iterator<Entry<Key, Value>> batchScanMainTable(Collection<Range> ids) throws RebarException {
-    // scan document table with IDs.
-    BatchScanner docsc = null;
-    try {
-      docsc = this.conn.createBatchScanner(this.tableName, Configuration.getAuths(), 8);
-      docsc.setRanges(ids);
-//      IteratorSetting itSettings = new IteratorSetting(1, WholeRowIterator.class);
-//      docsc.addScanIterator(itSettings);
-      return docsc.iterator();
-    } catch (TableNotFoundException e) {
-      throw new RebarException(e);
-    } finally {
-      if (docsc != null)
-        docsc.close();
-    }
-  }
+//  protected Iterator<Entry<Key, Value>> batchScanMainTable(Collection<Range> ids) throws RebarException {
+//    // scan document table with IDs.
+//    BatchScanner docsc = null;
+//    try {
+//      docsc = this.conn.createBatchScanner(this.tableName, Configuration.getAuths(), 8);
+//      docsc.setRanges(ids);
+//      return docsc.iterator();
+//    } catch (TableNotFoundException e) {
+//      throw new RebarException(e);
+//    } finally {
+//      if (docsc != null)
+//        docsc.close();
+//    }
+//  }
+  protected abstract Iterator<Entry<Key, Value>> batchScanMainTable(Collection<Range> ids) throws RebarException;
   
   protected Iterator<Entry<Key, Value>> batchScanMainTableWholeRowIterator(Collection<Range> ids) throws RebarException {
     // scan document table with IDs.
