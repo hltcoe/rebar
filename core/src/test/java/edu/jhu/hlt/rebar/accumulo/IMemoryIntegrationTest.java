@@ -22,6 +22,7 @@ import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.CommunicationType;
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.rebar.Util;
+import edu.jhu.hlt.rebar.annotations.RebarSectionSegmentation;
 import edu.jhu.hlt.rebar.annotations.SingleSectionSegmenter;
 import edu.jhu.hlt.rebar.stages.AbstractStage;
 import edu.jhu.hlt.rebar.stages.StageCreator;

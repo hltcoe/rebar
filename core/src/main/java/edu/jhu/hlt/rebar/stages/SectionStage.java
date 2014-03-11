@@ -37,17 +37,20 @@ import edu.jhu.hlt.rebar.annotations.RebarSectionSegmentation;
  */
 public class SectionStage extends AbstractStage<SectionSegmentation> {
   
-  private class SectionCommunicationReader extends CommunicationReader {
+  public SectionStage(Connector conn, Stage stage) throws RebarException {
+    super(conn, stage);
+  }
 
-    public SectionCommunicationReader() throws RebarException {
-      this(Constants.getConnector());
-    }
-    
+  public SectionStage(Stage stage) throws RebarException {
+    this(Constants.getConnector(), stage);
+  }
+  
+  private class SectionCommunicationReader extends CommunicationReader {
     public SectionCommunicationReader(Connector conn) throws RebarException {
       super(conn);
     }
     
-    public Iterator<Communication> mergedIterator(String stageName) throws RebarException {
+    protected Iterator<Communication> mergedIterator(String stageName) throws RebarException {
       Range r = new Range("stage:"+stageName);
       Set<Range> ranges = this.scanIndexTableColF(r);
       Iterator<Entry<Key, Value>> eIter = this.batchScanMainTableWholeRowIterator(ranges);
@@ -63,9 +66,9 @@ public class SectionStage extends AbstractStage<SectionSegmentation> {
           try {
             Entry<Key, Value> e = this.iter.next();
             Map<Key, Value> rows = WholeRowIterator.decodeRow(e.getKey(), e.getValue());
-            // NOTE: ROWS is mutated by call to getRoot
+            // NOTE: ROWS is mutated by below calls
             Communication root = getCommFromColumnFamily(rows);
-            SectionSegmentation ss = getSectionSegFromColumnFamily(rows);
+            SectionSegmentation ss = getViaColumnFamily(rows);
             root.addToSectionSegmentations(ss);
             return root;
           } catch (IOException | TException | RebarException e) {
@@ -75,32 +78,10 @@ public class SectionStage extends AbstractStage<SectionSegmentation> {
       };
     }
   }
-  
-  public SectionStage(Connector conn, Stage stage) throws RebarException {
-    super(conn, stage);
-  }
-
-  public SectionStage(Stage stage) throws RebarException {
-    this(Constants.getConnector(), stage);
-  }
 
   public void annotate(SectionSegmentation ss, String docId) throws RebarException, AnnotationException {
-    try {
-      Communication c = this.reader.get(docId);
-      AbstractRebarAnnotation<SectionSegmentation> rss = new RebarSectionSegmentation(ss);
-      
-      if (rss.validate(c)) {
-        Mutation m = new Mutation(c.uuid);
-        m.put("annotations", this.stage.name, new Value(this.serializer.serialize(ss)));
-
-        this.idxBw.addMutation(Util.generateEmptyValueMutation("stage:"+this.stage.name, c.uuid, ""));
-        this.bw.addMutation(m);
-      } else {
-        throw new AnnotationException("Your SectionSegmentation object was invalid.");
-      }
-    } catch (TException | MutationsRejectedException e) {
-      throw new RebarException(e);
-    }
+    AbstractRebarAnnotation<SectionSegmentation> rss = new RebarSectionSegmentation(ss);
+    this.annotate(rss, docId);
   }
 
   @Override
@@ -111,34 +92,8 @@ public class SectionStage extends AbstractStage<SectionSegmentation> {
   /*
    * TODO:: Refactor below into something more coherent
    */
-  /**
-   * 
-   * @param decodedRowViaWRI
-   * @return
-   * @throws TException
-   * @throws RebarException
-   */
-  public Communication getCommFromColumnFamily(Map<Key, Value> decodedRowViaWRI) throws TException, RebarException {
-    Communication d = null;
-    Iterator<Entry<Key, Value>> iter = decodedRowViaWRI.entrySet().iterator();
-    while (iter.hasNext()) {
-      Entry<Key, Value> entry = iter.next();
-      Key k = entry.getKey();
-      if (k.compareColumnFamily(new Text(Constants.DOCUMENT_COLF)) == 0) {
-        d = new Communication();
-        this.deserializer.deserialize(d, entry.getValue().get());
-        iter.remove();
-        decodedRowViaWRI.remove(k);
-      }
-    }
-    
-    if (d == null)
-      throw new RebarException("Did not find a root communication in this row.");
-
-    return d;
-  }
-  
-  public SectionSegmentation getSectionSegFromColumnFamily(Map<Key, Value> decodedRowViaWRI) throws TException, RebarException {
+  @Override
+  public SectionSegmentation getViaColumnFamily(Map<Key, Value> decodedRowViaWRI) throws TException, RebarException {
     SectionSegmentation d = null;
     Iterator<Entry<Key, Value>> iter = decodedRowViaWRI.entrySet().iterator();
     while (iter.hasNext()) {
@@ -157,5 +112,4 @@ public class SectionStage extends AbstractStage<SectionSegmentation> {
 
     return d;
   }
-  
 }

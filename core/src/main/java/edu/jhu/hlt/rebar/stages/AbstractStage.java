@@ -3,21 +3,14 @@
  */
 package edu.jhu.hlt.rebar.stages;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
 
-import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.data.Key;
+import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import org.apache.hadoop.io.Text;
@@ -26,21 +19,16 @@ import org.apache.thrift.TException;
 import org.apache.thrift.TFieldIdEnum;
 
 import edu.jhu.hlt.asphalt.Stage;
-import edu.jhu.hlt.asphalt.StageType;
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.LanguageIdentification;
-import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.SectionSegmentation;
-import edu.jhu.hlt.concrete.Sentence;
-import edu.jhu.hlt.concrete.SentenceSegmentation;
-import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
-import edu.jhu.hlt.concrete.Tokenization;
-import edu.jhu.hlt.concrete.TokenizationCollection;
 import edu.jhu.hlt.rebar.AnnotationException;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.accumulo.AbstractCommunicationWriter;
 import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
+import edu.jhu.hlt.rebar.annotations.AbstractRebarAnnotation;
+import edu.jhu.hlt.rebar.annotations.RebarSectionSegmentation;
 
 /**
  * @author max
@@ -69,9 +57,58 @@ public abstract class AbstractStage<T extends TBase<T, ? extends TFieldIdEnum>> 
     this.reader = new CommunicationReader(conn);
   }
 
-  public abstract void annotate(T annotation, String docId) throws AnnotationException, RebarException;
+  protected final void annotate(AbstractRebarAnnotation<T> annotation, String docId) throws AnnotationException, RebarException {
+    try {
+      Communication c = this.reader.get(docId);
+      if (annotation.validate(c)) {
+        Mutation m = new Mutation(c.uuid);
+        m.put("annotations", this.stage.name, new Value(this.serializer.serialize(annotation.getAnnotation())));
 
+        this.idxBw.addMutation(Util.generateEmptyValueMutation("stage:"+this.stage.name, c.uuid, ""));
+        this.bw.addMutation(m);
+      } else {
+        throw new AnnotationException("Your " + annotation.getClass().getName() + " object was invalid.");
+      }
+    } catch (TException | MutationsRejectedException e) {
+      throw new RebarException(e);
+    }
+  }
+
+  public abstract void annotate(T annotation, String docId) throws RebarException, AnnotationException;
+  
   public abstract Iterator<Communication> getDocuments() throws RebarException;
+  
+  protected abstract T getViaColumnFamily(Map<Key, Value> decodedRow) throws TException, RebarException;
+  
+  /**
+   * Takes a row via {@link WholeRowIterator#decodeRow(Key, Value)} as input. Attempts
+   * to find the {@link Communication} object in the row. 
+   * 
+   * @param decodedRowViaWRI - via {@link WholeRowIterator#decodeRow(Key, Value)}
+   * @return a {@link Communication} if found
+   * @throws TException - if there is a deserialization error
+   * @throws RebarException - if there is no {@link Communication} in this row
+   */
+  protected Communication getCommFromColumnFamily(Map<Key, Value> decodedRowViaWRI) throws TException, RebarException {
+    Communication d = null;
+    Iterator<Entry<Key, Value>> iter = decodedRowViaWRI.entrySet().iterator();
+    while (iter.hasNext()) {
+      Entry<Key, Value> entry = iter.next();
+      Key k = entry.getKey();
+      if (k.compareColumnFamily(new Text(Constants.DOCUMENT_COLF)) == 0) {
+        d = new Communication();
+        this.deserializer.deserialize(d, entry.getValue().get());
+        iter.remove();
+        decodedRowViaWRI.remove(k);
+      }
+    }
+    
+    if (d == null)
+      throw new RebarException("Did not find a root communication in this row.");
+
+    return d;
+  }
+  
   
 //  private Communication mergeSentenceSegmentationCollection(Communication c, Value v) throws IllegalAnnotationException, TException {
 //    SentenceSegmentationCollection ssc = new SentenceSegmentationCollection();

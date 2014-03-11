@@ -23,4 +23,8 @@ public abstract class AbstractRebarAnnotation<T> {
   }
 
   public abstract boolean validate(Communication c) throws RebarException;
+  
+  public T getAnnotation() {
+    return this.annotation;
+  }
 }
