@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.jhu.hlt.rebar.stages;
+package edu.jhu.hlt.rebar.stage;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TBase;
@@ -9,6 +9,7 @@ import org.apache.thrift.TFieldIdEnum;
 
 import edu.jhu.hlt.asphalt.Stage;
 import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.stage.writer.SectionStageWriter;
 
 /**
  * @author max

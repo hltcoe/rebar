@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.jhu.hlt.rebar.stages;
+package edu.jhu.hlt.rebar.stage;
 
 import java.util.HashSet;
 import java.util.Iterator;

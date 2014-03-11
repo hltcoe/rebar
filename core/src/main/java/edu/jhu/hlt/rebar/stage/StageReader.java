@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.jhu.hlt.rebar.stages;
+package edu.jhu.hlt.rebar.stage;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -25,6 +25,7 @@ import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.accumulo.AbstractReader;
 import edu.jhu.hlt.rebar.accumulo.AbstractThriftIterator;
+import edu.jhu.hlt.rebar.stage.writer.SectionStageWriter;
 
 /**
  * @author max

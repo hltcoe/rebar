@@ -24,9 +24,9 @@ import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.annotations.RebarSectionSegmentation;
 import edu.jhu.hlt.rebar.annotations.SingleSectionSegmenter;
-import edu.jhu.hlt.rebar.stages.AbstractStageWriter;
-import edu.jhu.hlt.rebar.stages.StageCreator;
-import edu.jhu.hlt.rebar.stages.StageReader;
+import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
+import edu.jhu.hlt.rebar.stage.StageCreator;
+import edu.jhu.hlt.rebar.stage.StageReader;
 
 public class IMemoryIntegrationTest extends AbstractAccumuloTest {
 

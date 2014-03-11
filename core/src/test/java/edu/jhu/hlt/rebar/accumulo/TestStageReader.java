@@ -30,8 +30,8 @@ import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
-import edu.jhu.hlt.rebar.stages.StageCreator;
-import edu.jhu.hlt.rebar.stages.StageReader;
+import edu.jhu.hlt.rebar.stage.StageCreator;
+import edu.jhu.hlt.rebar.stage.StageReader;
 
 /**
  * @author max
@@ -61,7 +61,7 @@ public class TestStageReader extends AbstractAccumuloTest {
   }
 
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.stages.StageCreator#exists(java.lang.String)}.
+   * Test method for {@link edu.jhu.hlt.rebar.stage.StageCreator#exists(java.lang.String)}.
    * @throws TException 
    * @throws RebarException 
    */
@@ -77,7 +77,7 @@ public class TestStageReader extends AbstractAccumuloTest {
   }
   
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.stages.StageCreator#exists(java.lang.String)}.
+   * Test method for {@link edu.jhu.hlt.rebar.stage.StageCreator#exists(java.lang.String)}.
    * @throws TException 
    * @throws RebarException 
    */
