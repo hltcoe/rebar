@@ -25,6 +25,7 @@ import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.accumulo.AbstractReader;
 import edu.jhu.hlt.rebar.accumulo.AbstractThriftIterator;
+import edu.jhu.hlt.rebar.stage.reader.SectionStageReader;
 import edu.jhu.hlt.rebar.stage.writer.SectionStageWriter;
 
 /**
@@ -132,6 +133,14 @@ public class StageReader extends AbstractReader<Stage> {
     Stage generic = this.get(stageName);
     if (generic.type == StageType.SECTION)
       return new SectionStageWriter(this.conn, generic);
+    else
+      throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SectionStage.");
+  }
+  
+  public AbstractStageReader getSectionStageReader (String stageName) throws RebarException {
+    Stage generic = this.get(stageName);
+    if (generic.type == StageType.SECTION)
+      return new SectionStageReader(this.conn, stageName);
     else
       throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SectionStage.");
   }

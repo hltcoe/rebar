@@ -22,8 +22,8 @@ import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.CommunicationType;
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.rebar.Util;
-import edu.jhu.hlt.rebar.annotations.RebarSectionSegmentation;
 import edu.jhu.hlt.rebar.annotations.SingleSectionSegmenter;
+import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
 import edu.jhu.hlt.rebar.stage.StageCreator;
 import edu.jhu.hlt.rebar.stage.StageReader;
@@ -76,6 +76,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     
     StageReader sr = new StageReader(this.conn);
     assertEquals("Should find the ingested stage.", st, sr.getStages().next());
+    assertTrue("Should find the ingested stage via exists method.", sr.exists(st.name));
     assertEquals("Should find the ingested stage via get method.", st, sr.get(st.name));
     
     Map<String, SectionSegmentation> idToSSMap = new HashMap<>(11);
@@ -87,15 +88,16 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
         idToSSMap.put(empty.uuid, empty);
         retStage.annotate(empty, c.id);
       }
-      
-//      Iterator<Communication> retComms = retStage.getDocuments();
-//      while(retComms.hasNext()) {
-//        Communication c = retComms.next();
-//        assertTrue(idToCommMap.containsKey(c.id));
-//        assertEquals(1, c.getSectionSegmentationsSize());
-//        SectionSegmentation retrieved = c.getSectionSegmentations().get(0);
-//        assertTrue(idToSSMap.containsKey(retrieved.uuid));
-//      }
+    }
+    
+    AbstractStageReader reader = sr.getSectionStageReader(st.name);
+    Iterator<Communication> retComms = reader.getAll();
+    while(retComms.hasNext()) {
+      Communication c = retComms.next();
+      assertTrue(idToCommMap.containsKey(c.id));
+      assertEquals(1, c.getSectionSegmentationsSize());
+      SectionSegmentation retrieved = c.getSectionSegmentations().get(0);
+      assertTrue(idToSSMap.containsKey(retrieved.uuid));
     }
 //    Util.printTable(Constants.DOCUMENT_TABLE_NAME, this.conn, logger);
 //    
