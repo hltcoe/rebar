@@ -35,7 +35,7 @@ public abstract class AbstractStageReader extends AbstractCommunicationReader {
   
   public AbstractStageReader(Connector conn, String stageName) throws RebarException {
     super(conn);
-    if (new StageReader().exists(stageName))
+    if (new StageReader(this.conn).exists(stageName))
       this.stageName = stageName;
     else
       throw new RebarException("Stage: " + stageName + " doesn't exist; you need to create it first.");

@@ -32,7 +32,7 @@ import edu.jhu.hlt.rebar.stage.writer.SectionStageWriter;
  * @author max
  *
  */
-public class StageReader extends AbstractReader<Stage> {
+public final class StageReader extends AbstractReader<Stage> {
 
   /**
    * 

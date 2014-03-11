@@ -109,6 +109,8 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     }
     
     assertEquals("Should find the second ingested stage via get method.", stTwo, sr.get(stTwo.name));
+    assertTrue("Should find the ingested stage via exists method.", sr.exists(stTwo.name));
+    assertEquals("Should find the ingested stage via get method.", stTwo, sr.get(stTwo.name));
     
     try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(stTwo.name);) {
       commIter = cr.getCommunications(CommunicationType.TWEET);
@@ -121,15 +123,16 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
         SectionSegmentation empty = sss.section(c);
         retStage.annotate(empty, c.id);
       }
-      
-//      assertEquals("Should only get " + (nDocs - 2) + " docs annotated in S2.", 
-//          nDocs - 2, Util.countIteratorResults(retStage.getDocuments()));
-//      Iterator<Communication> retComms = retStage.getDocuments();
-//      while(retComms.hasNext()) {
-//        Communication c = retComms.next();
-//        assertTrue(idToCommMap.containsKey(c.id));
-//        assertEquals(1, c.getSectionSegmentationsSize());
-//      }
+    }
+    
+    reader = sr.getSectionStageReader(stTwo.name);
+    assertEquals("Should only get " + (nDocs - 2) + " docs annotated in S2.", 
+        nDocs - 2, Util.countIteratorResults(reader.getAll()));
+    retComms = reader.getAll();
+    while(retComms.hasNext()) {
+      Communication c = retComms.next();
+      assertTrue(idToCommMap.containsKey(c.id));
+      assertEquals(1, c.getSectionSegmentationsSize());
     }
     
 //    
