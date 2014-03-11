@@ -148,6 +148,4 @@ public class StageReader extends AbstractReader<Stage> {
     StageReader sr = new StageReader(Constants.getConnector());
     sr.printStages();
   }
-
-  
 }

@@ -15,32 +15,40 @@ import org.apache.accumulo.core.data.Value;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.accumulo.AbstractReader;
+import edu.jhu.hlt.rebar.accumulo.AbstractCommunicationReader;
 
 /**
  * @author max
  *
  */
-public abstract class AbstractStageReader<T> extends AbstractReader<T> {
+public abstract class AbstractStageReader extends AbstractCommunicationReader {
 
+  protected final String stageName;
+  
   /**
    * @throws RebarException 
    * 
    */
-  public AbstractStageReader() throws RebarException {
-    this(Constants.getConnector());
+  public AbstractStageReader(String stageName) throws RebarException {
+    this(Constants.getConnector(), stageName);
   }
   
-  public AbstractStageReader(Connector conn) throws RebarException {
-    super(conn, Constants.DOCUMENT_TABLE_NAME, Constants.DOCUMENT_IDX_TABLE);
+  public AbstractStageReader(Connector conn, String stageName) throws RebarException {
+    super(conn);
+    if (new StageReader().exists(stageName))
+      this.stageName = stageName;
+    else
+      throw new RebarException("Stage: " + stageName + " doesn't exist; you need to create it first.");
   }
   
-  protected Iterator<T> mergedIterator(String stageName) throws RebarException {
-    Range r = new Range("stage:"+stageName);
+  protected Iterator<Communication> mergedIterator() throws RebarException {
+    Range r = new Range("stage:"+this.stageName);
     Set<Range> ranges = this.scanIndexTableColF(r);
     Iterator<Entry<Key, Value>> eIter = this.batchScanMainTableWholeRowIterator(ranges);
     return this.accumuloIterToTIter(eIter);
   }
   
-  public abstract Iterator<Communication> getDocuments() throws RebarException;
+  public final Iterator<Communication> getAll() throws RebarException {
+    return this.mergedIterator();
+  }
 }
