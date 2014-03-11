@@ -3,12 +3,9 @@
  */
 package edu.jhu.hlt.rebar.stages;
 
-import java.util.Iterator;
-
 import org.apache.accumulo.core.client.Connector;
 
 import edu.jhu.hlt.asphalt.Stage;
-import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.rebar.AnnotationException;
 import edu.jhu.hlt.rebar.Constants;
@@ -20,13 +17,13 @@ import edu.jhu.hlt.rebar.annotations.RebarSectionSegmentation;
  * @author max
  *
  */
-public class SectionStage extends AbstractStageWriter<SectionSegmentation> {
+public class SectionStageWriter extends AbstractStageWriter<SectionSegmentation> {
   
-  public SectionStage(Connector conn, Stage stage) throws RebarException {
+  public SectionStageWriter(Connector conn, Stage stage) throws RebarException {
     super(conn, stage);
   }
 
-  public SectionStage(Stage stage) throws RebarException {
+  public SectionStageWriter(Stage stage) throws RebarException {
     this(Constants.getConnector(), stage);
   }
   

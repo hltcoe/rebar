@@ -130,7 +130,7 @@ public class StageReader extends AbstractReader<Stage> {
   public AbstractStageWriter<SectionSegmentation> retrieveSectionStage (String stageName) throws RebarException {
     Stage generic = this.get(stageName);
     if (generic.type == StageType.SECTION)
-      return new SectionStage(this.conn, generic);
+      return new SectionStageWriter(this.conn, generic);
     else
       throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SectionStage.");
   }

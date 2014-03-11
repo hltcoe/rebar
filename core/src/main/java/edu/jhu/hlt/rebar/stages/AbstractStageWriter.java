@@ -3,8 +3,6 @@
  */
 package edu.jhu.hlt.rebar.stages;
 
-import java.util.Iterator;
-
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.data.Mutation;

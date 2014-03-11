@@ -36,7 +36,7 @@ public class StageFactory {
     case LANG_ID:
       break;
     case SECTION:
-      stage = (AbstractStageWriter<T>) new SectionStage(s);
+      stage = (AbstractStageWriter<T>) new SectionStageWriter(s);
       break;
     case SENTENCE:
       break;

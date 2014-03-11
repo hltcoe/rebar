@@ -3,7 +3,6 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
-import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.data.Mutation;
@@ -26,8 +25,6 @@ public class CleanIngester extends AbstractCommunicationWriter {
 
   private static final Logger logger = LoggerFactory.getLogger(CleanIngester.class);
   
-  private final BatchWriter idxBw;
-  
   /**
    * @throws RebarException
    */
@@ -41,7 +38,6 @@ public class CleanIngester extends AbstractCommunicationWriter {
    */
   public CleanIngester(Connector conn) throws RebarException {
     super(conn);
-    this.idxBw = this.safeBatchWriter(Constants.DOCUMENT_IDX_TABLE);
   }
   
   public void close() throws RebarException {
