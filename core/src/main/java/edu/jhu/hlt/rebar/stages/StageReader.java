@@ -127,7 +127,7 @@ public class StageReader extends AbstractReader<Stage> {
     return this.rangeToIter(new Range());
   }
   
-  public AbstractStageWriter<SectionSegmentation> retrieveSectionStage (String stageName) throws RebarException {
+  public AbstractStageWriter<SectionSegmentation> getSectionStageWriter (String stageName) throws RebarException {
     Stage generic = this.get(stageName);
     if (generic.type == StageType.SECTION)
       return new SectionStageWriter(this.conn, generic);
