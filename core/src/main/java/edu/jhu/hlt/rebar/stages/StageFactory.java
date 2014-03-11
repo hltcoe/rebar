@@ -26,8 +26,8 @@ public class StageFactory {
   // Suppress warnings: the switch statement should handle any
   // class cast mismatches.
   @SuppressWarnings("unchecked")
-  public static <T extends TBase<T, ? extends TFieldIdEnum>> AbstractStage<T> fromStage(Stage s) throws RebarException {
-    AbstractStage<T> stage = null;
+  public static <T extends TBase<T, ? extends TFieldIdEnum>> AbstractStageWriter<T> fromStage(Stage s) throws RebarException {
+    AbstractStageWriter<T> stage = null;
     switch (s.type) {
     case ENTITIES:
       break;
@@ -36,7 +36,7 @@ public class StageFactory {
     case LANG_ID:
       break;
     case SECTION:
-      stage = (AbstractStage<T>) new SectionStage(s);
+      stage = (AbstractStageWriter<T>) new SectionStage(s);
       break;
     case SENTENCE:
       break;

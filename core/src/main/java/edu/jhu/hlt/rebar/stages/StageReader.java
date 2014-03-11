@@ -119,7 +119,15 @@ public class StageReader extends AbstractReader<Stage> {
     return this.rangeToIter(r);
   }
   
-  public AbstractStage<SectionSegmentation> retrieveSectionStage (String stageName) throws RebarException {
+  /* (non-Javadoc)
+   * @see edu.jhu.hlt.rebar.accumulo.AbstractReader#get()
+   */
+  @Override
+  public Iterator<Stage> getAll() throws RebarException {
+    return this.rangeToIter(new Range());
+  }
+  
+  public AbstractStageWriter<SectionSegmentation> retrieveSectionStage (String stageName) throws RebarException {
     Stage generic = this.get(stageName);
     if (generic.type == StageType.SECTION)
       return new SectionStage(this.conn, generic);
@@ -139,4 +147,6 @@ public class StageReader extends AbstractReader<Stage> {
     StageReader sr = new StageReader(Constants.getConnector());
     sr.printStages();
   }
+
+  
 }

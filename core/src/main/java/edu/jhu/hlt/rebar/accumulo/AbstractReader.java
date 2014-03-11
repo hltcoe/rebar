@@ -127,4 +127,6 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
         docsc.close();
     }
   }
+  
+  public abstract Iterator<T> getAll() throws RebarException;
 }
