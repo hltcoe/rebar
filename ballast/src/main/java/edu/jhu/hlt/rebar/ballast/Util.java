@@ -5,6 +5,8 @@
  */
 package edu.jhu.hlt.rebar.ballast;
 
+import java.util.UUID;
+
 import edu.jhu.hlt.concrete.AnnotationMetadata;
 
 /**
@@ -24,5 +26,14 @@ public final class Util {
     md.timestamp = (int) (System.currentTimeMillis() / 1000);
     md.tool = "rebar-ballast";
     return md;
+  }
+  
+  public static boolean isValidUUIDString(String uuidStr) {
+    try {
+      UUID.fromString(uuidStr);
+      return true;
+    } catch (IllegalArgumentException iae) {
+      return false;
+    }
   }
 }
