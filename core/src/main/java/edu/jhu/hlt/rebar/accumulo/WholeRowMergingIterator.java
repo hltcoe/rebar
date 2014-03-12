@@ -35,7 +35,7 @@ public abstract class WholeRowMergingIterator<K> extends AbstractThriftIterator<
     this.stageName = stageName;
   }
 
-  protected abstract K extractInterestingTFromWholeRow(Map<Key, Value> wholeRowMap, String colQ) throws RebarException, TException;
+  protected abstract K extractInterestingKFromWholeRow(Map<Key, Value> wholeRowMap, String colQ) throws RebarException, TException;
   
   /**
    * Takes a row via {@link WholeRowIterator#decodeRow(Key, Value)} as input. Attempts

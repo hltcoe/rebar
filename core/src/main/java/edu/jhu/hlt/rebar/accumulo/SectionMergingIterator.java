@@ -46,7 +46,7 @@ public class SectionMergingIterator extends WholeRowMergingIterator<SectionSegme
       Map<Key, Value> rows = WholeRowIterator.decodeRow(e.getKey(), e.getValue());
       // NOTE: ROWS is mutated by below calls
       Communication root = getCommFromColumnFamily(rows);
-      SectionSegmentation ss = extractInterestingTFromWholeRow(rows, this.stageName);
+      SectionSegmentation ss = extractInterestingKFromWholeRow(rows, this.stageName);
       root.addToSectionSegmentations(ss);
       return root;
     } catch (IOException | TException | RebarException e) {
@@ -58,7 +58,7 @@ public class SectionMergingIterator extends WholeRowMergingIterator<SectionSegme
    * @see edu.jhu.hlt.rebar.accumulo.WholeRowMergingIterator#extractInterestingTFromWholeRow(java.util.Map, java.lang.String)
    */
   @Override
-  protected SectionSegmentation extractInterestingTFromWholeRow(Map<Key, Value> wholeRowMap, String colQ) throws RebarException, TException {
+  protected SectionSegmentation extractInterestingKFromWholeRow(Map<Key, Value> wholeRowMap, String colQ) throws RebarException, TException {
     SectionSegmentation d = null;
     Iterator<Entry<Key, Value>> iter = wholeRowMap.entrySet().iterator();
     while (iter.hasNext()) {
