@@ -8,6 +8,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>asphalt</module>
+    <module>ballast</module>
     <module>core</module>
   </modules>
 
@@ -206,6 +207,11 @@
         <groupId>edu.jhu.hlt</groupId>
         <artifactId>rebar-asphalt</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+	<groupId>edu.jhu.hlt</groupId>
+	<artifactId>rebar-ballast</artifactId>
+	<version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>

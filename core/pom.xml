@@ -55,6 +55,10 @@
       <artifactId>rebar-asphalt</artifactId>
     </dependency>
     <dependency>
+      <groupId>edu.jhu.hlt</groupId>
+      <artifactId>rebar-ballast</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.thrift</groupId>
       <artifactId>libthrift</artifactId>
     </dependency>

@@ -22,7 +22,7 @@ import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.CommunicationType;
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.rebar.Util;
-import edu.jhu.hlt.rebar.annotations.SingleSectionSegmenter;
+import edu.jhu.hlt.rebar.ballast.tools.SingleSectionSegmenter;
 import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
 import edu.jhu.hlt.rebar.stage.StageCreator;
@@ -84,7 +84,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
       commIter = cr.getCommunications(CommunicationType.TWEET);
       while(commIter.hasNext()) {
         Communication c = commIter.next();
-        SectionSegmentation empty = sss.section(c);
+        SectionSegmentation empty = sss.annotate(c);
         idToSSMap.put(empty.uuid, empty);
         retStage.annotate(empty, c.id);
       }
@@ -120,7 +120,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
       
       while(commIter.hasNext()) {
         Communication c = commIter.next();
-        SectionSegmentation empty = sss.section(c);
+        SectionSegmentation empty = sss.annotate(c);
         retStage.annotate(empty, c.id);
       }
     }
