@@ -7,3 +7,4 @@
 target/
 .cache
 bin/
+.DS_Store
