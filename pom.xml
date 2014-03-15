@@ -29,6 +29,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <groovy.version>2.1.3</groovy.version>
     <jackson.version>2.2.3</jackson.version>
+    <concrete.version>2.0.6-SNAPSHOT</concrete.version>
+    <tift.version>2.0.2-SNAPSHOT</tift.version>
   </properties>
 
   <scm>
@@ -209,9 +211,9 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
-	<groupId>edu.jhu.hlt</groupId>
-	<artifactId>rebar-ballast</artifactId>
-	<version>${project.version}</version>
+        <groupId>edu.jhu.hlt</groupId>
+        <artifactId>rebar-ballast</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -226,12 +228,12 @@
       <dependency>
         <groupId>edu.jhu.hlt</groupId>
         <artifactId>concrete-core</artifactId>
-        <version>2.0.5</version>
+        <version>${concrete.version}</version>
       </dependency>
       <dependency>
-	<groupId>edu.jhu.hlt</groupId>
-	<artifactId>concrete-util</artifactId>
-	<version>2.0.5</version>
+        <groupId>edu.jhu.hlt</groupId>
+        <artifactId>concrete-util</artifactId>
+        <version>${concrete.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
