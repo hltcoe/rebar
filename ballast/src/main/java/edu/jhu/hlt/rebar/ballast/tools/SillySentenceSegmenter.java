@@ -21,7 +21,7 @@ import edu.jhu.hlt.concrete.TextSpan;
 import edu.jhu.hlt.concrete.util.SuperTextSpan;
 import edu.jhu.hlt.rebar.ballast.AnnotationException;
 import edu.jhu.hlt.rebar.ballast.AnnotationTool;
-import edu.jhu.hlt.rebar.ballast.Util;
+import edu.jhu.hlt.concrete.util.Util;
 
 /**
  * A silly example of how to generate {@link SentenceSegmentationCollection}s. Probably

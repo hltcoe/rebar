@@ -8,7 +8,7 @@ import java.util.Iterator;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.SectionSegmentation;
-import edu.jhu.hlt.rebar.ballast.Util;
+import edu.jhu.hlt.concrete.util.Util;
 
 /**
  * @author max
@@ -32,12 +32,12 @@ public class ValidatableSectionSegmentation extends AbstractAnnotation<SectionSe
     boolean valid = 
         this.annotation.metadata != null
         && Util.isValidUUIDString(this.annotation.uuid)
-        && this.annotation.isSetSectionList();
+        && !this.annotation.getSectionList().isEmpty();
     Iterator<Section> sects = this.annotation.getSectionListIterator();
     while (valid && sects.hasNext()) {
       Section s = sects.next();
-      valid = 
-          Util.isValidUUIDString(s.uuid);
+      valid = Util.isValidUUIDString(s.uuid)
+          && new ValidatableTextSpan(s.getTextSpan()).isValid(c);
     }
     
     return valid;

@@ -16,7 +16,7 @@ import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.TextSpan;
 import edu.jhu.hlt.rebar.ballast.AnnotationException;
 import edu.jhu.hlt.rebar.ballast.AnnotationTool;
-import edu.jhu.hlt.rebar.ballast.Util;
+import edu.jhu.hlt.concrete.util.Util;
 
 /**
  * @author max

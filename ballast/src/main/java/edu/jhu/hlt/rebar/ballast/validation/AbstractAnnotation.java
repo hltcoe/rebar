@@ -12,7 +12,7 @@ import edu.jhu.hlt.concrete.Communication;
  * 
  * @author max
  */
-public abstract class AbstractAnnotation<T extends TBase<T,? extends TFieldIdEnum>> {
+public abstract class AbstractAnnotation<T extends TBase<T, ? extends TFieldIdEnum>> {
 
   protected final T annotation;
   
