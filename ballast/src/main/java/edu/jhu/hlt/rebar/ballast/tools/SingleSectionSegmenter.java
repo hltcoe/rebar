@@ -53,7 +53,7 @@ public class SingleSectionSegmenter implements AnnotationTool<SectionSegmentatio
     // these contain all the required fields of the object.
     // below, the 'start' and 'end' are required, thus the 
     // ctor has 2 fields. 
-    TextSpan ts = new TextSpan(0, c.getText().length() - 1);
+    TextSpan ts = new TextSpan(0, c.getText().length());
     // as above, can use "getter"s to access fields
     // no need to "build" like protobufs - all done
     s.textSpan = ts;
