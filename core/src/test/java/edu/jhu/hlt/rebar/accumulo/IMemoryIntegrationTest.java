@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,12 +22,15 @@ import edu.jhu.hlt.asphalt.StageType;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.CommunicationType;
 import edu.jhu.hlt.concrete.SectionSegmentation;
+import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.rebar.Util;
+import edu.jhu.hlt.rebar.ballast.tools.SillySentenceSegmenter;
 import edu.jhu.hlt.rebar.ballast.tools.SingleSectionSegmenter;
 import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
 import edu.jhu.hlt.rebar.stage.StageCreator;
 import edu.jhu.hlt.rebar.stage.StageReader;
+import edu.jhu.hlt.rebar.stage.writer.SentenceStageWriter;
 
 public class IMemoryIntegrationTest extends AbstractAccumuloTest {
 
@@ -99,10 +103,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
       SectionSegmentation retrieved = c.getSectionSegmentations().get(0);
       assertTrue(idToSSMap.containsKey(retrieved.uuid));
     }
-//    Util.printTable(Constants.DOCUMENT_TABLE_NAME, this.conn, logger);
-//    
-//    
-//    
+
     Stage stTwo = generateTestStage().setType(StageType.SECTION).setName("another_stage");
     try (StageCreator sc = new StageCreator(this.conn);) {
       sc.create(stTwo);
@@ -133,6 +134,32 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
       Communication c = retComms.next();
       assertTrue(idToCommMap.containsKey(c.id));
       assertEquals(1, c.getSectionSegmentationsSize());
+    }
+    
+    Stage sentStage = generateTestStage().setType(StageType.SENTENCE).setName("sent_stage");
+    Set<String> deps = new HashSet<>();
+    deps.add(st.name);
+    sentStage.dependencies = deps;
+    try (StageCreator sc = new StageCreator(this.conn);) {
+      sc.create(sentStage);
+    }
+    
+    assertEquals("Should find the third ingested stage via get method.", sentStage, sr.get(sentStage.name));
+    assertTrue("Should find the ingested stage via exists method.", sr.exists(sentStage.name));
+    assertEquals("Should find the ingested stage via get method.", sentStage, sr.get(sentStage.name));
+    assertEquals("SentenceStage should have 1 dependency.", 1, sr.get(sentStage.name).dependencies.size());
+    
+    SillySentenceSegmenter sss = new SillySentenceSegmenter();
+    List<String> depList = new ArrayList<>(sentStage.getDependencies());
+    try(AbstractStageWriter<SentenceSegmentationCollection> writer = new SentenceStageWriter(sentStage);) {
+      reader = sr.getSectionStageReader(depList.get(0));
+      retComms = reader.getAll();
+      while (retComms.hasNext()) {
+        Communication c = retComms.next();
+        assertTrue(c.isSetSectionSegmentations() && !c.getSectionSegmentations().isEmpty());
+        SentenceSegmentationCollection coll = sss.annotate(c);
+        writer.annotate(coll, c.getId());
+      }
     }
     
 //    
