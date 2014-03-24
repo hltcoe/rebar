@@ -43,7 +43,7 @@ public class SectionMergingIterator extends WholeRowMergingIterator<SectionSegme
       // NOTE: ROWS is mutated by below calls
       ThriftRowExtractor ext = new ThriftRowExtractor(rows);
       Communication root = ext.extractCommunication();
-      SectionSegmentation ss = ext.extractSectionSegmentation(this.stageName);
+      SectionSegmentation ss = ext.extract(new SectionSegmentation(), this.stageName);
       root.addToSectionSegmentations(ss);
       return root;
     } catch (IOException | RebarException e) {

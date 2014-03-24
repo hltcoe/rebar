@@ -51,9 +51,9 @@ public class SentenceMergingIterator extends WholeRowMergingIterator<SentenceSeg
       // NOTE: ROWS is mutated by below calls
       ThriftRowExtractor ext = new ThriftRowExtractor(rows);
       Communication root = ext.extractCommunication();
-      SectionSegmentation ss = ext.extractSectionSegmentation(this.sectDepStage);
+      SectionSegmentation ss = ext.extract(new SectionSegmentation(), this.sectDepStage);
       root.addToSectionSegmentations(ss);
-      SentenceSegmentationCollection sColl = ext.extractSentenceSegmentationCollection(this.stageName);
+      SentenceSegmentationCollection sColl = ext.extract(new SentenceSegmentationCollection(), stageName);
       
       // Generate a map of ID --> Sections
       // so that we can map SentenceSegmentation appropriately

@@ -10,35 +10,39 @@ import java.util.Map.Entry;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
+import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
+import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.SectionSegmentation;
-import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 
 /**
- * @author max
+ * Bloated code written due to Java's lack of functions-as-first-class-citizenry.
  * 
+ * Supports implementations of {@link WholeRowMergingIterator}.
+ * 
+ * @author max
  */
 public class ThriftRowExtractor {
-  
+
   private enum ColType {
     CF {
       @Override
       public int compare(Key k, String text) {
         return k.compareColumnFamily(new Text(text));
       }
-    }, CQ {
+    },
+    CQ {
       @Override
       public int compare(Key k, String text) {
         return k.compareColumnQualifier(new Text(text));
       }
     };
-    
+
     public abstract int compare(Key k, String text);
   }
 
@@ -51,23 +55,18 @@ public class ThriftRowExtractor {
     this.wholeRowMap = wholeRowMap;
   }
 
-  public SentenceSegmentationCollection extractSentenceSegmentationCollection(String stageName) throws RebarException {
+  /**
+   * Attempts to find the {@link T}, aka a 'thrift-like object', in the row.
+   * 
+   * @return a {@link T} if found
+   * @throws RebarException
+   *           - if there is no {@link T} in this row, or if there was an error during serialization
+   */
+  public <T extends TBase<T, ? extends TFieldIdEnum>> T extract(T object, String stageName) throws RebarException {
     try {
-      SentenceSegmentationCollection t = new SentenceSegmentationCollection();
       byte[] bytez = this.extractBytes(stageName, ColType.CQ);
-      new TDeserializer(new TBinaryProtocol.Factory()).deserialize(t, bytez);
-      return t;
-    } catch (TException e) {
-      throw new RebarException(e);
-    }
-  }
-
-  public SectionSegmentation extractSectionSegmentation(String stageName) throws RebarException {
-    try {
-      SectionSegmentation t = new SectionSegmentation();
-      byte[] bytez = this.extractBytes(stageName, ColType.CQ);
-      new TDeserializer(new TBinaryProtocol.Factory()).deserialize(t, bytez);
-      return t;
+      new TDeserializer(new TBinaryProtocol.Factory()).deserialize(object, bytez);
+      return object;
     } catch (TException e) {
       throw new RebarException(e);
     }
@@ -78,7 +77,7 @@ public class ThriftRowExtractor {
    * 
    * @return a {@link Communication} if found
    * @throws RebarException
-   *           - if there is no {@link Communication} in this row, or if there was an error during serialization
+   *           if there is no {@link Communication} in this row, or if there was an error during serialization
    */
   public Communication extractCommunication() throws RebarException {
     try {
@@ -105,7 +104,7 @@ public class ThriftRowExtractor {
     }
 
     if (bytez == null)
-      throw new RebarException("Did not find anything matching ColQ: " + colQ);
+      throw new RebarException("Did not find anything matching " + ct.toString() + ": " + colQ);
 
     return bytez;
   }

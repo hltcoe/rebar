@@ -26,6 +26,7 @@ import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.Sentence;
 import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
+import edu.jhu.hlt.concrete.util.SuperTextSpan;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.ballast.tools.SillySentenceSegmenter;
 import edu.jhu.hlt.rebar.ballast.tools.SingleSectionSegmenter;
@@ -179,10 +180,6 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
       for (Section sect : ss.getSectionList()) {
         assertTrue(sect.isSetSentenceSegmentation());
         assertEquals(1, sect.getSentenceSegmentation().size());
-        SentenceSegmentation sentSeg = sect.getSentenceSegmentation().get(0);
-        for (Sentence s : sentSeg.getSentenceList()) {
-          logger.info ("Got sentence: " + s.toString());
-        }
       }
     }
     
