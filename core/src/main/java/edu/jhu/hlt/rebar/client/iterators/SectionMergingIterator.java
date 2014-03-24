@@ -22,14 +22,17 @@ import edu.jhu.hlt.rebar.RebarException;
  * 
  * @author max
  */
-public class SectionMergingIterator extends WholeRowMergingIterator<SectionSegmentation> {
+public class SectionMergingIterator extends AbstractThriftIterator<Communication> {
+  
+  protected final String stageName;
   
   /**
    * @param iter
    * @param stageName
    */
   public SectionMergingIterator(Iterator<Entry<Key, Value>> iter, String stageName) {
-    super(iter, stageName);
+    super(iter);
+    this.stageName = stageName;
   }
 
   /* (non-Javadoc)

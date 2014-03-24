@@ -23,12 +23,17 @@ import edu.jhu.hlt.rebar.RebarException;
 /**
  * Bloated code written due to Java's lack of functions-as-first-class-citizenry.
  * 
- * Supports implementations of {@link WholeRowMergingIterator}.
+ * Supports implementations of {@link AbstractThriftIterator}.
  * 
  * @author max
  */
 public class ThriftRowExtractor {
 
+  /**
+   * Silly enum to support column family or column qualifier based matching.
+   * 
+   * @author max
+   */
   private enum ColType {
     CF {
       @Override
@@ -90,13 +95,22 @@ public class ThriftRowExtractor {
     }
   }
 
-  private byte[] extractBytes(String colQ, ColType ct) throws RebarException {
+  /**
+   * Find the bytes from this row; mutate the iterator so that the row does not appear
+   * in future iterations. 
+   * 
+   * @param colStr - string of the ColF / ColQ to match
+   * @param ct - the {@link ColType} to match on
+   * @return an array of bytes with the {@link Value} of the row matched
+   * @throws RebarException if nothing is found
+   */
+  private byte[] extractBytes(String colStr, ColType ct) throws RebarException {
     byte[] bytez = null;
     Iterator<Entry<Key, Value>> iter = this.wholeRowMap.entrySet().iterator();
     while (iter.hasNext()) {
       Entry<Key, Value> entry = iter.next();
       Key k = entry.getKey();
-      if (ct.compare(k, colQ) == 0) {
+      if (ct.compare(k, colStr) == 0) {
         bytez = entry.getValue().get();
         iter.remove();
         this.wholeRowMap.remove(k);
@@ -104,7 +118,7 @@ public class ThriftRowExtractor {
     }
 
     if (bytez == null)
-      throw new RebarException("Did not find anything matching " + ct.toString() + ": " + colQ);
+      throw new RebarException("Did not find anything matching " + ct.toString() + ": " + colStr);
 
     return bytez;
   }

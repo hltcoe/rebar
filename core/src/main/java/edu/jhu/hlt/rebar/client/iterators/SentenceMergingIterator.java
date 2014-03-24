@@ -26,7 +26,7 @@ import edu.jhu.hlt.rebar.RebarException;
  * 
  * @author max
  */
-public class SentenceMergingIterator extends WholeRowMergingIterator<SentenceSegmentationCollection> {
+public class SentenceMergingIterator extends SectionMergingIterator {
   
   protected final String sectDepStage;
   
@@ -39,8 +39,9 @@ public class SentenceMergingIterator extends WholeRowMergingIterator<SentenceSeg
     this.sectDepStage = sectDepStage;
   }
 
-  /* (non-Javadoc)
-   * @see edu.jhu.hlt.rebar.accumulo.AbstractThriftIterator#next()
+  /*
+   * (non-Javadoc)
+   * @see edu.jhu.hlt.rebar.client.iterators.SectionMergingIterator#next()
    */
   @Override
   public Communication next() {

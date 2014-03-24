@@ -32,11 +32,4 @@ public class SectionStageWriter extends AbstractStageWriter<SectionSegmentation>
     AbstractRebarAnnotation<SectionSegmentation> rss = new RebarSectionSegmentation(ss);
     this.annotate(rss, docId);
   }
-
-//  @Override
-//  public Iterator<Communication> getDocuments() throws RebarException {
-////    Iterator<Entry<Key, Value>> iter = this.
-////    return new SectionCommunicationReader(this.conn).mergedIterator(this.stage.name);
-//    return null;
-//  }
 }
