@@ -3,9 +3,12 @@
  */
 package edu.jhu.hlt.rebar.stage;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.Connector;
@@ -20,13 +23,16 @@ import org.apache.thrift.TException;
 import edu.jhu.hlt.asphalt.Stage;
 import edu.jhu.hlt.asphalt.StageType;
 import edu.jhu.hlt.concrete.SectionSegmentation;
+import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.accumulo.AbstractReader;
 import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
 import edu.jhu.hlt.rebar.stage.reader.SectionStageReader;
+import edu.jhu.hlt.rebar.stage.reader.SentenceStageReader;
 import edu.jhu.hlt.rebar.stage.writer.SectionStageWriter;
+import edu.jhu.hlt.rebar.stage.writer.SentenceStageWriter;
 
 /**
  * @author max
@@ -141,6 +147,27 @@ public final class StageReader extends AbstractReader<Stage> {
     Stage generic = this.get(stageName);
     if (generic.type == StageType.SECTION)
       return new SectionStageReader(this.conn, stageName);
+    else
+      throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SectionStage.");
+  }
+  
+  public AbstractStageWriter<SentenceSegmentationCollection> getSentenceStageWriter (String stageName) throws RebarException {
+    Stage generic = this.get(stageName);
+    if (generic.type == StageType.SENTENCE)
+      return new SentenceStageWriter(this.conn, generic);
+    else
+      throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SectionStage.");
+  }
+  
+  public AbstractStageReader getSentenceStageReader (String stageName) throws RebarException {
+    Stage generic = this.get(stageName);
+    if (generic.type == StageType.SENTENCE) {
+      Set<String> deps = generic.getDependencies();
+      List<String> depList = new ArrayList<>(deps);
+      String firstDep = depList.get(0);
+      return new SentenceStageReader(this.conn, stageName, firstDep);
+    }
+    
     else
       throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SectionStage.");
   }

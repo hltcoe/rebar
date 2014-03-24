@@ -21,7 +21,10 @@ import edu.jhu.hlt.asphalt.Stage;
 import edu.jhu.hlt.asphalt.StageType;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.CommunicationType;
+import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.SectionSegmentation;
+import edu.jhu.hlt.concrete.Sentence;
+import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.ballast.tools.SillySentenceSegmenter;
@@ -36,11 +39,13 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
 
   private static final Logger logger = LoggerFactory.getLogger(IMemoryIntegrationTest.class);
   SingleSectionSegmenter sss;
+  SillySentenceSegmenter sentSegmenter;
   
   @Before
   public void setUp() throws Exception {
     this.initialize();
     this.sss = new SingleSectionSegmenter();
+    this.sentSegmenter = new SillySentenceSegmenter();
   }
 
   @After
@@ -149,7 +154,6 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     assertEquals("Should find the ingested stage via get method.", sentStage, sr.get(sentStage.name));
     assertEquals("SentenceStage should have 1 dependency.", 1, sr.get(sentStage.name).dependencies.size());
     
-    SillySentenceSegmenter sss = new SillySentenceSegmenter();
     List<String> depList = new ArrayList<>(sentStage.getDependencies());
     try(AbstractStageWriter<SentenceSegmentationCollection> writer = new SentenceStageWriter(this.conn, sentStage);) {
       reader = sr.getSectionStageReader(depList.get(0));
@@ -157,8 +161,28 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
       while (retComms.hasNext()) {
         Communication c = retComms.next();
         assertTrue(c.isSetSectionSegmentations() && !c.getSectionSegmentations().isEmpty());
-        SentenceSegmentationCollection coll = sss.annotate(c);
+        SentenceSegmentationCollection coll = this.sentSegmenter.annotate(c);
         writer.annotate(coll, c.getId());
+      }
+    }
+    
+    reader = sr.getSentenceStageReader(sentStage.name);
+    assertEquals("Should get " + nDocs + " docs annotated in sent stage.", 
+        nDocs, Util.countIteratorResults(reader.getAll()));
+    retComms = reader.getAll();
+    while(retComms.hasNext()) {
+      Communication c = retComms.next();
+      assertTrue(idToCommMap.containsKey(c.id));
+      assertEquals(1, c.getSectionSegmentationsSize());
+      SectionSegmentation ss = c.getSectionSegmentations().get(0);
+      assertTrue(ss.getSectionList() != null);
+      for (Section sect : ss.getSectionList()) {
+        assertTrue(sect.isSetSentenceSegmentation());
+        assertEquals(1, sect.getSentenceSegmentation().size());
+        SentenceSegmentation sentSeg = sect.getSentenceSegmentation().get(0);
+        for (Sentence s : sentSeg.getSentenceList()) {
+          logger.info ("Got sentence: " + s.toString());
+        }
       }
     }
     
