@@ -151,7 +151,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     
     SillySentenceSegmenter sss = new SillySentenceSegmenter();
     List<String> depList = new ArrayList<>(sentStage.getDependencies());
-    try(AbstractStageWriter<SentenceSegmentationCollection> writer = new SentenceStageWriter(sentStage);) {
+    try(AbstractStageWriter<SentenceSegmentationCollection> writer = new SentenceStageWriter(this.conn, sentStage);) {
       reader = sr.getSectionStageReader(depList.get(0));
       retComms = reader.getAll();
       while (retComms.hasNext()) {

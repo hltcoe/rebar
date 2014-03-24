@@ -11,6 +11,7 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TException;
 
 import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
 
 /**
  * @author max

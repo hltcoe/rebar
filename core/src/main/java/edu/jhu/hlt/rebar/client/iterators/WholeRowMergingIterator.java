@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.jhu.hlt.rebar.accumulo;
+package edu.jhu.hlt.rebar.client.iterators;
 
 import java.util.Iterator;
 import java.util.Map;

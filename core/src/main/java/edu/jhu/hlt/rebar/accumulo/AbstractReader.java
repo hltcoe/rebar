@@ -22,6 +22,7 @@ import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.client.iterators.EmptyIterator;
 
 /**
  * @author max

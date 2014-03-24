@@ -24,7 +24,7 @@ import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.accumulo.AbstractReader;
-import edu.jhu.hlt.rebar.accumulo.AbstractThriftIterator;
+import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
 import edu.jhu.hlt.rebar.stage.reader.SectionStageReader;
 import edu.jhu.hlt.rebar.stage.writer.SectionStageWriter;
 

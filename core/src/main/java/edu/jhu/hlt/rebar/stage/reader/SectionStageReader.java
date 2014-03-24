@@ -13,7 +13,7 @@ import org.apache.accumulo.core.data.Value;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.accumulo.SectionMergingIterator;
+import edu.jhu.hlt.rebar.client.iterators.SectionMergingIterator;
 import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 
 /**

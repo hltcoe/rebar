@@ -34,21 +34,11 @@ public class SentenceStageWriter extends AbstractStageWriter<SentenceSegmentatio
    */
   public SentenceStageWriter(Connector conn, Stage stage) throws RebarException {
     super(conn, stage);
-    // TODO Auto-generated constructor stub
   }
   
   public SentenceStageWriter(Stage stage) throws RebarException {
     this(Constants.getConnector(), stage);
   }
-
-  /* (non-Javadoc)
-   * @see edu.jhu.hlt.rebar.stages.AbstractStage#getDocuments()
-   */
-//  @Override
-//  public Iterator<Communication> getDocuments() throws RebarException {
-//    // TODO Auto-generated method stub
-//    return null;
-//  }
 
   /* (non-Javadoc)
    * @see edu.jhu.hlt.rebar.stages.AbstractStage#annotate(org.apache.thrift.TBase, java.lang.String)
