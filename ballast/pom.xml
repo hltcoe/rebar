@@ -12,6 +12,10 @@
   <name>Rebar :: Ballast</name>
   <description>Rebar interfaces and example tools</description>
 
+  <properties>
+    <tift.version>2.0.3-SNAPSHOT</tift.version>
+  </properties>
+
   <build>
       <plugins>
         <plugin>

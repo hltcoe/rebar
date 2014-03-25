@@ -11,7 +11,7 @@
   <artifactId>rebar-core</artifactId>
   <name>Rebar :: Core</name>
   <description>Core Rebar library</description>
-
+  
   <build>
       <plugins>
         <plugin>

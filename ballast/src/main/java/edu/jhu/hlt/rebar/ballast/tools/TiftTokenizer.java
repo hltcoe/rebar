@@ -40,7 +40,7 @@ public class TiftTokenizer implements AnnotationTool<TokenizationCollection> {
       for (Sentence st : s.getSentenceSegmentation().get(0).getSentenceList()) {
         SuperTextSpan sts = new SuperTextSpan(st.getTextSpan(), copy);
         String sentenceText = sts.getText();
-        Tokenization t = this.tokenizer.tokenizeToConcrete(sentenceText, 0);
+        Tokenization t = this.tokenizer.tokenizeSentence(sentenceText, 0, st.getUuid());
         tokColl.addToTokenizationList(t);
       }
     }
