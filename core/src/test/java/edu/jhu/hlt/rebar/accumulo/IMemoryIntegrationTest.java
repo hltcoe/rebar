@@ -26,27 +26,32 @@ import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.Sentence;
 import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
-import edu.jhu.hlt.concrete.util.SuperTextSpan;
+import edu.jhu.hlt.concrete.TokenizationCollection;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.ballast.tools.SillySentenceSegmenter;
 import edu.jhu.hlt.rebar.ballast.tools.SingleSectionSegmenter;
+import edu.jhu.hlt.rebar.ballast.tools.TiftTokenizer;
 import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
 import edu.jhu.hlt.rebar.stage.StageCreator;
 import edu.jhu.hlt.rebar.stage.StageReader;
 import edu.jhu.hlt.rebar.stage.writer.SentenceStageWriter;
+import edu.jhu.hlt.rebar.stage.writer.TokenizationStageWriter;
+import edu.jhu.hlt.tift.Tokenizer;
 
 public class IMemoryIntegrationTest extends AbstractAccumuloTest {
 
   private static final Logger logger = LoggerFactory.getLogger(IMemoryIntegrationTest.class);
   SingleSectionSegmenter sss;
   SillySentenceSegmenter sentSegmenter;
+  TiftTokenizer tokenizer;
   
   @Before
   public void setUp() throws Exception {
     this.initialize();
     this.sss = new SingleSectionSegmenter();
     this.sentSegmenter = new SillySentenceSegmenter();
+    this.tokenizer = new TiftTokenizer(Tokenizer.WHITESPACE);
   }
 
   @After
@@ -183,13 +188,68 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
       }
     }
     
-//    
-//    Stage sectionSegmentationStage = generateTestStage("sect_seg_stage", "Section segmentation stage.", new HashSet<String>(), StageType.SECTION);
-//    try (RebarAnnotator ra = new RebarAnnotator(this.conn);) {
-//      for (Communication c : commList) {
-//        SectionSegm
-//        ra.addSectionSegmentation(c, sectionSegmentationStage, sectionSegmentation);
-//      }
-//    }
+    Stage tokStage = generateTestStage().setType(StageType.TOKENIZATION).setName("tok_stage");
+    Set<String> tokDeps = new HashSet<>();
+    tokDeps.add(st.name);
+    tokDeps.add(sentStage.name);
+    tokStage.dependencies = tokDeps;
+    try (StageCreator sc = new StageCreator(this.conn);) {
+      sc.create(tokStage);
+    }
+    
+    assertEquals("Should find the third ingested stage via get method.", tokStage, sr.get(tokStage.name));
+    assertTrue("Should find the ingested stage via exists method.", sr.exists(tokStage.name));
+    assertEquals("Should find the ingested stage via get method.", tokStage, sr.get(tokStage.name));
+    assertEquals("TokenizationStage should have 2 dependencies.", 2, sr.get(tokStage.name).dependencies.size());
+    
+    depList = new ArrayList<>(tokStage.getDependencies());
+    try(AbstractStageWriter<TokenizationCollection> writer = new TokenizationStageWriter(this.conn, tokStage);) {
+      reader = sr.getSentenceStageReader(depList.get(1));
+      retComms = reader.getAll();
+      while (retComms.hasNext()) {
+        Communication c = retComms.next();
+        assertTrue(c.isSetSectionSegmentations() && !c.getSectionSegmentations().isEmpty());
+        for (SectionSegmentation ss : c.getSectionSegmentations()) {
+          assertTrue(ss.isSetSectionList());
+          assertTrue(ss.getSectionListSize()> 0);
+          for (Section sect : ss.getSectionList()) {
+            assertTrue(sect.isSetSentenceSegmentation());
+            assertTrue(sect.getSentenceSegmentationSize() > 0);
+            for (SentenceSegmentation sentSeg : sect.getSentenceSegmentation()) {
+              assertTrue(sentSeg.isSetSentenceList());
+              assertTrue(sentSeg.getSentenceListSize() > 0);
+            }
+          }
+        }
+        
+        TokenizationCollection coll = this.tokenizer.annotate(c);
+        writer.annotate(coll, c.getId());
+      }
+    }
+    
+    reader = sr.getTokenizationStageReader(tokStage.name);
+    assertEquals("Should get " + nDocs + " docs annotated in tok stage.", 
+        nDocs, Util.countIteratorResults(reader.getAll()));
+    retComms = reader.getAll();
+    while(retComms.hasNext()) {
+      Communication c = retComms.next();
+      assertTrue(idToCommMap.containsKey(c.id));
+      assertEquals(1, c.getSectionSegmentationsSize());
+      SectionSegmentation ss = c.getSectionSegmentations().get(0);
+      assertTrue(ss.getSectionList() != null);
+      for (Section sect : ss.getSectionList()) {
+        assertTrue(sect.isSetSentenceSegmentation());
+        assertEquals(1, sect.getSentenceSegmentation().size());
+        for (SentenceSegmentation sentSeg : sect.getSentenceSegmentation()) {
+          assertTrue(sentSeg.isSetSentenceList());
+          assertTrue(sentSeg.getSentenceListSize() > 0);
+          for (Sentence sent : sentSeg.getSentenceList()) {
+            assertTrue(sent.isSetTokenizationList());
+            assertTrue(sent.getTokenizationListSize() > 0);
+          }
+        }
+      }
+    }
+    
   }
 }

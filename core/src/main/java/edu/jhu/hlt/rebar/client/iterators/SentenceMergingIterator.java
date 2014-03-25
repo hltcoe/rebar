@@ -51,37 +51,49 @@ public class SentenceMergingIterator extends SectionMergingIterator {
       Map<Key, Value> rows = WholeRowIterator.decodeRow(e.getKey(), e.getValue());
       // NOTE: ROWS is mutated by below calls
       ThriftRowExtractor ext = new ThriftRowExtractor(rows);
+      // NOTE: we will mutate "root" heavily
       Communication root = ext.extractCommunication();
       SectionSegmentation ss = ext.extract(new SectionSegmentation(), this.sectDepStage);
-      root.addToSectionSegmentations(ss);
       SentenceSegmentationCollection sColl = ext.extract(new SentenceSegmentationCollection(), stageName);
-      
-      // Generate a map of ID --> Sections
-      // so that we can map SentenceSegmentation appropriately
-      Map<String, Section> idToSectionMap = new HashMap<>();
-      for (Section s : ss.getSectionList())
-        idToSectionMap.put(s.uuid, s);
-
-      // We have the section segmentation collection.
-      // Iterate over it and map the SentenceSegmentations
-      // to the appropriate sections.
-      for (SentenceSegmentation sentSeg : sColl.getSentSegList()) {
-        String id = sentSeg.getSectionId();
-        // Find the appropriate section.
-        // If it is not in our map, we need to throw an error - something went wrong.
-        // Ideally this would be covered by a validation library.
-        if (idToSectionMap.containsKey(id)) {
-          Section s = idToSectionMap.get(id);
-          s.addToSentenceSegmentation(sentSeg);
-        } else 
-          throw new RebarException("A sentence segmentation pointed to a Section with id: "
-              + id + " , but that id does not map to an existing Section from this stage.");
-        
-      }
-
+      this.merge(root, ss, sColl);
       return root;
     } catch (IOException | RebarException e) {
       throw new RuntimeException(e);
     }  
+  }
+  
+  /**
+   * NOTE: mutation to first two parameters.
+   * 
+   * @param root
+   * @param ss
+   * @param ssc
+   * @throws RebarException
+   */
+  protected void merge (Communication root, SectionSegmentation ss, SentenceSegmentationCollection ssc) throws RebarException {
+    this.merge(root, ss);
+    
+    // Generate a map of ID --> Sections
+    // so that we can map SentenceSegmentation appropriately
+    Map<String, Section> idToSectionMap = new HashMap<>();
+    for (Section s : ss.getSectionList())
+      idToSectionMap.put(s.uuid, s);
+
+    // We have the section segmentation collection.
+    // Iterate over it and map the SentenceSegmentations
+    // to the appropriate sections.
+    for (SentenceSegmentation sentSeg : ssc.getSentSegList()) {
+      String id = sentSeg.getSectionId();
+      // Find the appropriate section.
+      // If it is not in our map, we need to throw an error - something went wrong.
+      // Ideally this would be covered by a validation library.
+      if (idToSectionMap.containsKey(id)) {
+        Section s = idToSectionMap.get(id);
+        s.addToSentenceSegmentation(sentSeg);
+      } else 
+        throw new RebarException("A sentence segmentation pointed to a Section with id: "
+            + id + " , but that id does not map to an existing Section from this stage.");
+      
+    }
   }
 }

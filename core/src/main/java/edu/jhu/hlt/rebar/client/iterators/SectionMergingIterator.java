@@ -47,10 +47,20 @@ public class SectionMergingIterator extends AbstractThriftIterator<Communication
       ThriftRowExtractor ext = new ThriftRowExtractor(rows);
       Communication root = ext.extractCommunication();
       SectionSegmentation ss = ext.extract(new SectionSegmentation(), this.stageName);
-      root.addToSectionSegmentations(ss);
+      this.merge(root, ss);
       return root;
     } catch (IOException | RebarException e) {
       throw new RuntimeException(e);
     }  
+  }
+  
+  /**
+   * NOTE: root is mutated by the following method.
+   * 
+   * @param root
+   * @param ss
+   */
+  protected void merge(Communication root, SectionSegmentation ss) {
+    root.addToSectionSegmentations(ss);
   }
 }
