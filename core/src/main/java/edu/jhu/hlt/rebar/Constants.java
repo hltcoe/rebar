@@ -24,6 +24,7 @@ public class Constants {
   public static final String DOCUMENT_IDX_TABLE = "doc_idx";
   
   public static final String AVAILABLE_CORPUS_TABLE_NAME = "available_corpora";
+  public static final String CORPUS_IDX_TABLE_NAME = "corpus_idx";
   public static final String CORPUS_PREFIX = "corpus_";
   
   public static final String STAGES_TABLE_NAME = "available_stages";
