@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.hlt.asphalt.services.Ingester;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.accumulo.RebarIngester;
+import edu.jhu.hlt.rebar.accumulo.CleanIngester;
 
 /**
  * @author max
@@ -30,15 +30,16 @@ public class RebarIngesterServer extends AbstractThriftServer {
   }
   
   public RebarIngesterServer(Connector conn, int port) throws RebarException {
-    this(conn, port, new RebarIngester(conn));
+    this(conn, port, new CleanIngester(conn));
   }
   
   /**
    * @throws RebarException 
    * 
    */
-  private RebarIngesterServer(Connector conn, int port, RebarIngester ri) throws RebarException {
-    super(port, ri, new Ingester.Processor<>(ri));
+  private RebarIngesterServer(Connector conn, int port, CleanIngester ri) throws RebarException {
+    // super(port, ri, new Ingester.Processor<>(ri));
+    super(port, ri, null);
   }
 
   public static void main(String... args) throws Exception {

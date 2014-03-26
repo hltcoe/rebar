@@ -60,17 +60,17 @@ public class TestRebarIngesterServer extends AbstractServiceTest {
   }
   
 
-  @Test
-  public void testBulkInsertCommunications() throws AsphaltException, TException, TableNotFoundException, RebarException {
-    int nComms = 10;
-    Set<Communication> commSet = AbstractAccumuloTest.generateMockDocumentSet(nComms);
-    nComms = commSet.size(); // in case there were duplicate IDs.
-    for (Communication c : commSet) {
-      //logger.info("Ingesting comm: " + c.id);
-      this.client.ingest(c);
-    }
-    
-    Iterator<Entry<Key, Value>> iterator = AbstractAccumuloTest.generateIterator(this.conn, Constants.DOCUMENT_TABLE_NAME, new Range());
-    assertEquals("Should find " + nComms + " docs.", nComms, Util.countIteratorResults(iterator));
-  }
+//  @Test
+//  public void testBulkInsertCommunications() throws AsphaltException, TException, TableNotFoundException, RebarException {
+//    int nComms = 10;
+//    Set<Communication> commSet = AbstractAccumuloTest.generateMockDocumentSet(nComms);
+//    nComms = commSet.size(); // in case there were duplicate IDs.
+//    for (Communication c : commSet) {
+//      //logger.info("Ingesting comm: " + c.id);
+//      this.client.ingest(c);
+//    }
+//    
+//    Iterator<Entry<Key, Value>> iterator = AbstractAccumuloTest.generateIterator(this.conn, Constants.DOCUMENT_TABLE_NAME, new Range());
+//    assertEquals("Should find " + nComms + " docs.", nComms, Util.countIteratorResults(iterator));
+//  }
 }
