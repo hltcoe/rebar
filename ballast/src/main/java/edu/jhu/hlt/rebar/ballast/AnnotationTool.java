@@ -8,6 +8,7 @@ package edu.jhu.hlt.rebar.ballast;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TFieldIdEnum;
 
+import edu.jhu.hlt.concrete.AnnotationMetadata;
 import edu.jhu.hlt.concrete.Communication;
 
 /**
@@ -16,4 +17,6 @@ import edu.jhu.hlt.concrete.Communication;
  */
 public interface AnnotationTool<T extends TBase<T, ? extends TFieldIdEnum>> {
   public T annotate(Communication c) throws AnnotationException;
+  
+  public AnnotationMetadata getMetadata();
 }

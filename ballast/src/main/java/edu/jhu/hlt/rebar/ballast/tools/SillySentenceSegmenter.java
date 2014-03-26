@@ -19,9 +19,8 @@ import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.TextSpan;
 import edu.jhu.hlt.concrete.util.SuperTextSpan;
-import edu.jhu.hlt.rebar.ballast.AnnotationException;
-import edu.jhu.hlt.rebar.ballast.AnnotationTool;
 import edu.jhu.hlt.concrete.util.Util;
+import edu.jhu.hlt.rebar.ballast.AnnotationException;
 
 /**
  * A silly example of how to generate {@link SentenceSegmentationCollection}s. Probably
@@ -29,7 +28,7 @@ import edu.jhu.hlt.concrete.util.Util;
  * 
  * @author max
  */
-public class SillySentenceSegmenter implements AnnotationTool<SentenceSegmentationCollection> {
+public class SillySentenceSegmenter extends BallastAnnotationTool<SentenceSegmentationCollection> {
 
   public static final Pattern DEFAULT_SENTENCE_PATTERN = Pattern.compile("[a-zA-Z0-9 ']+[.?!]+");
   private final Pattern splitPattern;

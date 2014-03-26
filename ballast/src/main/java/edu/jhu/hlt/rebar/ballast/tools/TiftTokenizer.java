@@ -10,7 +10,6 @@ import edu.jhu.hlt.concrete.Tokenization;
 import edu.jhu.hlt.concrete.TokenizationCollection;
 import edu.jhu.hlt.concrete.util.SuperTextSpan;
 import edu.jhu.hlt.rebar.ballast.AnnotationException;
-import edu.jhu.hlt.rebar.ballast.AnnotationTool;
 import edu.jhu.hlt.tift.Tokenizer;
 
 /**
@@ -20,7 +19,7 @@ import edu.jhu.hlt.tift.Tokenizer;
  * @author max
  *
  */
-public class TiftTokenizer implements AnnotationTool<TokenizationCollection> {
+public class TiftTokenizer extends BallastAnnotationTool<TokenizationCollection> {
 
   private final Tokenizer tokenizer;
   

@@ -14,15 +14,14 @@ import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.SectionKind;
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.TextSpan;
-import edu.jhu.hlt.rebar.ballast.AnnotationException;
-import edu.jhu.hlt.rebar.ballast.AnnotationTool;
 import edu.jhu.hlt.concrete.util.Util;
+import edu.jhu.hlt.rebar.ballast.AnnotationException;
 
 /**
  * @author max
  *
  */
-public class SingleSectionSegmenter implements AnnotationTool<SectionSegmentation> {
+public class SingleSectionSegmenter extends BallastAnnotationTool<SectionSegmentation> {
 
   /**
    * Generate a {@link SectionSegmentation} with a single {@link Section} that 
