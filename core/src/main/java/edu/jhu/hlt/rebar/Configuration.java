@@ -27,24 +27,15 @@ import org.apache.log4j.PropertyConfigurator;
  * 
  */
 public final class Configuration {
-  private static final Properties props;
+  private static final Properties props = new Properties();
   
   static {
-    props = new Properties();
-    InputStream stream = null;
-    try {
-      stream = Configuration.class.getClassLoader().getResourceAsStream("rebar.properties");
+    try (InputStream stream = Configuration.class.getClassLoader().getResourceAsStream("rebar.properties");) {
       if (stream == null)
         throw new RuntimeException("Problem finding rebar.properties on the classpath.");
       props.load(stream);
     } catch (IOException e) {
       throw new RuntimeException("Failed to load properties file rebar.properties!", e);
-    } finally {
-      try {
-        stream.close();
-      } catch (IOException ioe) {
-        
-      }
     }
     // Configure the logger.
     PropertyConfigurator.configure(props);

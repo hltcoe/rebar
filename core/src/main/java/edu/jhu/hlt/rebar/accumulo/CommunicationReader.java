@@ -70,9 +70,9 @@ public class CommunicationReader extends AbstractCommunicationReader {
       throw new RebarException("Document: " + docId + " has not been ingested.");
   }
   
-  public Iterator<Communication> getCommunications(int unixTimeStart, int unixTimeEnd) throws RebarException {
+  public Iterator<Communication> getCommunications(long unixTimeStart, long unixTimeEnd) throws RebarException {
     DateTime start = new DateTime(unixTimeStart * 1000);
-    DateTime end = new DateTime(unixTimeEnd * 1000);
+    DateTime end = new DateTime(unixTimeStart * 1000);
     return this.getCommunications(start, end);
   }
   
@@ -87,7 +87,7 @@ public class CommunicationReader extends AbstractCommunicationReader {
     return this.getCommunications(past, new DateTime());
   }
   
-  public Iterator<Communication> getCommunications(int unixTimePast) throws RebarException {
+  public Iterator<Communication> getCommunications(long unixTimePast) throws RebarException {
     return this.getCommunications(new DateTime(unixTimePast * 1000), new DateTime());
   }
   
