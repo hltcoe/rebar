@@ -72,8 +72,7 @@ public class SentenceStageWriter extends AbstractStageWriter<SentenceSegmentatio
             for (SentenceSegmentation sts : this.annotation.getSentSegList()) {
               if (!idToSectionSegMap.containsKey(sts.sectionId))
                 return false;
-              
-            }            
+            }
           }
         }
         
