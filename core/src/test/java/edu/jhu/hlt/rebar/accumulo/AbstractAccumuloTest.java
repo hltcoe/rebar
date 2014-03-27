@@ -82,7 +82,7 @@ public class AbstractAccumuloTest {
   public static Communication generateMockDocument() {
     Communication document = new Communication();
     document.type = CommunicationType.TWEET;
-    document.text = "Hello world! Test multiple sentences here.";
+    document.text = "The Roman army fled from the Alemanni. They returned to Capua after 3 weeks.";
     document.id = Integer.toString(Math.abs(rand.nextInt()));
     document.uuid = UUID.randomUUID().toString();
 

@@ -59,7 +59,7 @@ public class SentenceMergingIterator extends SectionMergingIterator {
       return root;
     } catch (IOException | RebarException e) {
       throw new RuntimeException(e);
-    }  
+    }
   }
   
   /**

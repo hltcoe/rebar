@@ -3,6 +3,9 @@ package edu.jhu.hlt.rebar.accumulo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +30,7 @@ import edu.jhu.hlt.concrete.Sentence;
 import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.TokenizationCollection;
+import edu.jhu.hlt.concrete.util.SuperCommunication;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.ballast.tools.SillySentenceSegmenter;
 import edu.jhu.hlt.rebar.ballast.tools.SingleSectionSegmenter;
@@ -250,6 +254,5 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
         }
       }
     }
-    
   }
 }
