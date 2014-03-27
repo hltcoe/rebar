@@ -29,7 +29,7 @@ import edu.jhu.hlt.rebar.ballast.AnnotationException;
  */
 public class SillySentenceSegmenter extends BallastAnnotationTool<SentenceSegmentationCollection> {
 
-  public static final Pattern DEFAULT_SENTENCE_PATTERN = Pattern.compile("[a-zA-Z0-9 ']+[.?!]+");
+  public static final Pattern DEFAULT_SENTENCE_PATTERN = Pattern.compile("[a-zA-Z0-9 ,']+[.?!]+");
   private final Pattern splitPattern;
   
   public SillySentenceSegmenter() {
