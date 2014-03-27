@@ -1,5 +1,6 @@
-/**
- * 
+/*
+ * Copyright 2012-2014 Johns Hopkins University HLTCOE. All rights reserved.
+ * See LICENSE in the project root directory.
  */
 package edu.jhu.hlt.rebar.ballast.tools;
 
@@ -30,6 +31,10 @@ public class TiftTokenizer extends BallastAnnotationTool<TokenizationCollection>
     this.tokenizer = tokenizer;
   }
 
+  /*
+   * (non-Javadoc)
+   * @see edu.jhu.hlt.rebar.ballast.AnnotationTool#annotate(edu.jhu.hlt.concrete.Communication)
+   */
   @Override
   public TokenizationCollection annotate(Communication c) throws AnnotationException {
     Communication copy = new Communication(c);

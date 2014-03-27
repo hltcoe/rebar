@@ -1,6 +1,5 @@
 /*
  * Copyright 2012-2014 Johns Hopkins University HLTCOE. All rights reserved.
- * This software is released under the 2-clause BSD license.
  * See LICENSE in the project root directory.
  */
 package edu.jhu.hlt.rebar.ballast.tools;
@@ -44,6 +43,10 @@ public class SillySentenceSegmenter extends BallastAnnotationTool<SentenceSegmen
    * @param c - A {@link Communication} to generate a {@link SentenceSegmentationCollection} from. Note that it
    * must have at least one {@link SectionSegmentation} with at least one {@link Section}.
    * @throws AnnotationException - if the {@link Communication} is not properly formatted (see above note).
+   */
+  /*
+   * (non-Javadoc)
+   * @see edu.jhu.hlt.rebar.ballast.AnnotationTool#annotate(edu.jhu.hlt.concrete.Communication)
    */
   @Override
   public SentenceSegmentationCollection annotate(Communication c) throws AnnotationException {

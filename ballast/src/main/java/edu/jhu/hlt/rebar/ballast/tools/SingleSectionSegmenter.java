@@ -1,6 +1,5 @@
 /*
  * Copyright 2012-2014 Johns Hopkins University HLTCOE. All rights reserved.
- * This software is released under the 2-clause BSD license.
  * See LICENSE in the project root directory.
  */
 package edu.jhu.hlt.rebar.ballast.tools;
@@ -29,6 +28,10 @@ public class SingleSectionSegmenter extends BallastAnnotationTool<SectionSegment
    * 
    * @param c - a {@link Communication} object to "section"
    * @return a {@link SectionSegmentation} that can be added to the {@link Communication}
+   */
+  /*
+   * (non-Javadoc)
+   * @see edu.jhu.hlt.rebar.ballast.AnnotationTool#annotate(edu.jhu.hlt.concrete.Communication)
    */
   @Override
   public SectionSegmentation annotate(Communication c) throws AnnotationException {
