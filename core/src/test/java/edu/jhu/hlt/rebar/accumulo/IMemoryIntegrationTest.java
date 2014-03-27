@@ -32,6 +32,8 @@ import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.TokenizationCollection;
 import edu.jhu.hlt.concrete.util.SuperCommunication;
 import edu.jhu.hlt.rebar.Util;
+import edu.jhu.hlt.rebar.ballast.tools.BasicSituationTagger;
+import edu.jhu.hlt.rebar.ballast.tools.LatinEntityTagger;
 import edu.jhu.hlt.rebar.ballast.tools.SillySentenceSegmenter;
 import edu.jhu.hlt.rebar.ballast.tools.SingleSectionSegmenter;
 import edu.jhu.hlt.rebar.ballast.tools.TiftTokenizer;
@@ -46,9 +48,12 @@ import edu.jhu.hlt.tift.Tokenizer;
 public class IMemoryIntegrationTest extends AbstractAccumuloTest {
 
   private static final Logger logger = LoggerFactory.getLogger(IMemoryIntegrationTest.class);
+  
   SingleSectionSegmenter sss;
   SillySentenceSegmenter sentSegmenter;
   TiftTokenizer tokenizer;
+  LatinEntityTagger et;
+  BasicSituationTagger st;
   
   @Before
   public void setUp() throws Exception {
@@ -56,6 +61,8 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     this.sss = new SingleSectionSegmenter();
     this.sentSegmenter = new SillySentenceSegmenter();
     this.tokenizer = new TiftTokenizer(Tokenizer.WHITESPACE);
+    this.et = new LatinEntityTagger();
+    this.st = new BasicSituationTagger();
   }
 
   @After
@@ -80,6 +87,8 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     CommunicationReader cr = new CommunicationReader(this.conn);
     Iterator<Communication> commIter = cr.getCommunications(CommunicationType.TWEET);
     assertEquals("Should get " + nDocs + "ingested docs.", nDocs, Util.countIteratorResults(commIter));
+    assertEquals("Shouldn't get any non-Tweets.", 0, 
+        Util.countIteratorResults(cr.getCommunications(CommunicationType.NEWS)));
     
     commIter = cr.getCommunications(CommunicationType.TWEET);
     while(commIter.hasNext()) {
