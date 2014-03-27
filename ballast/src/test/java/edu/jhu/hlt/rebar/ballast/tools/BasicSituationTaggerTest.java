@@ -19,7 +19,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.EntityMention;
 import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SituationMention;
 import edu.jhu.hlt.concrete.SituationMentionSet;
