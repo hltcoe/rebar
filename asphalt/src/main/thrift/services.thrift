@@ -13,6 +13,8 @@ namespace java edu.jhu.hlt.asphalt.services
 namespace py asphalt.services
 #@namespace scala edu.jhu.hlt.grommet.services
 
+typedef communication.Communication Comm
+
 service Ingester {
   void ingest(1: communication.Communication comm) throws (1: ex.AsphaltException ex)
 }
@@ -35,4 +37,14 @@ service CorpusHandler {
   list<string> listCorpora() throws (1: ex.AsphaltException ex)
   void deleteCorpus(1: string corpusName) throws (1: ex.AsphaltException ex)
   bool corpusExists(1: string corpusName) throws (1: ex.AsphaltException ex)
+}
+
+/**
+ * Annotator service methods.
+ */
+service Annotator {
+  structure.SentenceSegmentationCollection generateSentenceSegmentationCollection(1: Comm c) throws (1: ex.AsphaltException ex)
+  structure.TokenizationCollection generateTokenizationCollection(1: Comm c) throws (1: ex.AsphaltException ex)
+  entities.EntityMentionSet generateEntityMentionSet(1: Comm c) throws (1: ex.AsphaltException ex)
+  entities.EntitySet generateEntitySet(1: Comm c) throws (1: ex.AsphaltException ex)
 }
