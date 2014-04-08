@@ -16,7 +16,7 @@ namespace py asphalt.services
 typedef communication.Communication Comm
 
 service Ingester {
-  void ingest(1: communication.Communication comm) throws (1: ex.AsphaltException ex)
+  void ingest(1: Comm comm) throws (1: ex.AsphaltException ex)
 }
 
 /**
@@ -32,8 +32,8 @@ service StageHandler {
  * Service for handling corpora.
  */
 service CorpusHandler {
-  void createCorpus(1: string corpusName, 2: list<communication.Communication> commList) throws (1: ex.AsphaltException ex)
-  list<communication.Communication> getCorpusCommunicationSet(1: string corpusName) throws (1: ex.AsphaltException ex)
+  void createCorpus(1: string corpusName, 2: list<Comm> commList) throws (1: ex.AsphaltException ex)
+  list<Comm> getCorpusCommunicationSet(1: string corpusName) throws (1: ex.AsphaltException ex)
   list<string> listCorpora() throws (1: ex.AsphaltException ex)
   void deleteCorpus(1: string corpusName) throws (1: ex.AsphaltException ex)
   bool corpusExists(1: string corpusName) throws (1: ex.AsphaltException ex)
