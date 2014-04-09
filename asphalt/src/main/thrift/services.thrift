@@ -43,8 +43,5 @@ service CorpusHandler {
  * Annotator service methods.
  */
 service Annotator {
-  structure.SentenceSegmentationCollection generateSentenceSegmentationCollection(1: Comm c) throws (1: ex.AsphaltException ex)
-  structure.TokenizationCollection generateTokenizationCollection(1: Comm c) throws (1: ex.AsphaltException ex)
-  entities.EntityMentionSet generateEntityMentionSet(1: Comm c) throws (1: ex.AsphaltException ex)
-  entities.EntitySet generateEntitySet(1: Comm c) throws (1: ex.AsphaltException ex)
+  Comm annotate(1: Comm original) throws (1: ex.AsphaltException ex)
 }
