@@ -13,8 +13,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.jhu.hlt.asphalt.Stage;
-import edu.jhu.hlt.asphalt.StageType;
+import edu.jhu.hlt.grommet.Stage;
+import edu.jhu.hlt.grommet.StageType;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.stage.StageCreator;
 import edu.jhu.hlt.rebar.stage.StageReader;

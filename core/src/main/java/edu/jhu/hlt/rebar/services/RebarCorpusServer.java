@@ -3,14 +3,8 @@
  */
 package edu.jhu.hlt.rebar.services;
 
-import org.apache.accumulo.core.client.Connector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.jhu.hlt.asphalt.services.CorpusHandler;
-import edu.jhu.hlt.rebar.Constants;
-import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.accumulo.RebarCorpusHandler;
 
 /**
  * @author max

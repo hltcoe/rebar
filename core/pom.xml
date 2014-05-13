@@ -11,7 +11,7 @@
   <artifactId>rebar-core</artifactId>
   <name>Rebar :: Core</name>
   <description>Core Rebar library</description>
-  
+
   <build>
       <plugins>
         <plugin>
@@ -52,11 +52,15 @@
     </dependency>
     <dependency>
       <groupId>edu.jhu.hlt</groupId>
-      <artifactId>rebar-asphalt</artifactId>
+      <artifactId>rebar-thrift</artifactId>
     </dependency>
     <dependency>
       <groupId>edu.jhu.hlt</groupId>
-      <artifactId>rebar-ballast</artifactId>
+      <artifactId>ballast-asphalt</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>edu.jhu.hlt</groupId>
+      <artifactId>ballast-tools</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.thrift</groupId>
@@ -97,7 +101,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
-      <scope>test</scope>	  
+      <scope>test</scope>
     </dependency>
 
 

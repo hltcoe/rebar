@@ -7,8 +7,7 @@
   <version>2.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
-    <module>asphalt</module>
-    <module>ballast</module>
+    <module>thrift</module>
     <module>core</module>
   </modules>
 
@@ -30,6 +29,7 @@
     <groovy.version>2.1.3</groovy.version>
     <jackson.version>2.2.3</jackson.version>
     <concrete.version>2.0.7-SNAPSHOT</concrete.version>
+    <ballast.version>1.0.0-SNAPSHOT</ballast.version>
   </properties>
 
   <scm>
@@ -206,18 +206,23 @@
     <dependencies>
       <dependency>
         <groupId>edu.jhu.hlt</groupId>
-        <artifactId>rebar-asphalt</artifactId>
-        <version>${project.version}</version>
+        <artifactId>ballast-asphalt</artifactId>
+        <version>${ballast.version}</version>
       </dependency>
       <dependency>
         <groupId>edu.jhu.hlt</groupId>
-        <artifactId>rebar-ballast</artifactId>
+        <artifactId>ballast-tools</artifactId>
+        <version>${ballast.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>edu.jhu.hlt</groupId>
+        <artifactId>rebar-thrift</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.7.5</version>
+        <version>1.7.6</version>
       </dependency>
       <dependency>
         <groupId>org.apache.thrift</groupId>

@@ -3,11 +3,6 @@
  */
 package edu.jhu.hlt.rebar.services;
 
-import org.apache.accumulo.core.client.Connector;
-
-import edu.jhu.hlt.asphalt.services.StageHandler;
-import edu.jhu.hlt.rebar.Constants;
-import edu.jhu.hlt.rebar.RebarException;
 
 
 /**

@@ -11,8 +11,8 @@ import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 import org.apache.thrift.TFieldIdEnum;
 
-import edu.jhu.hlt.asphalt.Stage;
 import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.grommet.Stage;
 import edu.jhu.hlt.rebar.AnnotationException;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;

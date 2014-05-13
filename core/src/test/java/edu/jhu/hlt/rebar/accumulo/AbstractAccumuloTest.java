@@ -32,10 +32,9 @@ import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.CommunicationType;
 import edu.jhu.hlt.concrete.LanguageIdentification;
-import edu.jhu.hlt.asphalt.Stage;
-import edu.jhu.hlt.asphalt.StageType;
+import edu.jhu.hlt.grommet.Stage;
+import edu.jhu.hlt.grommet.StageType;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
 
@@ -81,7 +80,7 @@ public class AbstractAccumuloTest {
 
   public static Communication generateMockDocument() {
     Communication document = new Communication();
-    document.type = CommunicationType.TWEET;
+    document.type = "Tweet";
     document.text = "The Roman army fled from the Alemanni. They returned to Capua after 3 weeks.";
     document.id = Integer.toString(Math.abs(rand.nextInt()));
     document.uuid = UUID.randomUUID().toString();

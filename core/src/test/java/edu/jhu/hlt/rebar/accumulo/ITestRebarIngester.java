@@ -3,20 +3,6 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
-import static org.junit.Assert.fail;
-import junit.framework.TestFailure;
-
-import org.apache.accumulo.minicluster.MiniAccumuloCluster;
-import org.apache.thrift.server.TServer;
-import org.apache.thrift.server.TServer.Args;
-import org.apache.thrift.server.TSimpleServer;
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TServerTransport;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 /**
  * @author max

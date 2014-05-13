@@ -13,7 +13,6 @@ import org.apache.accumulo.core.data.Range;
 import org.joda.time.DateTime;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.CommunicationType;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
@@ -91,7 +90,7 @@ public class CommunicationReader extends AbstractCommunicationReader {
     return this.getCommunications(new DateTime(unixTimePast * 1000), new DateTime());
   }
   
-  public Iterator<Communication> getCommunications(CommunicationType t) throws RebarException {
+  public Iterator<Communication> getCommunications(String t) throws RebarException {
     Range r = new Range("type:"+t.toString());
     return this.rangeToIter(r);
   }

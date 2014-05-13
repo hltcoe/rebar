@@ -6,14 +6,8 @@ package edu.jhu.hlt.rebar.accumulo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Iterator;
-import java.util.Map.Entry;
-
 import org.apache.accumulo.core.client.MutationsRejectedException;
-import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Value;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,8 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.rebar.Configuration;
-import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 
 

@@ -8,8 +8,8 @@
     <version>2.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>rebar-asphalt</artifactId>
-  <name>Rebar :: Asphalt</name>
+  <artifactId>rebar-thrift</artifactId>
+  <name>Rebar :: Thrift</name>
   <description>Java classes for Thrift structs used in Rebar</description>
 
   <build>
@@ -49,7 +49,7 @@
     </dependency>
     <dependency>
       <groupId>edu.jhu.hlt</groupId>
-      <artifactId>concrete-core</artifactId>
+      <artifactId>ballast-asphalt</artifactId>
     </dependency>
   </dependencies>
 </project>

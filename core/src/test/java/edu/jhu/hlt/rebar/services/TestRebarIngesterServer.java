@@ -3,28 +3,10 @@
  */
 package edu.jhu.hlt.rebar.services;
 
-import static org.junit.Assert.*;
-
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Range;
-import org.apache.accumulo.core.data.Value;
-import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 
-import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.asphalt.services.Ingester;
-import edu.jhu.hlt.asphalt.AsphaltException;
-import edu.jhu.hlt.rebar.Constants;
-import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.Util;
-import edu.jhu.hlt.rebar.accumulo.AbstractAccumuloTest;
+import edu.jhu.hlt.grommet.services.Ingester;
 
 /**
  * @author max

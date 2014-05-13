@@ -3,9 +3,6 @@ package edu.jhu.hlt.rebar.accumulo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,23 +17,21 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.hlt.asphalt.Stage;
-import edu.jhu.hlt.asphalt.StageType;
+import edu.jhu.hlt.ballast.tools.BasicSituationTagger;
+import edu.jhu.hlt.ballast.tools.LatinEntityTagger;
+import edu.jhu.hlt.ballast.tools.SillySentenceSegmenter;
+import edu.jhu.hlt.ballast.tools.SingleSectionSegmenter;
+import edu.jhu.hlt.ballast.tools.TiftTokenizer;
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.CommunicationType;
 import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.Sentence;
 import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.TokenizationCollection;
-import edu.jhu.hlt.concrete.util.SuperCommunication;
+import edu.jhu.hlt.grommet.Stage;
+import edu.jhu.hlt.grommet.StageType;
 import edu.jhu.hlt.rebar.Util;
-import edu.jhu.hlt.rebar.ballast.tools.BasicSituationTagger;
-import edu.jhu.hlt.rebar.ballast.tools.LatinEntityTagger;
-import edu.jhu.hlt.rebar.ballast.tools.SillySentenceSegmenter;
-import edu.jhu.hlt.rebar.ballast.tools.SingleSectionSegmenter;
-import edu.jhu.hlt.rebar.ballast.tools.TiftTokenizer;
 import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
 import edu.jhu.hlt.rebar.stage.StageCreator;
@@ -85,12 +80,12 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     }
     
     CommunicationReader cr = new CommunicationReader(this.conn);
-    Iterator<Communication> commIter = cr.getCommunications(CommunicationType.TWEET);
+    Iterator<Communication> commIter = cr.getCommunications("Tweet");
     assertEquals("Should get " + nDocs + "ingested docs.", nDocs, Util.countIteratorResults(commIter));
     assertEquals("Shouldn't get any non-Tweets.", 0, 
-        Util.countIteratorResults(cr.getCommunications(CommunicationType.NEWS)));
+        Util.countIteratorResults(cr.getCommunications("News")));
     
-    commIter = cr.getCommunications(CommunicationType.TWEET);
+    commIter = cr.getCommunications("Tweet");
     while(commIter.hasNext()) {
       Communication c = commIter.next();
       assertTrue(idToCommMap.containsKey(c.id));
@@ -109,10 +104,10 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     
     Map<String, SectionSegmentation> idToSSMap = new HashMap<>(11);
     try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(st.name);) {
-      commIter = cr.getCommunications(CommunicationType.TWEET);
+      commIter = cr.getCommunications("Tweet");
       while(commIter.hasNext()) {
         Communication c = commIter.next();
-        SectionSegmentation empty = sss.annotate(c);
+        SectionSegmentation empty = sss.annotateDiff(c);
         idToSSMap.put(empty.uuid, empty);
         retStage.annotate(empty, c.id);
       }
@@ -138,14 +133,14 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     assertEquals("Should find the ingested stage via get method.", stTwo, sr.get(stTwo.name));
     
     try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(stTwo.name);) {
-      commIter = cr.getCommunications(CommunicationType.TWEET);
+      commIter = cr.getCommunications("Tweet");
       for (int i = 0; i < 2; i++)
         if (commIter.hasNext())
           commIter.next();
       
       while(commIter.hasNext()) {
         Communication c = commIter.next();
-        SectionSegmentation empty = sss.annotate(c);
+        SectionSegmentation empty = sss.annotateDiff(c);
         retStage.annotate(empty, c.id);
       }
     }
@@ -180,7 +175,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
       while (retComms.hasNext()) {
         Communication c = retComms.next();
         assertTrue(c.isSetSectionSegmentations() && !c.getSectionSegmentations().isEmpty());
-        SentenceSegmentationCollection coll = this.sentSegmenter.annotate(c);
+        SentenceSegmentationCollection coll = this.sentSegmenter.annotateDiff(c);
         writer.annotate(coll, c.getId());
       }
     }
@@ -235,7 +230,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
           }
         }
         
-        TokenizationCollection coll = this.tokenizer.annotate(c);
+        TokenizationCollection coll = this.tokenizer.annotateDiff(c);
         writer.annotate(coll, c.getId());
       }
     }

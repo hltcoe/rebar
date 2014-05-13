@@ -5,9 +5,9 @@ package edu.jhu.hlt.rebar.stage.writer;
 
 import org.apache.accumulo.core.client.Connector;
 
-import edu.jhu.hlt.asphalt.Stage;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.TokenizationCollection;
+import edu.jhu.hlt.grommet.Stage;
 import edu.jhu.hlt.rebar.AnnotationException;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;

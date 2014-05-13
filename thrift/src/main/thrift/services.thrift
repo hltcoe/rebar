@@ -9,9 +9,8 @@ include "twitter.thrift"
 include "audio.thrift"
 include "communication.thrift"
 
-namespace java edu.jhu.hlt.asphalt.services
-namespace py asphalt.services
-#@namespace scala edu.jhu.hlt.grommet.services
+namespace java edu.jhu.hlt.grommet.services
+namespace py grommet.services
 
 typedef communication.Communication Comm
 
@@ -37,11 +36,4 @@ service CorpusHandler {
   list<string> listCorpora() throws (1: ex.AsphaltException ex)
   void deleteCorpus(1: string corpusName) throws (1: ex.AsphaltException ex)
   bool corpusExists(1: string corpusName) throws (1: ex.AsphaltException ex)
-}
-
-/**
- * Annotator service methods.
- */
-service Annotator {
-  Comm annotate(1: Comm original) throws (1: ex.AsphaltException ex)
 }

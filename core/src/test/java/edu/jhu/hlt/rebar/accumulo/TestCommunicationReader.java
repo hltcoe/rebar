@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.concrete.CommunicationType;
 import edu.jhu.hlt.rebar.RebarException;
 
 /**
@@ -113,7 +112,7 @@ public class TestCommunicationReader extends AbstractAccumuloTest {
   }
 
   /**
-   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CommunicationReader#getCommunications(edu.jhu.hlt.concrete.CommunicationType)}.
+   * Test method for {@link edu.jhu.hlt.rebar.accumulo.CommunicationReader#getCommunications(String)}.
    * 
    * @throws RebarException 
    * @throws TableNotFoundException 
@@ -121,16 +120,16 @@ public class TestCommunicationReader extends AbstractAccumuloTest {
    */
   @Test
   public void communicationsByType() throws RebarException, TableNotFoundException, MutationsRejectedException {
-    assertFalse(cr.getCommunications(CommunicationType.NEWS).hasNext());
+    assertFalse(cr.getCommunications("News").hasNext());
     Communication c = generateMockDocument();
     ci.ingest(c);
     Communication c2 = generateMockDocument();
     ci.ingest(c2);
     
-    assertFalse(cr.getCommunications(CommunicationType.NEWS).hasNext());
-    assertTrue(cr.getCommunications(CommunicationType.TWEET).hasNext());
+    assertFalse(cr.getCommunications("News").hasNext());
+    assertTrue(cr.getCommunications("Tweet").hasNext());
     
-    Iterator<Communication> commIter = cr.getCommunications(CommunicationType.TWEET);
+    Iterator<Communication> commIter = cr.getCommunications("Tweet");
     int ct = 0;
     while (commIter.hasNext()) {
       commIter.next();
@@ -139,7 +138,7 @@ public class TestCommunicationReader extends AbstractAccumuloTest {
     
     assertEquals(2, ct);
     
-    commIter = cr.getCommunications(CommunicationType.TWEET);
+    commIter = cr.getCommunications("Tweet");
     ct = 0;
     
     while (commIter.hasNext()) {

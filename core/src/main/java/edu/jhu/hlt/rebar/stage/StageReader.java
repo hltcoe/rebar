@@ -20,11 +20,11 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
 import org.apache.thrift.TException;
 
-import edu.jhu.hlt.asphalt.Stage;
-import edu.jhu.hlt.asphalt.StageType;
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.TokenizationCollection;
+import edu.jhu.hlt.grommet.Stage;
+import edu.jhu.hlt.grommet.StageType;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;

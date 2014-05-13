@@ -1,6 +1,5 @@
-namespace java edu.jhu.hlt.asphalt
-namespace py asphalt
-#@namespace scala edu.jhu.hlt.grommet
+namespace java edu.jhu.hlt.grommet
+namespace py grommet
 
 /**
  * Possible annotation types that Stages can produce.
