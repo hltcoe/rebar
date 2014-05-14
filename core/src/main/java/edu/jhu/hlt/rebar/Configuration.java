@@ -30,15 +30,19 @@ public final class Configuration {
   private static final Properties props = new Properties();
   
   static {
-    try (InputStream stream = Configuration.class.getClassLoader().getResourceAsStream("rebar.properties");) {
-      if (stream == null)
-        throw new RuntimeException("Problem finding rebar.properties on the classpath.");
-      props.load(stream);
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to load properties file rebar.properties!", e);
+    if (System.getenv("REBAR_ENV").equals("testing"))
+      props.setProperty("accumuloMock", "true");
+    else {
+      try (InputStream stream = Configuration.class.getClassLoader().getResourceAsStream("rebar.properties");) {
+        if (stream == null)
+          throw new RuntimeException("Problem finding rebar.properties on the classpath.");
+        props.load(stream);
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to load properties file rebar.properties!", e);
+      }
+      // Configure the logger.
+      PropertyConfigurator.configure(props);
     }
-    // Configure the logger.
-    PropertyConfigurator.configure(props);
   };
 
   public static boolean useAccumuloMock() {
