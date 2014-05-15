@@ -30,7 +30,8 @@ public final class Configuration {
   private static final Properties props = new Properties();
   
   static {
-    if (System.getenv("REBAR_ENV").equals("testing"))
+    String envVar = System.getenv("REBAR_ENV");
+    if (envVar != null && envVar.equals("testing"))
       props.setProperty("accumuloMock", "true");
     else {
       try (InputStream stream = Configuration.class.getClassLoader().getResourceAsStream("rebar.properties");) {
