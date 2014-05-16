@@ -19,9 +19,12 @@ import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.grommet.Stage;
+import edu.jhu.hlt.grommet.StageType;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
@@ -34,6 +37,8 @@ import edu.jhu.hlt.rebar.accumulo.AbstractAccumuloClient;
  */
 public class StageCreator extends AbstractAccumuloClient implements AutoCloseable {
 
+  private static final Logger logger = LoggerFactory.getLogger(StageCreator.class);
+  
   protected final BatchWriter stagesTableBW;
   protected final BatchWriter stagesIdxBW;
   protected final StageReader sr;
@@ -149,4 +154,49 @@ public class StageCreator extends AbstractAccumuloClient implements AutoCloseabl
     }
   }
 
+  public static void main(String... args) throws Exception {
+    if (args.length != 3) {
+      logger.info("Use this program to create a stage with no dependencies, suitable for LIDs or Sections.");
+      logger.info("Takes 3 arguments: stage-name, stage-description, stage-type.");
+      logger.info("Stage type must be one of (case ignored):");
+      logger.info("SECTION");
+      logger.info("LANG_ID");
+      logger.info("Usage: {} <{}> <{}> <{}>", 
+          StageCreator.class.getSimpleName(), "stage-name", "stage-description", "stage-type");
+      System.exit(1);
+    }
+    
+    String stageName = args[0];
+    if (new StageReader().exists(stageName)) {
+      logger.info("Stage {} exists already. Choose a different name.", stageName);
+      System.exit(1);
+    }
+      
+    String stageDesc = args[1];
+    String stageTypeString = args[2];
+    StageType st;
+    try {
+      st = StageType.valueOf(stageTypeString.toUpperCase());
+      if (!(st == StageType.LANG_ID || st == StageType.SECTION)) {
+        logger.info("Currently you can only create LANG_ID or SECTION stages, not {}.", st.toString());
+        System.exit(1);
+      }
+    } catch (IllegalArgumentException iae) {
+      throw new RuntimeException(stageTypeString + " was not a valid stage.");
+    }
+    
+    Stage s = new Stage()
+      .setName(stageName)
+      .setType(st)
+      .setDescription(stageDesc)
+      .setCreateTime(System.currentTimeMillis())
+      .setDependencies(new HashSet<String>());
+    
+    try (StageCreator sc = new StageCreator()) {
+      sc.create(s);
+    }
+    
+    logger.info("Stage created successfully!");
+    System.exit(0);
+  }
 }
