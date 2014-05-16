@@ -82,7 +82,8 @@ public final class StageReader extends AbstractReader<Stage> {
       docsc = this.conn.createBatchScanner(this.tableName, Configuration.getAuths(), 8);
       docsc.setRanges(ids);
       docsc.fetchColumnFamily(new Text(Constants.STAGES_OBJ_COLF));
-      return docsc.iterator();
+      Iterator<Entry<Key, Value>> iter = docsc.iterator();
+      return iter;
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
     } finally {

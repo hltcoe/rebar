@@ -72,6 +72,6 @@ public class TestStageReader extends AbstractAccumuloTest {
     ing.create(generateTestStage());
     ing.create(generateTestStage("foo_test", "Good stage", new HashSet<String>(), StageType.LANG_ID));
     
-    this.sr.printStages();
+    new StageReader(this.conn).printStages();
   }
 }
