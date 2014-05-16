@@ -83,9 +83,6 @@ public final class StageReader extends AbstractReader<Stage> {
       return docsc;
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
-    } finally {
-      if (docsc != null)
-        docsc.close();
     }
   }
   
