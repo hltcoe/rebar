@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
@@ -30,8 +31,8 @@ public class SectionMergingIterator extends AbstractThriftIterator<Communication
    * @param iter
    * @param stageName
    */
-  public SectionMergingIterator(Iterator<Entry<Key, Value>> iter, String stageName) {
-    super(iter);
+  public SectionMergingIterator(ScannerBase sc, String stageName) {
+    super(sc);
     this.stageName = stageName;
   }
 

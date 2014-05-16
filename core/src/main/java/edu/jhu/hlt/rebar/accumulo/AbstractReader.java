@@ -13,6 +13,7 @@ import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.Scanner;
+import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
@@ -73,14 +74,14 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
     }
   }
   
-  protected abstract Iterator<T> accumuloIterToTIter (Iterator<Entry<Key, Value>> accIter) throws RebarException;
+  protected abstract Iterator<T> accumuloIterToTIter (ScannerBase sc) throws RebarException;
   
   protected Iterator<T> fromMainTable(String rowId) throws RebarException {
     try {
       Scanner sc = this.conn.createScanner(this.tableName, Configuration.getAuths());
       Range r = new Range(rowId, rowId);
       sc.setRange(r);
-      return this.accumuloIterToTIter(sc.iterator());
+      return this.accumuloIterToTIter(sc);
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
     }
@@ -110,9 +111,9 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
 //        docsc.close();
 //    }
 //  }
-  protected abstract Iterator<Entry<Key, Value>> batchScanMainTable(Collection<Range> ids) throws RebarException;
+  protected abstract BatchScanner batchScanMainTable(Collection<Range> ids) throws RebarException;
   
-  protected Iterator<Entry<Key, Value>> batchScanMainTableWholeRowIterator(Collection<Range> ids) throws RebarException {
+  protected BatchScanner batchScanMainTableWholeRowIterator(Collection<Range> ids) throws RebarException {
     // scan document table with IDs.
     BatchScanner docsc = null;
     try {
@@ -120,12 +121,9 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
       docsc.setRanges(ids);
       IteratorSetting itSettings = new IteratorSetting(1, WholeRowIterator.class);
       docsc.addScanIterator(itSettings);
-      return docsc.iterator();
+      return docsc;
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
-    } finally {
-      if (docsc != null)
-        docsc.close();
     }
   }
   

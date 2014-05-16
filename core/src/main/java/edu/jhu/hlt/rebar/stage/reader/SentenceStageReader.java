@@ -4,11 +4,9 @@
 package edu.jhu.hlt.rebar.stage.reader;
 
 import java.util.Iterator;
-import java.util.Map.Entry;
 
 import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.client.ScannerBase;
 
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Constants;
@@ -45,7 +43,7 @@ public class SentenceStageReader extends SectionStageReader {
    * @see edu.jhu.hlt.rebar.accumulo.AbstractReader#accumuloIterToTIter(java.util.Iterator)
    */
   @Override
-  protected Iterator<Communication> accumuloIterToTIter(Iterator<Entry<Key, Value>> accIter) throws RebarException {
-    return new SentenceMergingIterator(accIter, stageName, this.sectStageDep);
+  protected Iterator<Communication> accumuloIterToTIter(ScannerBase sc) throws RebarException {
+    return new SentenceMergingIterator(sc, stageName, this.sectStageDep);
   }
 }

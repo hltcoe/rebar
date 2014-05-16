@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
@@ -40,8 +41,8 @@ public class TokenizationMergingIterator extends SentenceMergingIterator {
    * @param sectDepStage
    * @param sentDepStage
    */
-  public TokenizationMergingIterator(Iterator<Entry<Key, Value>> iter, String stageName, String sectDepStage, String sentDepStage) {
-    super(iter, stageName, sectDepStage);
+  public TokenizationMergingIterator(ScannerBase sc, String stageName, String sectDepStage, String sentDepStage) {
+    super(sc, stageName, sectDepStage);
     this.sentDepStage = sentDepStage;
   }
 

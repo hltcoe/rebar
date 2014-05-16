@@ -4,13 +4,11 @@
 package edu.jhu.hlt.rebar.stage;
 
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
-import org.apache.accumulo.core.data.Value;
 
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Constants;
@@ -44,7 +42,7 @@ public abstract class AbstractStageReader extends AbstractCommunicationReader {
   protected Iterator<Communication> mergedIterator() throws RebarException {
     Range r = new Range("stage:"+this.stageName);
     Set<Range> ranges = this.scanIndexTableColF(r);
-    Iterator<Entry<Key, Value>> eIter = this.batchScanMainTableWholeRowIterator(ranges);
+    BatchScanner eIter = this.batchScanMainTableWholeRowIterator(ranges);
     return this.accumuloIterToTIter(eIter);
   }
   

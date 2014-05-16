@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
@@ -36,9 +37,9 @@ public class SituationMentionMergingIterator extends TokenizationMergingIterator
    * @param sectDepStage
    * @param sentDepStage
    */
-  public SituationMentionMergingIterator(Iterator<Entry<Key, Value>> iter, String stageName, String sectDepStage, 
+  public SituationMentionMergingIterator(ScannerBase sc, String stageName, String sectDepStage, 
       String sentDepStage, String tokenizationDepStage) {
-    super(iter, stageName, sectDepStage, sentDepStage);
+    super(sc, stageName, sectDepStage, sentDepStage);
     this.tokenizationDepStage = tokenizationDepStage;
   }
 

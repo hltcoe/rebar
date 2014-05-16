@@ -3,9 +3,9 @@
  */
 package edu.jhu.hlt.rebar.accumulo;
 
-import java.util.Iterator;
 import java.util.Map.Entry;
 
+import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.thrift.TException;
@@ -22,8 +22,8 @@ public class CommunicationIterator extends AbstractThriftIterator<Communication>
   /**
    * @param iter
    */
-  public CommunicationIterator(Iterator<Entry<Key, Value>> iter) {
-    super(iter);
+  public CommunicationIterator(ScannerBase sc) {
+    super(sc);
   }
 
   /* (non-Javadoc)

@@ -7,16 +7,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Scanner;
+import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
-import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
 import org.apache.thrift.TException;
 
@@ -60,13 +58,13 @@ public final class StageReader extends AbstractReader<Stage> {
   }
 
   @Override
-  protected Iterator<Stage> accumuloIterToTIter(Iterator<Entry<Key, Value>> accIter) throws RebarException {
-    return new AbstractThriftIterator<Stage>(accIter) {
+  protected Iterator<Stage> accumuloIterToTIter(ScannerBase sc) throws RebarException {
+    return new AbstractThriftIterator<Stage>(sc) {
       @Override
       public Stage next() {
         try {
           Stage c = new Stage();
-          deser.deserialize(c, iter.next().getValue().get());
+          deser.deserialize(c, this.iter.next().getValue().get());
           return c;
         } catch (TException e) {
           throw new RuntimeException(e);
@@ -76,14 +74,13 @@ public final class StageReader extends AbstractReader<Stage> {
   }
   
   @Override
-  protected Iterator<Entry<Key, Value>> batchScanMainTable(Collection<Range> ids) throws RebarException {
+  protected BatchScanner batchScanMainTable(Collection<Range> ids) throws RebarException {
     BatchScanner docsc = null;
     try {
       docsc = this.conn.createBatchScanner(this.tableName, Configuration.getAuths(), 8);
       docsc.setRanges(ids);
       docsc.fetchColumnFamily(new Text(Constants.STAGES_OBJ_COLF));
-      Iterator<Entry<Key, Value>> iter = docsc.iterator();
-      return iter;
+      return docsc;
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
     } finally {
@@ -113,7 +110,7 @@ public final class StageReader extends AbstractReader<Stage> {
         Scanner sc = this.conn.createScanner(this.tableName, Configuration.getAuths());
         Range r = new Range(stageName);
         sc.setRange(r);
-        return this.accumuloIterToTIter(sc.iterator()).next();
+        return this.accumuloIterToTIter(sc).next();
       } catch (TableNotFoundException e) {
         throw new RebarException(e);
       }
