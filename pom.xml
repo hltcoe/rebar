@@ -240,6 +240,11 @@
         <version>${concrete.version}</version>
       </dependency>
       <dependency>
+        <groupId>edu.jhu.hlt</groupId>
+        <artifactId>concrete-validation</artifactId>
+        <version>${concrete.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-core</artifactId>
         <version>1.1.1</version>

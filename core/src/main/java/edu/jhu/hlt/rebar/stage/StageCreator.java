@@ -68,6 +68,9 @@ public class StageCreator extends AbstractAccumuloClient implements AutoCloseabl
   public void create(Stage stage) throws RebarException {
     if (this.sr.exists(stage.name))
       throw new RebarException("Can't create a stage that exists.");
+    
+    if (stage.getType() == null)
+      throw new RebarException("No type specified for stage.");
 
     Set<String> deps = stage.dependencies;
     for (String dep : deps) {

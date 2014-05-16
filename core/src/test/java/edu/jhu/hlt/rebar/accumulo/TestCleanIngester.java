@@ -14,6 +14,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.jhu.hlt.ballast.InvalidInputException;
+import edu.jhu.hlt.ballast.tools.SingleSectionSegmenter;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.RebarException;
 
@@ -68,6 +70,15 @@ public class TestCleanIngester extends AbstractAccumuloTest {
     ci.ingest(c2);
     assertTrue(cr.exists(c));
     assertTrue(cr.exists(c2));
+  }
+  
+  @Test(expected=RebarException.class)
+  public void exWithAnnotations() throws RebarException, TableNotFoundException, MutationsRejectedException, InvalidInputException {
+    assertFalse(cr.exists("bar"));
+    Communication c = generateMockDocument();
+    c.addToSectionSegmentations(new SingleSectionSegmenter().annotateDiff(c));
+    ci.ingest(c);
+    assertTrue(cr.exists(c));
   }
   
   /*

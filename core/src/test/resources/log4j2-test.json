@@ -14,7 +14,17 @@
                 "appender-ref": {
                     "ref": "STDOUT"
                 }
-            }
+            },
+            
+            "logger" : [
+            	{
+	            	"name" : "org.apache.hadoop",
+	            	"level": "warn",
+	                "appender-ref": {
+	                    "ref": "STDOUT"
+	                }
+            	}
+            ]
         }
     }
 }
