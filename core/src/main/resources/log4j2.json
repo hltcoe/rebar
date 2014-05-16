@@ -24,7 +24,15 @@
 	                "appender-ref": {
 	                    "ref": "STDOUT"
 	                }
-            	}, 
+            	},
+            	
+            	{
+	            	"name" : "org.apache.zookeeper",
+	            	"level": "warn",
+	                "appender-ref": {
+	                    "ref": "STDOUT"
+	                }
+            	},
             
             	{
 	            	"name" : "org.apache.jena",
