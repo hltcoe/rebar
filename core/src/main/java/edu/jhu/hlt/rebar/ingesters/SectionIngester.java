@@ -4,6 +4,8 @@
 package edu.jhu.hlt.rebar.ingesters;
 
 import org.apache.accumulo.core.client.Connector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.concrete.AnnotationMetadata;
 import edu.jhu.hlt.concrete.Communication;
@@ -26,6 +28,8 @@ import edu.jhu.hlt.rebar.stage.writer.SectionStageWriter;
  */
 public class SectionIngester implements AutoCloseable {
 
+  private static final Logger logger = LoggerFactory.getLogger(SectionIngester.class);
+  
   protected final Connector conn;
   protected final CleanIngester ci;
   protected final StageCreator sc;
@@ -51,12 +55,17 @@ public class SectionIngester implements AutoCloseable {
   public void ingestAndAnnotate(Communication c, Stage s) throws RebarException, AnnotationException {
     try {
       SuperCommunication sc = new SuperCommunication(c);
+      logger.debug("Checking for sections.");
       if (!sc.hasSections())
         throw new AnnotationException("Communication: " + c.getId() + " does not have sections.");
       SectionSegmentation ss = sc.firstSectionSegmentation();
+      logger.debug("Working with SectionSegmentation object: {}", ss.toString());
+      logger.debug("Attempting to validate first section segmentation object.");
       if (!new ValidatableSectionSegmentation(ss).validate(c))
         throw new AnnotationException("Section segmentation: " + ss.getUuid() + " is not valid; cannot continue.");
       AnnotationMetadata md = ss.getMetadata();
+      logger.debug("Attempting to validate AnnotationMetadata object.");
+      logger.debug("AnnotationMetadata: {}", md.toString());
       if (!new ValidatableMetadata(md).validate(c))
         throw new AnnotationException("Metadata for section segmentation: " + ss.getUuid() + " is not valid; cannot continue.");
 
