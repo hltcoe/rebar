@@ -58,7 +58,7 @@ public final class StageReader extends AbstractReader<Stage> {
   }
 
   @Override
-  protected Iterator<Stage> accumuloIterToTIter(ScannerBase sc) throws RebarException {
+  protected AbstractThriftIterator<Stage> accumuloIterToTIter(ScannerBase sc) throws RebarException {
     return new AbstractThriftIterator<Stage>(sc) {
       @Override
       public Stage next() {
@@ -107,7 +107,10 @@ public final class StageReader extends AbstractReader<Stage> {
         Scanner sc = this.conn.createScanner(this.tableName, Configuration.getAuths());
         Range r = new Range(stageName);
         sc.setRange(r);
-        return this.accumuloIterToTIter(sc).next();
+        try (AbstractThriftIterator<Stage> iter = this.accumuloIterToTIter(sc);) {
+          Stage match = iter.next();
+          return match;
+        }
       } catch (TableNotFoundException e) {
         throw new RebarException(e);
       }
