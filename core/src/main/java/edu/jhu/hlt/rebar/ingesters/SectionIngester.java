@@ -20,6 +20,7 @@ import edu.jhu.hlt.rebar.AnnotationException;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.accumulo.CleanIngester;
+import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
 import edu.jhu.hlt.rebar.stage.StageCreator;
 import edu.jhu.hlt.rebar.stage.writer.SectionStageWriter;
 
@@ -72,9 +73,12 @@ public class SectionIngester implements AutoCloseable {
       if (!new ValidatableMetadata(md).validate(c))
         throw new AnnotationException("Metadata for section segmentation: " + ss.getUuid() + " is not valid; cannot continue.");
 
-      // ingest the comm *ONLY*.
-      Communication stripped = new SuperCommunication(c).stripAnnotations().getCopy();
-      this.ci.ingest(stripped);
+      // see if comm exists. if not, ingest comm *ONLY*.
+      if (!new CommunicationReader(this.conn).exists(c)) {
+        logger.debug("Communication {} is not ingested; ingesting.", c.getId());
+        Communication stripped = new SuperCommunication(c).stripAnnotations().getCopy();
+        this.ci.ingest(stripped);
+      }
       
       // ingest the annotation.
       this.sectionWriter.annotate(ss, c.getId());

@@ -56,7 +56,9 @@ public class CleanIngester extends AbstractCommunicationWriter {
   }
   
   public void ingest(Communication d) throws RebarException {
-    logger.debug("Got ingest request: " + d.id);
+    logger.debug("Got ingest request: {}", d);
+    logger.debug("ID: {}", d.getId());
+    logger.debug("UUID: {}", d.getUuid());
     if (new CommunicationReader().exists(d))
       return;
     
