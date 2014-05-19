@@ -58,11 +58,12 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
   }
   
   protected Set<Range> scanIndexTableColF (Range r) throws RebarException {
+    Scanner sc = null;
     try {
       Set<Range> rowsToGet = new HashSet<>();
       
       // scan IDX table for ids.
-      Scanner sc = this.conn.createScanner(this.idxTableName, Configuration.getAuths());
+      sc = this.conn.createScanner(this.idxTableName, Configuration.getAuths());
       sc.setRange(r);
       Iterator<Entry<Key, Value>> iter = sc.iterator();
       while (iter.hasNext()) {
@@ -73,6 +74,8 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
       return rowsToGet;
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
+    } finally {
+      sc.close();
     }
   }
   

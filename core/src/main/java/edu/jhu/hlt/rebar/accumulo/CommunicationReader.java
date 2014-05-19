@@ -43,13 +43,17 @@ public class CommunicationReader extends AbstractCommunicationReader {
   }
 
   public boolean exists (String docId) throws RebarException {
+    Scanner sc = null;
     try {
-      Scanner sc = this.conn.createScanner(this.idxTableName, Configuration.getAuths());
+      sc = this.conn.createScanner(this.idxTableName, Configuration.getAuths());
       Range r = new Range("doc_id:" + docId);
       sc.setRange(r);
       return sc.iterator().hasNext();
     } catch (TableNotFoundException e) {
       throw new RebarException(e);
+    } finally {
+      if (sc != null)
+        sc.close();
     }
   }
   
