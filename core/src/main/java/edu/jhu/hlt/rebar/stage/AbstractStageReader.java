@@ -3,7 +3,6 @@
  */
 package edu.jhu.hlt.rebar.stage;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.accumulo.core.client.BatchScanner;
@@ -14,6 +13,7 @@ import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.accumulo.AbstractCommunicationReader;
+import edu.jhu.hlt.rebar.client.iterators.AutoCloseableAccumuloIterator;
 
 /**
  * @author max
@@ -39,14 +39,14 @@ public abstract class AbstractStageReader extends AbstractCommunicationReader {
       throw new RebarException("Stage: " + stageName + " doesn't exist; you need to create it first.");
   }
   
-  protected Iterator<Communication> mergedIterator() throws RebarException {
+  protected AutoCloseableAccumuloIterator<Communication> mergedIterator() throws RebarException {
     Range r = new Range("stage:"+this.stageName);
     Set<Range> ranges = this.scanIndexTableColF(r);
     BatchScanner eIter = this.batchScanMainTableWholeRowIterator(ranges);
     return this.accumuloIterToTIter(eIter);
   }
   
-  public final Iterator<Communication> getAll() throws RebarException {
+  public final AutoCloseableAccumuloIterator<Communication> getAll() throws RebarException {
     return this.mergedIterator();
   }
 }

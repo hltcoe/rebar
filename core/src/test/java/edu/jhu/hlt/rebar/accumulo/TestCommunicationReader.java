@@ -53,11 +53,10 @@ public class TestCommunicationReader extends AbstractAccumuloTest {
   
   /**
    * Test method for {@link edu.jhu.hlt.rebar.accumulo.CommunicationReader#byUuid(String)}.
-   * 
-   * @throws RebarException 
+   * @throws Exception 
    */
   @Test(expected=RebarException.class)
-  public void byUuidNonExistent() throws RebarException {
+  public void byUuidNonExistent() throws Exception {
     Communication c = generateMockDocument();
     ci.ingest(c);
     
@@ -66,11 +65,10 @@ public class TestCommunicationReader extends AbstractAccumuloTest {
   
   /**
    * Test method for {@link edu.jhu.hlt.rebar.accumulo.CommunicationReader#byUuid(String)}.
-   * 
-   * @throws RebarException 
+   * @throws Exception 
    */
   @Test
-  public void byUuid() throws RebarException {
+  public void byUuid() throws Exception {
     Communication c = generateMockDocument();
     UUID id = UUID.fromString(c.uuid);
     ci.ingest(c);

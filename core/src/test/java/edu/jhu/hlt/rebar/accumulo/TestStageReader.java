@@ -64,11 +64,11 @@ public class TestStageReader extends AbstractAccumuloTest {
   
   /**
    * Test method for {@link edu.jhu.hlt.rebar.stage.StageCreator#exists(java.lang.String)}.
+   * @throws Exception 
    * @throws TException 
-   * @throws RebarException 
    */
   @Test
-  public void testPrinting() throws RebarException {
+  public void testPrinting() throws Exception {
     ing.create(generateTestStage());
     ing.create(generateTestStage("foo_test", "Good stage", new HashSet<String>(), StageType.LANG_ID));
     

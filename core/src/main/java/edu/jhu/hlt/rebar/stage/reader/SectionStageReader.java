@@ -3,14 +3,13 @@
  */
 package edu.jhu.hlt.rebar.stage.reader;
 
-import java.util.Iterator;
-
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.ScannerBase;
 
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
 import edu.jhu.hlt.rebar.client.iterators.SectionMergingIterator;
 import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 
@@ -41,7 +40,7 @@ public class SectionStageReader extends AbstractStageReader {
    * @see edu.jhu.hlt.rebar.accumulo.AbstractReader#accumuloIterToTIter(java.util.Iterator)
    */
   @Override
-  protected Iterator<Communication> accumuloIterToTIter(ScannerBase sc) throws RebarException {
+  protected AbstractThriftIterator<Communication> accumuloIterToTIter(ScannerBase sc) throws RebarException {
     return new SectionMergingIterator(sc, stageName);
   }
 }

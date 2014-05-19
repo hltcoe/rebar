@@ -23,7 +23,9 @@ import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.client.iterators.EmptyIterator;
+import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
+import edu.jhu.hlt.rebar.client.iterators.AutoCloseableAccumuloIterator;
+import edu.jhu.hlt.rebar.client.iterators.EmptyAutoCloseableAccumuloIterator;
 
 /**
  * @author max
@@ -74,9 +76,9 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
     }
   }
   
-  protected abstract Iterator<T> accumuloIterToTIter (ScannerBase sc) throws RebarException;
+  protected abstract AbstractThriftIterator<T> accumuloIterToTIter (ScannerBase sc) throws RebarException;
   
-  protected Iterator<T> fromMainTable(String rowId) throws RebarException {
+  protected AutoCloseableAccumuloIterator<T> fromMainTable(String rowId) throws RebarException {
     try {
       Scanner sc = this.conn.createScanner(this.tableName, Configuration.getAuths());
       Range r = new Range(rowId, rowId);
@@ -87,12 +89,12 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
     }
   }
   
-  protected Iterator<T> rangeToIter(Range docIdxRange) throws RebarException {
+  protected AutoCloseableAccumuloIterator<T> rangeToIter(Range docIdxRange) throws RebarException {
     Set<Range> uuidsToGet = this.scanIndexTableColF(docIdxRange);
     // if we didn't find any IDs, there aren't any docs of this type.
     // return empty iterator.
     if (uuidsToGet.isEmpty())
-      return new EmptyIterator<T>();
+      return new EmptyAutoCloseableAccumuloIterator<T>();
     else
       return this.accumuloIterToTIter(this.batchScanMainTable(uuidsToGet));
   }
@@ -127,5 +129,5 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
     }
   }
   
-  public abstract Iterator<T> getAll() throws RebarException;
+  public abstract AutoCloseableAccumuloIterator<T> getAll() throws RebarException;
 }

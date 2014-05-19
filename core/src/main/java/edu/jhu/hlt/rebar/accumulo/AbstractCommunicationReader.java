@@ -4,7 +4,6 @@
 package edu.jhu.hlt.rebar.accumulo;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.Connector;
@@ -17,6 +16,7 @@ import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
 
 /**
  * @author max
@@ -40,7 +40,7 @@ public abstract class AbstractCommunicationReader extends AbstractReader<Communi
   }
   
   @Override
-  protected Iterator<Communication> accumuloIterToTIter(ScannerBase sc) throws RebarException {
+  protected AbstractThriftIterator<Communication> accumuloIterToTIter(ScannerBase sc) throws RebarException {
     return new CommunicationIterator(sc);
   }
   

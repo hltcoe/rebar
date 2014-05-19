@@ -3,7 +3,6 @@
  */
 package edu.jhu.hlt.rebar.client.iterators;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -11,13 +10,13 @@ import java.util.NoSuchElementException;
  * 
  * @author max
  */
-public class EmptyIterator<T> implements Iterator<T> {
+public class EmptyAutoCloseableAccumuloIterator<T> extends AutoCloseableAccumuloIterator<T> {
 
   /**
    * 
    */
-  public EmptyIterator() {
-
+  public EmptyAutoCloseableAccumuloIterator() {
+    super(null);
   }
 
   @Override
@@ -30,9 +29,11 @@ public class EmptyIterator<T> implements Iterator<T> {
     throw new NoSuchElementException("This iterator is empty.");
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.AutoCloseable#close()
+   */
   @Override
-  public void remove() {
-    throw new UnsupportedOperationException("You cannot remove with this iterator.");
+  public void close() throws Exception {
+    // nothing.
   }
-
 }

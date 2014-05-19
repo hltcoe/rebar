@@ -5,7 +5,6 @@ package edu.jhu.hlt.rebar.stage;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -28,6 +27,7 @@ import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.accumulo.AbstractReader;
 import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
+import edu.jhu.hlt.rebar.client.iterators.AutoCloseableAccumuloIterator;
 import edu.jhu.hlt.rebar.stage.reader.SectionStageReader;
 import edu.jhu.hlt.rebar.stage.reader.SentenceStageReader;
 import edu.jhu.hlt.rebar.stage.reader.TokenizationStageReader;
@@ -119,11 +119,11 @@ public final class StageReader extends AbstractReader<Stage> {
     }
   }
 
-  public Iterator<Stage> getStages() throws RebarException {
+  public AutoCloseableAccumuloIterator<Stage> getStages() throws RebarException {
     return this.rangeToIter(new Range());
   }
   
-  public Iterator<Stage> getStages(StageType t) throws RebarException {
+  public AutoCloseableAccumuloIterator<Stage> getStages(StageType t) throws RebarException {
     Range r = new Range("type:"+t.toString());
     return this.rangeToIter(r);
   }
@@ -132,7 +132,7 @@ public final class StageReader extends AbstractReader<Stage> {
    * @see edu.jhu.hlt.rebar.accumulo.AbstractReader#get()
    */
   @Override
-  public Iterator<Stage> getAll() throws RebarException {
+  public AutoCloseableAccumuloIterator<Stage> getAll() throws RebarException {
     return this.rangeToIter(new Range());
   }
   
@@ -212,15 +212,16 @@ public final class StageReader extends AbstractReader<Stage> {
       throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SectionStage.");
   }
   
-  public void printStages() throws RebarException {
-    Iterator<Stage> iter = this.getStages();
-    while (iter.hasNext()) {
-      Stage s = iter.next();
-      System.out.println(String.format("Stage: %s\nDescription: %s\nType: %s\n", s.name, s.description, s.type.toString()));
-    }    
+  public void printStages() throws Exception {
+    try (AutoCloseableAccumuloIterator<Stage> iter = this.getStages();) {
+      while (iter.hasNext()) {
+        Stage s = iter.next();
+        System.out.println(String.format("Stage: %s\nDescription: %s\nType: %s\n", s.name, s.description, s.type.toString()));
+      }
+    }
   }
   
-  public static void main (String... args) throws RebarException {
+  public static void main (String... args) throws Exception {
     StageReader sr = new StageReader(Constants.getConnector());
     sr.printStages();
   }
