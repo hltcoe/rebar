@@ -3,8 +3,7 @@
  */
 package edu.jhu.hlt.rebar.itest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,7 +62,8 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
 
   @Before
   public void setUp() throws Exception {
-    
+    if (Configuration.testingEnvSet())
+      fail("You can't run this test with $REBAR_ENV='testing'. Change it and try again.");
     this.initialize(Configuration.getMiniConfig(tempFolder.newFolder()));
     this.sss = new SingleSectionSegmenter();
     this.sentSegmenter = new SillySentenceSegmenter();

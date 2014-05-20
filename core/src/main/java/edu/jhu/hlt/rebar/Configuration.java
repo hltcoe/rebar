@@ -49,6 +49,10 @@ public final class Configuration {
     }
   };
 
+  public static boolean testingEnvSet() {
+    return System.getenv("REBAR_ENV") == null;
+  }
+  
   public static boolean useAccumuloMock() {
     return Boolean.parseBoolean(props.getProperty("accumuloMock"));
   }
