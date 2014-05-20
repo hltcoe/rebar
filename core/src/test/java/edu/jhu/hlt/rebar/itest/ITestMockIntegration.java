@@ -3,7 +3,8 @@
  */
 package edu.jhu.hlt.rebar.itest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,10 +14,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.ballast.tools.BasicSituationTagger;
 import edu.jhu.hlt.ballast.tools.LatinEntityTagger;
@@ -50,7 +54,9 @@ import edu.jhu.hlt.tift.Tokenizer;
  *
  */
 public class ITestMockIntegration extends AbstractMiniClusterTest {
-
+  
+  private static final Logger logger = LoggerFactory.getLogger(ITestMockIntegration.class);
+  
   SingleSectionSegmenter sss;
   SillySentenceSegmenter sentSegmenter;
   TiftTokenizer tokenizer;
@@ -62,9 +68,10 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
 
   @Before
   public void setUp() throws Exception {
+    logger.info("Checking if configuration is appropriate.");
     if (Configuration.testingEnvSet())
-      fail("You can't run this test with $REBAR_ENV='testing'. Change it and try again.");
-    this.initialize(Configuration.getMiniConfig(tempFolder.newFolder()));
+      throw new Exception("You can't run this test with $REBAR_ENV='testing'. Change it and try again.");
+    this.initialize(tempFolder.newFolder(), "password");
     this.sss = new SingleSectionSegmenter();
     this.sentSegmenter = new SillySentenceSegmenter();
     this.tokenizer = new TiftTokenizer(Tokenizer.WHITESPACE);
@@ -72,8 +79,14 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     this.st = new BasicSituationTagger();
   }
   
+  @After
+  public void shutDown() throws Exception {
+    this.close();
+  }
+  
   @Test
   public void miniClusterTest() throws Exception {
+    logger.info("Beginning mini cluster test.");
     int nDocs = 5;
     Map<String, Communication> idToCommMap = this.ingestDocs(nDocs);
     

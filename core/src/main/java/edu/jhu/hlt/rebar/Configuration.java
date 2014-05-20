@@ -10,17 +10,11 @@
 package edu.jhu.hlt.rebar;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Properties;
 
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Class for reading and accessing configuration values in rebar.properties.
@@ -29,74 +23,62 @@ import org.apache.log4j.PropertyConfigurator;
  * 
  */
 public final class Configuration {
-  private static final Properties props = new Properties();
-  public static final String REBAR_ITEST_PASSWORD = "REBAR_ITEST_PASSWORD";
+  
+  public static final String envCfg = "REBAR_ENV";
+  public static final String instanceCfg = "REBAR_INSTANCE";
+  public static final String zookeeperCfg = "REBAR_ZOOKEEPERS";
+  public static final String userCfg = "REBAR_USER";
+  public static final String passwordCfg = "REBAR_PASSWORD";
+  
+  private static final String envString;
+  private static final String instanceString;
+  private static final String zookeeperString;
+  private static final String userString;
+  private static final String passwordString;
   
   static {
-    String envVar = System.getenv("REBAR_ENV");
-    if (envVar != null && envVar.equals("testing"))
-      props.setProperty("accumuloMock", "true");
-    else {
-      try (InputStream stream = Configuration.class.getClassLoader().getResourceAsStream("rebar.properties");) {
-        if (stream == null)
-          throw new RuntimeException("Problem finding rebar.properties on the classpath.");
-        props.load(stream);
-      } catch (IOException e) {
-        throw new RuntimeException("Failed to load properties file rebar.properties!", e);
-      }
-      // Configure the logger.
-      PropertyConfigurator.configure(props);
-    }
-  };
-
+    envString = System.getenv(envCfg);
+    instanceString = System.getenv(instanceCfg);
+    zookeeperString = System.getenv(zookeeperCfg);
+    userString = System.getenv(userCfg);
+    passwordString = System.getenv(passwordCfg);
+  }
+  
   public static boolean testingEnvSet() {
     return System.getenv("REBAR_ENV") == null;
   }
   
   public static boolean useAccumuloMock() {
-    return Boolean.parseBoolean(props.getProperty("accumuloMock"));
+    return envString != null && envString.equals("testing");
+  }
+  
+  private static final String nonNullOrRTE(String prop, String val) {
+    if (val == null)
+      throw new RuntimeException("Property " + prop + " was not set.");
+    return val;
   }
 
   public static String getAccumuloInstanceName() {
-    return props.getProperty("accumuloInstanceName");
+    return nonNullOrRTE(instanceCfg, instanceString);
   }
 
   public static String getZookeeperServer() {
-    return props.getProperty("zookeeperServer");
+    return nonNullOrRTE(zookeeperCfg, zookeeperString);
   }
 
   public static String getAccumuloUser() {
-    return props.getProperty("accumuloUser");
+    return nonNullOrRTE(userCfg, userString);
   }
 
   public static byte[] getAccumuloPassword() {
-    return props.getProperty("accumuloPassword").getBytes();
-  }
-
-  public static String getMySqlUsername() {
-    return props.getProperty("mySqlUsername");
-  }
-
-  public static String getMySqlPassword() {
-    return props.getProperty("mySqlPassword");
-  }
-
-  public static String getHdfsRoot() {
-    return props.getProperty("hdfsRoot");
+    return nonNullOrRTE(passwordCfg, passwordString).getBytes();
   }
 
   public static boolean getTwitterTokenizerRw() {
-    return Boolean.parseBoolean(props.getProperty("TwitterTokenizer.rw"));
+    //return Boolean.parseBoolean(props.getProperty("TwitterTokenizer.rw"));
+    return false;
   }
 
-  public static Path getFileCorpusDirectory() {
-    return Paths.get(props.getProperty("fileCorpusDirectory"));
-  }
-
-  public static Path getTestFileCorpusDirectory() {
-    return Paths.get("target/file-corpora-test");
-  }
-  
   public static Authorizations getAuths() {
     return Constants.NO_AUTHS;
   }
@@ -106,9 +88,6 @@ public final class Configuration {
   }
   
   public static MiniAccumuloConfig getMiniConfig(File dir) throws RebarException {
-    String pw = System.getenv(REBAR_ITEST_PASSWORD);
-    if (pw == null)
-      throw new RebarException("You need to set: " + REBAR_ITEST_PASSWORD + " to use this method.");
-    return new MiniAccumuloConfig(dir, pw);
+    return new MiniAccumuloConfig(dir, "password");
   }
 }
