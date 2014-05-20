@@ -1,4 +1,4 @@
-package edu.jhu.hlt.rebar.accumulo;
+package edu.jhu.hlt.rebar.itest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -32,6 +32,9 @@ import edu.jhu.hlt.concrete.TokenizationCollection;
 import edu.jhu.hlt.grommet.Stage;
 import edu.jhu.hlt.grommet.StageType;
 import edu.jhu.hlt.rebar.Util;
+import edu.jhu.hlt.rebar.accumulo.AbstractAccumuloTest;
+import edu.jhu.hlt.rebar.accumulo.CleanIngester;
+import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
 import edu.jhu.hlt.rebar.stage.StageCreator;
@@ -41,6 +44,7 @@ import edu.jhu.hlt.rebar.stage.writer.TokenizationStageWriter;
 import edu.jhu.hlt.tift.Tokenizer;
 
 public class IMemoryIntegrationTest extends AbstractAccumuloTest {
+
 
   private static final Logger logger = LoggerFactory.getLogger(IMemoryIntegrationTest.class);
   

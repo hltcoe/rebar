@@ -26,6 +26,7 @@ import edu.jhu.hlt.rebar.RebarException;
  */
 public class TestCleanIngester extends AbstractAccumuloTest {
 
+
   private static final Logger logger = LoggerFactory.getLogger(TestCleanIngester.class);
   
   CleanIngester ci;

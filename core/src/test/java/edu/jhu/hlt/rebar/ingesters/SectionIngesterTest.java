@@ -31,6 +31,10 @@ import edu.jhu.hlt.rebar.stage.StageReader;
 
 public class SectionIngesterTest extends AbstractAccumuloTest {
 
+  public SectionIngesterTest() {
+    
+  }
+
   SingleSectionSegmenter sss;
   
   @Before

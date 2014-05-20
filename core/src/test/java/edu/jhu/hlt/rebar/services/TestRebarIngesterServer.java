@@ -3,6 +3,7 @@
  */
 package edu.jhu.hlt.rebar.services;
 
+import org.apache.accumulo.core.client.Instance;
 import org.junit.After;
 import org.junit.Before;
 

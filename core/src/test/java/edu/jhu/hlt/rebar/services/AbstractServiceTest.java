@@ -5,6 +5,7 @@ package edu.jhu.hlt.rebar.services;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.accumulo.core.client.Instance;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
@@ -22,16 +23,6 @@ public class AbstractServiceTest extends AbstractAccumuloTest {
   protected Thread serviceThread;
   protected TTransport xport;
   protected TProtocol protocol;
-  
-  /**
-   * @throws TTransportException 
-   * @throws AccumuloSecurityException 
-   * @throws AccumuloException 
-   * 
-   */
-  protected AbstractServiceTest() {
-    
-  }
   
   protected void initializeServiceFields() throws AccumuloException, AccumuloSecurityException, TTransportException {
     this.xport = new TSocket("localhost", 9990);

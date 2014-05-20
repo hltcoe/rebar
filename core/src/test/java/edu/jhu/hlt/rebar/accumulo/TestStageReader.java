@@ -24,7 +24,7 @@ import edu.jhu.hlt.rebar.stage.StageReader;
  *
  */
 public class TestStageReader extends AbstractAccumuloTest {
-
+  
   private StageReader sr;
   private StageCreator ing;
   

@@ -9,6 +9,7 @@
  */
 package edu.jhu.hlt.rebar;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -18,6 +19,7 @@ import java.util.Properties;
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.security.Authorizations;
+import org.apache.accumulo.minicluster.MiniAccumuloConfig;
 import org.apache.log4j.PropertyConfigurator;
 
 /**
@@ -28,6 +30,7 @@ import org.apache.log4j.PropertyConfigurator;
  */
 public final class Configuration {
   private static final Properties props = new Properties();
+  public static final String REBAR_ITEST_PASSWORD = "REBAR_ITEST_PASSWORD";
   
   static {
     String envVar = System.getenv("REBAR_ENV");
@@ -96,5 +99,12 @@ public final class Configuration {
   
   public static PasswordToken getPasswordToken() {
     return new PasswordToken(getAccumuloPassword());
+  }
+  
+  public static MiniAccumuloConfig getMiniConfig(File dir) throws RebarException {
+    String pw = System.getenv(REBAR_ITEST_PASSWORD);
+    if (pw == null)
+      throw new RebarException("You need to set: " + REBAR_ITEST_PASSWORD + " to use this method.");
+    return new MiniAccumuloConfig(dir, pw);
   }
 }

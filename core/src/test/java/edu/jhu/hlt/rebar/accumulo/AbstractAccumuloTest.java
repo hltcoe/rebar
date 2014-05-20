@@ -18,7 +18,6 @@ import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.mock.MockInstance;
@@ -44,7 +43,6 @@ import edu.jhu.hlt.rebar.Util;
  */
 public class AbstractAccumuloTest {
 
-  protected Instance inst;
   protected Connector conn;
   protected RebarTableOps tableOps;
   protected TSerializer serializer;
@@ -53,18 +51,30 @@ public class AbstractAccumuloTest {
   protected static final Random rand = new Random();
 
   /**
+   * @param inst TODO
    * 
    */
   public AbstractAccumuloTest() {
-    // TODO Auto-generated constructor stub
-  }
 
-  protected void initialize() throws AccumuloException, AccumuloSecurityException {
-    this.inst = new MockInstance();
-    this.conn = this.inst.getConnector("max", new PasswordToken(""));
-    this.tableOps = new RebarTableOps(conn);
-    this.serializer = new TSerializer(new TBinaryProtocol.Factory());
-    this.deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+  }
+  
+  protected void initialize () throws RebarException {
+    try {
+      this.initialize(new MockInstance().getConnector("max", new PasswordToken("")));
+    } catch (AccumuloException | AccumuloSecurityException e) {
+      throw new RebarException(e);
+    }
+  }
+  
+  protected void initialize(Connector conn) {
+    try {
+      this.conn = conn;
+      this.tableOps = new RebarTableOps(this.conn);
+      this.serializer = new TSerializer(new TBinaryProtocol.Factory());
+      this.deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+    } finally {
+      
+    }
   }
 
   public static Iterator<Entry<Key, Value>> generateIterator(Connector conn, String tableName, Range range) throws TableNotFoundException {
