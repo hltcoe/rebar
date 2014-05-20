@@ -1,3 +1,6 @@
+/**
+ * 
+ */
 package edu.jhu.hlt.rebar.itest;
 
 import static org.junit.Assert.assertEquals;
@@ -11,11 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.rules.TemporaryFolder;
 
 import edu.jhu.hlt.ballast.tools.BasicSituationTagger;
 import edu.jhu.hlt.ballast.tools.LatinEntityTagger;
@@ -31,9 +33,9 @@ import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.TokenizationCollection;
 import edu.jhu.hlt.grommet.Stage;
 import edu.jhu.hlt.grommet.StageType;
+import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Util;
-import edu.jhu.hlt.rebar.accumulo.AbstractAccumuloTest;
-import edu.jhu.hlt.rebar.accumulo.CleanIngester;
+import edu.jhu.hlt.rebar.accumulo.AbstractMiniClusterTest;
 import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
@@ -43,32 +45,35 @@ import edu.jhu.hlt.rebar.stage.writer.SentenceStageWriter;
 import edu.jhu.hlt.rebar.stage.writer.TokenizationStageWriter;
 import edu.jhu.hlt.tift.Tokenizer;
 
-public class IMemoryIntegrationTest extends AbstractAccumuloTest {
 
-  private static final Logger logger = LoggerFactory.getLogger(IMemoryIntegrationTest.class);
-  
+/**
+ * @author max
+ *
+ */
+public class ITestMockIntegration extends AbstractMiniClusterTest {
+
   SingleSectionSegmenter sss;
   SillySentenceSegmenter sentSegmenter;
   TiftTokenizer tokenizer;
   LatinEntityTagger et;
   BasicSituationTagger st;
   
+  @Rule
+  public TemporaryFolder tempFolder = new TemporaryFolder();
+
   @Before
   public void setUp() throws Exception {
-    this.initialize();
+    
+    this.initialize(Configuration.getMiniConfig(tempFolder.newFolder()));
     this.sss = new SingleSectionSegmenter();
     this.sentSegmenter = new SillySentenceSegmenter();
     this.tokenizer = new TiftTokenizer(Tokenizer.WHITESPACE);
     this.et = new LatinEntityTagger();
     this.st = new BasicSituationTagger();
   }
-
-  @After
-  public void tearDown() throws Exception {
-  }
-
+  
   @Test
-  public void bigIntegrationTest() throws Exception {
+  public void miniClusterTest() throws Exception {
     int nDocs = 5;
     Map<String, Communication> idToCommMap = this.ingestDocs(nDocs);
     

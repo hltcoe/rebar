@@ -156,4 +156,20 @@ public class AbstractAccumuloTest {
     
     return docList;
   }
+  
+  protected Map<String, Communication> ingestDocs(int k) throws RebarException {
+    Set<Communication> commSet = generateMockDocumentSet(k);
+    Map<String, Communication> idToCommMap = new HashMap<>(k + 1);
+    List<Communication> commList = new ArrayList<>(commSet);
+    for (Communication c : commList)
+      idToCommMap.put(c.id, c);
+    
+    try (CleanIngester ci = new CleanIngester(this.conn);) {
+      for (Communication c : commList) {
+        ci.ingest(c);
+      }
+    }
+    
+    return idToCommMap;
+  }
 }

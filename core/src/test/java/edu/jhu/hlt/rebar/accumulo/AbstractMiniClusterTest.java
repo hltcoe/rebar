@@ -22,20 +22,16 @@ import edu.jhu.hlt.rebar.RebarException;
  */
 public class AbstractMiniClusterTest extends AbstractAccumuloTest implements AutoCloseable {
 
-  protected final MiniAccumuloConfig cfg;
-  protected final MiniAccumuloCluster cluster;
+  protected MiniAccumuloConfig cfg;
+  protected MiniAccumuloCluster cluster;
   
-  /**
-   * @param inst
-   * @throws RebarException 
-   */
-  public AbstractMiniClusterTest(MiniAccumuloConfig cfg) throws RebarException {
+  protected final void initialize(MiniAccumuloConfig cfg) throws RebarException {
     try {
       this.cfg = cfg;
       this.cluster = new MiniAccumuloCluster(this.cfg);
       this.cluster.start();
       Instance inst = new ZooKeeperInstance(this.cluster.getInstanceName(), this.cluster.getZooKeepers());
-      this.initialize(inst.getConnector("max", new PasswordToken(this.cfg.getRootPassword())));
+      super.initialize(inst.getConnector("max", new PasswordToken(this.cfg.getRootPassword())));
     } catch (IOException | InterruptedException | AccumuloException | AccumuloSecurityException e) {
       throw new RebarException(e);
     }
