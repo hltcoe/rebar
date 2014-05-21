@@ -30,19 +30,11 @@ public final class Configuration {
   public static final String userCfg = "REBAR_USER";
   public static final String passwordCfg = "REBAR_PASSWORD";
   
-  private static final String envString;
-  private static final String instanceString;
-  private static final String zookeeperString;
-  private static final String userString;
-  private static final String passwordString;
-  
-  static {
-    envString = System.getenv(envCfg);
-    instanceString = System.getenv(instanceCfg);
-    zookeeperString = System.getenv(zookeeperCfg);
-    userString = System.getenv(userCfg);
-    passwordString = System.getenv(passwordCfg);
-  }
+  private static final String envString = System.getenv(envCfg);;
+  private static final String instanceString = System.getenv(instanceCfg);
+  private static final String zookeeperString = System.getenv(zookeeperCfg);
+  private static final String userString = System.getenv(userCfg);
+  private static final String passwordString = System.getenv(passwordCfg);
   
   public static boolean testingEnvSet() {
     return System.getenv("REBAR_ENV") == null;

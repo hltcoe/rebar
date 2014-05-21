@@ -11,6 +11,8 @@ import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.client.mock.MockInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Value;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 
 /**
  * @author max
@@ -18,6 +20,8 @@ import org.apache.accumulo.core.data.Value;
  */
 public class Constants {
 
+  private static final XLogger logger = XLoggerFactory.getXLogger(Constants.class);
+  
   public static final String DOCUMENT_TABLE_NAME = "documents";
   public static final String DOCUMENT_COLF = "raw_doc";
   public static final String DOCUMENT_ANNOTATION_COLF = "annotations";
@@ -50,6 +54,7 @@ public class Constants {
   }
   
   public static Connector getConnector() throws RebarException {
+    logger.entry();
     try {
       if (Configuration.useAccumuloMock()) {
         if (mockConnector == null)
