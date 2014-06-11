@@ -28,7 +28,8 @@ public class SectionMergingIterator extends AbstractThriftIterator<Communication
   protected final String stageName;
   
   /**
-   * @param iter
+   * 
+   * @param sc
    * @param stageName
    */
   public SectionMergingIterator(ScannerBase sc, String stageName) {

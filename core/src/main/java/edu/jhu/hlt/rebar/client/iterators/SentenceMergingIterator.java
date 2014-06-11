@@ -32,8 +32,10 @@ public class SentenceMergingIterator extends SectionMergingIterator {
   protected final String sectDepStage;
   
   /**
-   * @param iter
+   * 
+   * @param sc
    * @param stageName
+   * @param sectDepStage
    */
   public SentenceMergingIterator(ScannerBase sc, String stageName, String sectDepStage) {
     super(sc, stageName);

@@ -36,7 +36,7 @@ public class TokenizationMergingIterator extends SentenceMergingIterator {
   
   /**
    * 
-   * @param iter
+   * @param sc
    * @param stageName
    * @param sectDepStage
    * @param sentDepStage

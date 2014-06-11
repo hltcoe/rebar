@@ -32,10 +32,11 @@ public class SituationMentionMergingIterator extends TokenizationMergingIterator
   
   /**
    * 
-   * @param iter
+   * @param sc
    * @param stageName
    * @param sectDepStage
    * @param sentDepStage
+   * @param tokenizationDepStage
    */
   public SituationMentionMergingIterator(ScannerBase sc, String stageName, String sectDepStage, 
       String sentDepStage, String tokenizationDepStage) {
@@ -71,11 +72,9 @@ public class SituationMentionMergingIterator extends TokenizationMergingIterator
   }
   
   /**
-   * NOTE: mutation to root.
    * 
    * @param root
-   * @param ss
-   * @param ssc
+   * @param ms
    * @throws RebarException
    */
   protected void merge (Communication root, SituationMentionSet ms) throws RebarException {

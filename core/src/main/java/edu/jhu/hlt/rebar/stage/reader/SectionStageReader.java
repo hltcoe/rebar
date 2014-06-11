@@ -20,7 +20,8 @@ import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 public class SectionStageReader extends AbstractStageReader {
 
   /**
-   * @param conn
+   * 
+   * @param stageName
    * @throws RebarException
    */
   public SectionStageReader(String stageName) throws RebarException {
@@ -28,6 +29,7 @@ public class SectionStageReader extends AbstractStageReader {
   }
 
   /**
+   * 
    * @param conn
    * @param stageName
    * @throws RebarException

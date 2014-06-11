@@ -21,7 +21,10 @@ public class TokenizationStageReader extends SentenceStageReader {
   protected final String sentStageDep;
   
   /**
-   * @param conn
+   * 
+   * @param stageName
+   * @param sectStageDep
+   * @param sentStageDep
    * @throws RebarException
    */
   public TokenizationStageReader(String stageName, String sectStageDep, String sentStageDep) throws RebarException {
@@ -29,8 +32,11 @@ public class TokenizationStageReader extends SentenceStageReader {
   }
 
   /**
+   * 
    * @param conn
    * @param stageName
+   * @param sectStageDep
+   * @param sentStageDep
    * @throws RebarException
    */
   public TokenizationStageReader(Connector conn, String stageName, String sectStageDep, String sentStageDep) throws RebarException {

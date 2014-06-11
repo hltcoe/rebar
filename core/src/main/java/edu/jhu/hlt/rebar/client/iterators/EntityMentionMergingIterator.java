@@ -32,10 +32,11 @@ public class EntityMentionMergingIterator extends TokenizationMergingIterator {
   
   /**
    * 
-   * @param iter
+   * @param sc
    * @param stageName
    * @param sectDepStage
    * @param sentDepStage
+   * @param tokenizationDepStage
    */
   public EntityMentionMergingIterator(ScannerBase sc, String stageName, String sectDepStage, 
       String sentDepStage, String tokenizationDepStage) {
@@ -71,11 +72,9 @@ public class EntityMentionMergingIterator extends TokenizationMergingIterator {
   }
   
   /**
-   * NOTE: mutation to root.
    * 
    * @param root
-   * @param ss
-   * @param ssc
+   * @param ems
    * @throws RebarException
    */
   protected void merge (Communication root, EntityMentionSet ems) throws RebarException {

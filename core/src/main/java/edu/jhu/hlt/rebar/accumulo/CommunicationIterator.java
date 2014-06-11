@@ -20,7 +20,8 @@ import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
 public class CommunicationIterator extends AbstractThriftIterator<Communication> {
 
   /**
-   * @param iter
+   * 
+   * @param sc
    */
   public CommunicationIterator(ScannerBase sc) {
     super(sc);

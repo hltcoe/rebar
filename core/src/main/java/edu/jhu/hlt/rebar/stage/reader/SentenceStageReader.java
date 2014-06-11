@@ -21,7 +21,9 @@ public class SentenceStageReader extends SectionStageReader {
   protected final String sectStageDep;
   
   /**
-   * @param conn
+   * 
+   * @param stageName
+   * @param sectStageDep
    * @throws RebarException
    */
   public SentenceStageReader(String stageName, String sectStageDep) throws RebarException {
@@ -29,8 +31,10 @@ public class SentenceStageReader extends SectionStageReader {
   }
 
   /**
+   * 
    * @param conn
    * @param stageName
+   * @param sectStageDep
    * @throws RebarException
    */
   public SentenceStageReader(Connector conn, String stageName, String sectStageDep) throws RebarException {
