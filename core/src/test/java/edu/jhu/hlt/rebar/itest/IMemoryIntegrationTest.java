@@ -116,7 +116,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
       assertTrue(idToSSMap.containsKey(retrieved.uuid));
     }
 
-    Stage stTwo = generateTestStage("another_stage", StageType.SECTION);
+    Stage stTwo = generateTestStage("stage_another_stage", StageType.SECTION);
     try (StageCreator sc = new StageCreator(this.conn);) {
       sc.create(stTwo);
     }
@@ -150,7 +150,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     
     Set<String> deps = new HashSet<>();
     deps.add(st.getName());
-    Stage sentStage = generateTestStage("sent_stage", StageType.SENTENCE, deps);
+    Stage sentStage = generateTestStage("stage_sent", StageType.SENTENCE, deps);
     try (StageCreator sc = new StageCreator(this.conn);) {
       sc.create(sentStage);
     }
@@ -191,7 +191,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     Set<String> tokDeps = new HashSet<>();
     tokDeps.add(st.getName());
     tokDeps.add(sentStage.getName());
-    Stage tokStage = generateTestStage("tok_stage", StageType.TOKENIZATION, deps);
+    Stage tokStage = generateTestStage("stage_tok", StageType.TOKENIZATION, tokDeps);
 
     try (StageCreator sc = new StageCreator(this.conn);) {
       sc.create(tokStage);

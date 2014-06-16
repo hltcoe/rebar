@@ -69,8 +69,6 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
   @Before
   public void setUp() throws Exception {
     logger.info("Checking if configuration is appropriate.");
-    if (Configuration.testingEnvSet())
-      throw new Exception("You can't run this test with $REBAR_ENV='testing'. Change it and try again.");
     this.initialize(tempFolder.newFolder(), "password");
     this.sss = new SingleSectionSegmenter();
     this.sentSegmenter = new SillySentenceSegmenter();

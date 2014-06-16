@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2012-2014 Johns Hopkins University HLTCOE. All rights reserved.
  * This software is released under the 2-clause BSD license.
  * See LICENSE in the project root directory.
@@ -9,12 +9,16 @@
  */
 package edu.jhu.hlt.rebar;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Properties;
 
 import org.apache.accumulo.core.Constants;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.security.Authorizations;
-import org.apache.accumulo.minicluster.MiniAccumuloConfig;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Class for reading and accessing configuration values in rebar.properties.
@@ -23,63 +27,69 @@ import org.apache.accumulo.minicluster.MiniAccumuloConfig;
  * 
  */
 public final class Configuration {
+  private static final Properties props = new Properties();
   
-  public static final String envCfg = "REBAR_ENV";
-  public static final String instanceCfg = "REBAR_INSTANCE";
-  public static final String zookeeperCfg = "REBAR_ZOOKEEPERS";
-  public static final String userCfg = "REBAR_USER";
-  public static final String passwordCfg = "REBAR_PASSWORD";
-  
-  private static final String envString = System.getenv(envCfg);;
-  private static final String instanceString = System.getenv(instanceCfg);
-  private static final String zookeeperString = System.getenv(zookeeperCfg);
-  private static final String userString = System.getenv(userCfg);
-  private static final String passwordString = System.getenv(passwordCfg);
-  
-  public static boolean testingEnvSet() {
-    return System.getenv("REBAR_ENV") == null;
-  }
-  
+  static {
+    try (InputStream stream = Configuration.class.getClassLoader().getResourceAsStream("rebar.properties");) {
+      if (stream == null)
+        throw new RuntimeException("Problem finding rebar.properties on the classpath.");
+      props.load(stream);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to load properties file rebar.properties!", e);
+    }
+    // Configure the logger.
+    PropertyConfigurator.configure(props);
+  };
+
   public static boolean useAccumuloMock() {
-    return envString != null && envString.equals("testing");
-  }
-  
-  private static final String nonNullOrRTE(String prop, String val) {
-    if (val == null)
-      throw new RuntimeException("Property " + prop + " was not set.");
-    return val;
+    return Boolean.parseBoolean(props.getProperty("accumuloMock"));
   }
 
   public static String getAccumuloInstanceName() {
-    return nonNullOrRTE(instanceCfg, instanceString);
+    return props.getProperty("accumuloInstanceName");
   }
 
   public static String getZookeeperServer() {
-    return nonNullOrRTE(zookeeperCfg, zookeeperString);
+    return props.getProperty("zookeeperServer");
   }
 
   public static String getAccumuloUser() {
-    return nonNullOrRTE(userCfg, userString);
+    return props.getProperty("accumuloUser");
   }
 
   public static byte[] getAccumuloPassword() {
-    return nonNullOrRTE(passwordCfg, passwordString).getBytes();
+    return props.getProperty("accumuloPassword").getBytes();
+  }
+
+  public static String getMySqlUsername() {
+    return props.getProperty("mySqlUsername");
+  }
+
+  public static String getMySqlPassword() {
+    return props.getProperty("mySqlPassword");
+  }
+
+  public static String getHdfsRoot() {
+    return props.getProperty("hdfsRoot");
   }
 
   public static boolean getTwitterTokenizerRw() {
-    //return Boolean.parseBoolean(props.getProperty("TwitterTokenizer.rw"));
-    return false;
+    return Boolean.parseBoolean(props.getProperty("TwitterTokenizer.rw"));
   }
 
+  public static Path getFileCorpusDirectory() {
+    return Paths.get(props.getProperty("fileCorpusDirectory"));
+  }
+
+  public static Path getTestFileCorpusDirectory() {
+    return Paths.get("target/file-corpora-test");
+  }
+  
   public static Authorizations getAuths() {
     return Constants.NO_AUTHS;
   }
   
   public static PasswordToken getPasswordToken() {
     return new PasswordToken(getAccumuloPassword());
-  }
-  
-  public static MiniAccumuloConfig getMiniConfig(File dir) throws RebarException {
-    return new MiniAccumuloConfig(dir, "password");
   }
 }
