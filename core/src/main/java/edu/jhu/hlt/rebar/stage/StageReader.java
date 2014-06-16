@@ -1,4 +1,4 @@
-/**
+/*
  * 
  */
 package edu.jhu.hlt.rebar.stage;
@@ -15,13 +15,13 @@ import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Range;
 import org.apache.hadoop.io.Text;
-import org.apache.thrift.TException;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
 
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.TokenizationCollection;
-import edu.jhu.hlt.grommet.Stage;
-import edu.jhu.hlt.grommet.StageType;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
@@ -40,7 +40,7 @@ import edu.jhu.hlt.rebar.stage.writer.TokenizationStageWriter;
  *
  */
 public final class StageReader extends AbstractReader<Stage> {
-
+  
   /**
    * 
    * @throws RebarException
@@ -60,14 +60,14 @@ public final class StageReader extends AbstractReader<Stage> {
   @Override
   protected AbstractThriftIterator<Stage> accumuloIterToTIter(ScannerBase sc) throws RebarException {
     return new AbstractThriftIterator<Stage>(sc) {
+      
+      final Kryo k = new Kryo();
+      
       @Override
       public Stage next() {
-        try {
-          Stage c = new Stage();
-          deser.deserialize(c, this.iter.next().getValue().get());
-          return c;
-        } catch (TException e) {
-          throw new RuntimeException(e);
+        byte[] bytes = this.iter.next().getValue().get();
+        try (Input i = new Input(bytes)) {
+          return this.k.readObject(i, Stage.class);
         }
       }
     };
@@ -87,7 +87,7 @@ public final class StageReader extends AbstractReader<Stage> {
   }
   
   public boolean exists(Stage s) throws RebarException {
-    return this.exists(s.name);
+    return this.exists(s.getName());
   }
   
   public boolean exists (String stageName) throws RebarException {
@@ -138,26 +138,26 @@ public final class StageReader extends AbstractReader<Stage> {
   
   public AbstractStageWriter<SectionSegmentation> getSectionStageWriter (String stageName) throws RebarException {
     Stage generic = this.get(stageName);
-    if (generic.type == StageType.SECTION)
+    if (generic.getStageType() == StageType.SECTION)
       return new SectionStageWriter(this.conn, generic);
     else
-      throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SectionStage.");
+      throw new RebarException("You requested a stage with type " + generic.getStageType().toString() + ", which is not a SectionStage.");
   }
   
   public AbstractStageReader getSectionStageReader (String stageName) throws RebarException {
     Stage generic = this.get(stageName);
-    if (generic.type == StageType.SECTION)
+    if (generic.getStageType() == StageType.SECTION)
       return new SectionStageReader(this.conn, stageName);
     else
-      throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SectionStage.");
+      throw new RebarException("You requested a stage with type " + generic.getStageType().toString() + ", which is not a SectionStage.");
   }
   
   public AbstractStageWriter<SentenceSegmentationCollection> getSentenceStageWriter (String stageName) throws RebarException {
     Stage generic = this.get(stageName);
-    if (generic.type == StageType.SENTENCE)
+    if (generic.getStageType() == StageType.SENTENCE)
       return new SentenceStageWriter(this.conn, generic);
     else
-      throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SectionStage.");
+      throw new RebarException("You requested a stage with type " + generic.getStageType().toString() + ", which is not a SectionStage.");
   }
   
   /*
@@ -165,7 +165,7 @@ public final class StageReader extends AbstractReader<Stage> {
    */
   public AbstractStageReader getSentenceStageReader (String stageName) throws RebarException {
     Stage generic = this.get(stageName);
-    if (generic.type == StageType.SENTENCE) {
+    if (generic.getStageType() == StageType.SENTENCE) {
       Set<String> deps = generic.getDependencies();
       List<String> depList = new ArrayList<>(deps);
       String firstDep = depList.get(0);
@@ -173,15 +173,15 @@ public final class StageReader extends AbstractReader<Stage> {
     }
     
     else
-      throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SentenceStage.");
+      throw new RebarException("You requested a stage with type " + generic.getStageType().toString() + ", which is not a SentenceStage.");
   }
   
   public AbstractStageWriter<TokenizationCollection> getTokenizationStageWriter (String stageName) throws RebarException {
     Stage generic = this.get(stageName);
-    if (generic.type == StageType.TOKENIZATION)
+    if (generic.getStageType() == StageType.TOKENIZATION)
       return new TokenizationStageWriter(this.conn, generic);
     else
-      throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a TokenizationStage.");
+      throw new RebarException("You requested a stage with type " + generic.getStageType().toString() + ", which is not a TokenizationStage.");
   }
   
   /*
@@ -189,16 +189,16 @@ public final class StageReader extends AbstractReader<Stage> {
    */
   public AbstractStageReader getTokenizationStageReader (String stageName) throws RebarException {
     Stage generic = this.get(stageName);
-    if (generic.type == StageType.TOKENIZATION) {
+    if (generic.getStageType() == StageType.TOKENIZATION) {
       Set<String> deps = generic.getDependencies();
       List<String> depList = new ArrayList<>(deps);
       String firstDep = null;
       String secondDep = null;
       for (String d : depList) {
         Stage s = this.get(d);
-        if (s.type == StageType.SECTION)
+        if (s.getStageType() == StageType.SECTION)
           firstDep = d;
-        else if (s.type == StageType.SENTENCE)
+        else if (s.getStageType() == StageType.SENTENCE)
           secondDep = d;
       }
       
@@ -209,14 +209,14 @@ public final class StageReader extends AbstractReader<Stage> {
     }
     
     else
-      throw new RebarException("You requested a stage with type " + generic.type.toString() + ", which is not a SectionStage.");
+      throw new RebarException("You requested a stage with type " + generic.getStageType().toString() + ", which is not a SectionStage.");
   }
   
   public void printStages() throws Exception {
     try (AutoCloseableAccumuloIterator<Stage> iter = this.getStages();) {
       while (iter.hasNext()) {
         Stage s = iter.next();
-        System.out.println(String.format("Stage: %s\nDescription: %s\nType: %s\n", s.name, s.description, s.type.toString()));
+        System.out.println(String.format("Stage: %s\nDescription: %s\nType: %s\n", s.getName(), s.getDescription(), s.getStageType().toString()));
       }
     }
   }

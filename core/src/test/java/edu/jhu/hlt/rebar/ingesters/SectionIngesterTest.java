@@ -19,15 +19,15 @@ import edu.jhu.hlt.concrete.AnnotationMetadata;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.validation.ValidatableMetadata;
-import edu.jhu.hlt.grommet.Stage;
-import edu.jhu.hlt.grommet.StageType;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.accumulo.AbstractAccumuloTest;
 import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageReader;
+import edu.jhu.hlt.rebar.stage.Stage;
 import edu.jhu.hlt.rebar.stage.StageCreator;
 import edu.jhu.hlt.rebar.stage.StageReader;
+import edu.jhu.hlt.rebar.stage.StageType;
 
 public class SectionIngesterTest extends AbstractAccumuloTest {
 
@@ -64,12 +64,7 @@ public class SectionIngesterTest extends AbstractAccumuloTest {
     AnnotationMetadata am = sample.getSectionSegmentationsIterator().next().getMetadata();
     assertTrue("Metadata must be valid.", new ValidatableMetadata(am).validate(sample));
     
-    Stage s = new Stage()
-      .setType(StageType.SECTION)
-      .setName(am.getTool())
-      .setDescription("Rebar test stage.")
-      .setCreateTime(am.getTimestamp())
-      .setDependencies(new HashSet<String>());
+    Stage s = new Stage("stage_" + am.getTool(), "Rebar test stage.", StageType.SECTION, new HashSet<String>());
     
     try (StageCreator sc = new StageCreator(this.conn)) {
       sc.create(s);
@@ -86,7 +81,7 @@ public class SectionIngesterTest extends AbstractAccumuloTest {
     assertEquals("Should get " + nDocs + "ingested docs.", nDocs, Util.countIteratorResults(commIter));
     
     StageReader sr = new StageReader(this.conn);
-    AbstractStageReader reader = sr.getSectionStageReader(s.name);
+    AbstractStageReader reader = sr.getSectionStageReader(s.getName());
     Iterator<Communication> retComms = reader.getAll();
     while(retComms.hasNext()) {
       Communication c = retComms.next();

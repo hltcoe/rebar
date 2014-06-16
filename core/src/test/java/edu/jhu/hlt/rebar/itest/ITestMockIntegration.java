@@ -34,16 +34,16 @@ import edu.jhu.hlt.concrete.Sentence;
 import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.TokenizationCollection;
-import edu.jhu.hlt.grommet.Stage;
-import edu.jhu.hlt.grommet.StageType;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.accumulo.AbstractMiniClusterTest;
 import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
+import edu.jhu.hlt.rebar.stage.Stage;
 import edu.jhu.hlt.rebar.stage.StageCreator;
 import edu.jhu.hlt.rebar.stage.StageReader;
+import edu.jhu.hlt.rebar.stage.StageType;
 import edu.jhu.hlt.rebar.stage.writer.SentenceStageWriter;
 import edu.jhu.hlt.rebar.stage.writer.TokenizationStageWriter;
 import edu.jhu.hlt.tift.Tokenizer;
@@ -103,18 +103,18 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
       assertTrue(idToCommMap.containsValue(c));
     }
     
-    Stage st = generateTestStage().setType(StageType.SECTION);
+    Stage st = generateTestStage(StageType.SECTION);
     try (StageCreator sc = new StageCreator(this.conn);) {
       sc.create(st);
     }
     
     StageReader sr = new StageReader(this.conn);
     assertEquals("Should find the ingested stage.", st, sr.getStages().next());
-    assertTrue("Should find the ingested stage via exists method.", sr.exists(st.name));
-    assertEquals("Should find the ingested stage via get method.", st, sr.get(st.name));
+    assertTrue("Should find the ingested stage via exists method.", sr.exists(st.getName()));
+    assertEquals("Should find the ingested stage via get method.", st, sr.get(st.getName()));
     
     Map<String, SectionSegmentation> idToSSMap = new HashMap<>(11);
-    try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(st.name);) {
+    try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(st.getName());) {
       commIter = cr.getCommunications("Tweet");
       while(commIter.hasNext()) {
         Communication c = commIter.next();
@@ -124,7 +124,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
       }
     }
     
-    AbstractStageReader reader = sr.getSectionStageReader(st.name);
+    AbstractStageReader reader = sr.getSectionStageReader(st.getName());
     Iterator<Communication> retComms = reader.getAll();
     while(retComms.hasNext()) {
       Communication c = retComms.next();
@@ -134,16 +134,16 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
       assertTrue(idToSSMap.containsKey(retrieved.uuid));
     }
 
-    Stage stTwo = generateTestStage().setType(StageType.SECTION).setName("another_stage");
+    Stage stTwo = generateTestStage("another_stage", StageType.SECTION);
     try (StageCreator sc = new StageCreator(this.conn);) {
       sc.create(stTwo);
     }
     
-    assertEquals("Should find the second ingested stage via get method.", stTwo, sr.get(stTwo.name));
-    assertTrue("Should find the ingested stage via exists method.", sr.exists(stTwo.name));
-    assertEquals("Should find the ingested stage via get method.", stTwo, sr.get(stTwo.name));
+    assertEquals("Should find the second ingested stage via get method.", stTwo, sr.get(stTwo.getName()));
+    assertTrue("Should find the ingested stage via exists method.", sr.exists(stTwo.getName()));
+    assertEquals("Should find the ingested stage via get method.", stTwo, sr.get(stTwo.getName()));
     
-    try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(stTwo.name);) {
+    try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(stTwo.getName());) {
       commIter = cr.getCommunications("Tweet");
       for (int i = 0; i < 2; i++)
         if (commIter.hasNext())
@@ -156,7 +156,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
       }
     }
     
-    reader = sr.getSectionStageReader(stTwo.name);
+    reader = sr.getSectionStageReader(stTwo.getName());
     assertEquals("Should only get " + (nDocs - 2) + " docs annotated in S2.", 
         nDocs - 2, Util.countIteratorResults(reader.getAll()));
     retComms = reader.getAll();
@@ -166,18 +166,19 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
       assertEquals(1, c.getSectionSegmentationsSize());
     }
     
-    Stage sentStage = generateTestStage().setType(StageType.SENTENCE).setName("sent_stage");
+    
     Set<String> deps = new HashSet<>();
-    deps.add(st.name);
-    sentStage.dependencies = deps;
+    deps.add(st.getName());
+    Stage sentStage = generateTestStage("stage_sent", StageType.SENTENCE, deps);
+
     try (StageCreator sc = new StageCreator(this.conn);) {
       sc.create(sentStage);
     }
     
-    assertEquals("Should find the third ingested stage via get method.", sentStage, sr.get(sentStage.name));
-    assertTrue("Should find the ingested stage via exists method.", sr.exists(sentStage.name));
-    assertEquals("Should find the ingested stage via get method.", sentStage, sr.get(sentStage.name));
-    assertEquals("SentenceStage should have 1 dependency.", 1, sr.get(sentStage.name).dependencies.size());
+    assertEquals("Should find the third ingested stage via get method.", sentStage, sr.get(sentStage.getName()));
+    assertTrue("Should find the ingested stage via exists method.", sr.exists(sentStage.getName()));
+    assertEquals("Should find the ingested stage via get method.", sentStage, sr.get(sentStage.getName()));
+    assertEquals("SentenceStage should have 1 dependency.", 1, sr.get(sentStage.getName()).getDependencies().size());
     
     List<String> depList = new ArrayList<>(sentStage.getDependencies());
     try(AbstractStageWriter<SentenceSegmentationCollection> writer = new SentenceStageWriter(this.conn, sentStage);) {
@@ -191,7 +192,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
       }
     }
     
-    reader = sr.getSentenceStageReader(sentStage.name);
+    reader = sr.getSentenceStageReader(sentStage.getName());
     assertEquals("Should get " + nDocs + " docs annotated in sent stage.", 
         nDocs, Util.countIteratorResults(reader.getAll()));
     retComms = reader.getAll();
@@ -207,19 +208,19 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
       }
     }
     
-    Stage tokStage = generateTestStage().setType(StageType.TOKENIZATION).setName("tok_stage");
     Set<String> tokDeps = new HashSet<>();
-    tokDeps.add(st.name);
-    tokDeps.add(sentStage.name);
-    tokStage.dependencies = tokDeps;
+    tokDeps.add(st.getName());
+    tokDeps.add(sentStage.getName());
+    Stage tokStage = generateTestStage("stage_tok", StageType.TOKENIZATION, deps);
+
     try (StageCreator sc = new StageCreator(this.conn);) {
       sc.create(tokStage);
     }
     
-    assertEquals("Should find the third ingested stage via get method.", tokStage, sr.get(tokStage.name));
-    assertTrue("Should find the ingested stage via exists method.", sr.exists(tokStage.name));
-    assertEquals("Should find the ingested stage via get method.", tokStage, sr.get(tokStage.name));
-    assertEquals("TokenizationStage should have 2 dependencies.", 2, sr.get(tokStage.name).dependencies.size());
+    assertEquals("Should find the third ingested stage via get method.", tokStage, sr.get(tokStage.getName()));
+    assertTrue("Should find the ingested stage via exists method.", sr.exists(tokStage.getName()));
+    assertEquals("Should find the ingested stage via get method.", tokStage, sr.get(tokStage.getName()));
+    assertEquals("TokenizationStage should have 2 dependencies.", 2, sr.get(tokStage.getName()).getDependencies().size());
     
     depList = new ArrayList<>(tokStage.getDependencies());
     try(AbstractStageWriter<TokenizationCollection> writer = new TokenizationStageWriter(this.conn, tokStage);) {
@@ -246,7 +247,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
       }
     }
     
-    reader = sr.getTokenizationStageReader(tokStage.name);
+    reader = sr.getTokenizationStageReader(tokStage.getName());
     assertEquals("Should get " + nDocs + " docs annotated in tok stage.", 
         nDocs, Util.countIteratorResults(reader.getAll()));
     retComms = reader.getAll();

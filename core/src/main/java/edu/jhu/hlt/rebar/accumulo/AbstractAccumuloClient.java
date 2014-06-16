@@ -11,6 +11,8 @@ import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
 
+import com.esotericsoftware.kryo.Kryo;
+
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 
@@ -24,6 +26,7 @@ public abstract class AbstractAccumuloClient {
   protected final RebarTableOps tableOps;
   protected final TSerializer serializer;
   protected final TDeserializer deserializer;
+  protected final Kryo kryo;
   
   public static final BatchWriterOpts defaultBwOpts;
   
@@ -55,6 +58,8 @@ public abstract class AbstractAccumuloClient {
     
     this.serializer = new TSerializer(new TBinaryProtocol.Factory());
     this.deserializer = new TDeserializer(new TBinaryProtocol.Factory());
+    
+    this.kryo = new Kryo();
   }
   
   protected BatchWriter safeBatchWriter(String tableName) throws RebarException {

@@ -13,11 +13,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.jhu.hlt.grommet.Stage;
-import edu.jhu.hlt.grommet.StageType;
 import edu.jhu.hlt.rebar.RebarException;
+import edu.jhu.hlt.rebar.stage.Stage;
 import edu.jhu.hlt.rebar.stage.StageCreator;
 import edu.jhu.hlt.rebar.stage.StageReader;
+import edu.jhu.hlt.rebar.stage.StageType;
 
 /**
  * @author max
@@ -54,7 +54,7 @@ public class TestStageReader extends AbstractAccumuloTest {
   @Test
   public void testStageExists() throws RebarException {
     Stage s = generateTestStage();
-    String sName = s.name;
+    String sName = s.getName();
     assertFalse("Shouldn't find any stages at the start.", this.sr.exists(sName));
     ing.create(s);
     assertTrue("Should find an ingested stage.", this.sr.exists(s));
@@ -70,7 +70,7 @@ public class TestStageReader extends AbstractAccumuloTest {
   @Test
   public void testPrinting() throws Exception {
     ing.create(generateTestStage());
-    ing.create(generateTestStage("foo_test", "Good stage", new HashSet<String>(), StageType.LANG_ID));
+    ing.create(generateTestStage("stage_foo_test", "Good stage", new HashSet<String>(), StageType.LANG_ID));
     
     new StageReader(this.conn).printStages();
   }

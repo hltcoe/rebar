@@ -14,12 +14,12 @@ import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
-import edu.jhu.hlt.grommet.Stage;
 import edu.jhu.hlt.rebar.AnnotationException;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.annotations.AbstractRebarAnnotation;
 import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
+import edu.jhu.hlt.rebar.stage.Stage;
 
 /**
  * @author max

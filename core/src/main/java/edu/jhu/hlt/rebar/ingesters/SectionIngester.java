@@ -14,14 +14,14 @@ import edu.jhu.hlt.concrete.communications.SuperCommunication;
 import edu.jhu.hlt.concrete.util.ConcreteException;
 import edu.jhu.hlt.concrete.validation.ValidatableMetadata;
 import edu.jhu.hlt.concrete.validation.ValidatableSectionSegmentation;
-import edu.jhu.hlt.grommet.Stage;
-import edu.jhu.hlt.grommet.StageType;
 import edu.jhu.hlt.rebar.AnnotationException;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.accumulo.CleanIngester;
 import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
+import edu.jhu.hlt.rebar.stage.Stage;
 import edu.jhu.hlt.rebar.stage.StageCreator;
+import edu.jhu.hlt.rebar.stage.StageType;
 import edu.jhu.hlt.rebar.stage.writer.SectionStageWriter;
 
 /**
@@ -43,8 +43,8 @@ public class SectionIngester implements AutoCloseable {
    * 
    */
   public SectionIngester(Connector conn, Stage s) throws RebarException {
-    if (s.getType() != StageType.SECTION)
-      throw new RebarException("You can't use this ingester with a stage of type: " + s.getType().toString());
+    if (s.getStageType() != StageType.SECTION)
+      throw new RebarException("You can't use this ingester with a stage of type: " + s.getStageType().toString());
     this.conn = conn;
     this.ci = new CleanIngester(this.conn);
     this.sc = new StageCreator(this.conn);

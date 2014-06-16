@@ -32,10 +32,11 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.LanguageIdentification;
-import edu.jhu.hlt.grommet.Stage;
-import edu.jhu.hlt.grommet.StageType;
+import edu.jhu.hlt.rebar.InvalidStageNameException;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
+import edu.jhu.hlt.rebar.stage.Stage;
+import edu.jhu.hlt.rebar.stage.StageType;
 
 /**
  * @author max
@@ -140,11 +141,33 @@ public class AbstractAccumuloTest {
   }
 
   protected static Stage generateTestStage() {
-    return new Stage("stage_foo", "Foo stage for testing", Util.getCurrentUnixTime(), new HashSet<String>(), StageType.LANG_ID);
+    try {
+      return generateTestStage("stage_foo", StageType.LANG_ID);
+    } catch (InvalidStageNameException e) {
+      // no throw
+      throw new RuntimeException(e);
+    }
   }
   
-  protected static Stage generateTestStage(String name, String desc, Set<String> deps, StageType sType) {
-    return new Stage(name, desc, Util.getCurrentUnixTime(), deps, sType);
+  protected static Stage generateTestStage(StageType stageType) {
+    try {
+      return generateTestStage("stage_foo", stageType);
+    } catch (InvalidStageNameException e) {
+      // won't throw
+      throw new RuntimeException(e);
+    }
+  }
+  
+  protected static Stage generateTestStage(String name, StageType st, Set<String> deps) throws InvalidStageNameException {
+    return new Stage(name, "Foo stage for testing", Util.getCurrentUnixTime(), st, deps);
+  }
+  
+  protected static Stage generateTestStage(String name, StageType st) throws InvalidStageNameException {
+    return new Stage(name, "Foo stage for testing", Util.getCurrentUnixTime(), st, new HashSet<String>());
+  }
+    
+  protected static Stage generateTestStage(String name, String desc, Set<String> deps, StageType sType) throws InvalidStageNameException {
+    return new Stage(name, desc, sType, deps);
   }
 
   protected List<Communication> ingestDocuments(int nDocs) throws RebarException, TException {

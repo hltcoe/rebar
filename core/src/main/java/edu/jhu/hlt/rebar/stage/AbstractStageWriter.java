@@ -12,7 +12,6 @@ import org.apache.thrift.TException;
 import org.apache.thrift.TFieldIdEnum;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.grommet.Stage;
 import edu.jhu.hlt.rebar.AnnotationException;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
@@ -53,9 +52,9 @@ public abstract class AbstractStageWriter<T extends TBase<T, ? extends TFieldIdE
       Communication c = this.reader.get(docId);
       if (annotation.validate(c)) {
         Mutation m = new Mutation(c.uuid);
-        m.put("annotations", this.stage.name, new Value(this.serializer.serialize(annotation.getAnnotation())));
+        m.put("annotations", this.stage.getName(), new Value(this.serializer.serialize(annotation.getAnnotation())));
 
-        this.idxBw.addMutation(Util.generateEmptyValueMutation("stage:"+this.stage.name, c.uuid, ""));
+        this.idxBw.addMutation(Util.generateEmptyValueMutation("stage:"+this.stage.getName(), c.uuid, ""));
         this.bw.addMutation(m);
       } else {
         throw new AnnotationException("Your " + annotation.getClass().getName() + " object was invalid.");

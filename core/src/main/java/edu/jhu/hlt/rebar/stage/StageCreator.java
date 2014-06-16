@@ -1,8 +1,9 @@
-/**
+/*
  * 
  */
 package edu.jhu.hlt.rebar.stage;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -18,13 +19,12 @@ import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
-import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.esotericsoftware.kryo.io.Output;
+
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.grommet.Stage;
-import edu.jhu.hlt.grommet.StageType;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
@@ -42,7 +42,7 @@ public class StageCreator extends AbstractAccumuloClient implements AutoCloseabl
   protected final BatchWriter stagesTableBW;
   protected final BatchWriter stagesIdxBW;
   protected final StageReader sr;
-
+  
   /**
    * 
    */
@@ -71,13 +71,13 @@ public class StageCreator extends AbstractAccumuloClient implements AutoCloseabl
   }
 
   public void create(Stage stage) throws RebarException {
-    if (this.sr.exists(stage.name))
+    if (this.sr.exists(stage.getName()))
       throw new RebarException("Can't create a stage that exists.");
     
-    if (stage.getType() == null)
+    if (stage.getStageType() == null)
       throw new RebarException("No type specified for stage.");
 
-    Set<String> deps = stage.dependencies;
+    Set<String> deps = stage.getDependencies();
     for (String dep : deps) {
       if (!this.sr.exists(dep))
         throw new RebarException("Dependency: " + dep + " doesn't exist; can't create that stage.");
@@ -85,23 +85,18 @@ public class StageCreator extends AbstractAccumuloClient implements AutoCloseabl
 
     try {
       // create entry in stage table
-      final Mutation m = new Mutation(stage.name);
-      m.put(Constants.STAGES_OBJ_COLF, "", new Value(this.serializer.serialize(stage)));
+      final Mutation m = new Mutation(stage.getName());
+      Output op = new Output(new ByteArrayOutputStream());
+      this.kryo.writeObject(op, stage);
+      m.put(Constants.STAGES_OBJ_COLF, "", new Value(op.toBytes()));
       this.stagesTableBW.addMutation(m);
       
-      Mutation typeIdx = Util.generateEmptyValueMutation("type:"+stage.type.toString(), stage.name, "");
+      Mutation typeIdx = Util.generateEmptyValueMutation("type:"+stage.getStageType().toString(), stage.getName(), "");
       this.stagesIdxBW.addMutation(typeIdx);
-    } catch (MutationsRejectedException | TException e) {
+      op.close();
+    } catch (MutationsRejectedException e) {
       throw new RebarException(e);
     }
-  }
-
-  public static boolean isValidStageName(Stage s) {
-    return isValidStageName(s.name);
-  }
-
-  public static boolean isValidStageName(String stageName) {
-    return stageName.startsWith(Constants.STAGES_PREFIX);
   }
 
   /*
@@ -125,7 +120,7 @@ public class StageCreator extends AbstractAccumuloClient implements AutoCloseabl
 
   public void addAnnotatedDocument(Stage stage, Communication document) throws RebarException {
     try {
-      final Mutation m = new Mutation(stage.name);
+      final Mutation m = new Mutation(stage.getName());
       m.put(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF, document.id, Util.EMPTY_VALUE);
       this.stagesTableBW.addMutation(m);
     } catch (MutationsRejectedException e) {
@@ -140,7 +135,7 @@ public class StageCreator extends AbstractAccumuloClient implements AutoCloseabl
 
     try {
       Scanner sc = this.conn.createScanner(Constants.STAGES_TABLE_NAME, Configuration.getAuths());
-      Range r = new Range(s.name);
+      Range r = new Range(s.getName());
       sc.setRange(r);
       sc.fetchColumnFamily(new Text(Constants.STAGES_DOCS_ANNOTATED_IDS_COLF));
       Iterator<Entry<Key, Value>> iter = sc.iterator();
@@ -185,13 +180,7 @@ public class StageCreator extends AbstractAccumuloClient implements AutoCloseabl
       throw new RuntimeException(stageTypeString + " was not a valid stage.");
     }
     
-    Stage s = new Stage()
-      .setName(stageName)
-      .setType(st)
-      .setDescription(stageDesc)
-      .setCreateTime(System.currentTimeMillis())
-      .setDependencies(new HashSet<String>());
-    
+    Stage s = new Stage(stageName, stageDesc, st, new HashSet<String>());
     try (StageCreator sc = new StageCreator()) {
       sc.create(s);
     }
