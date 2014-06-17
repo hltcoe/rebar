@@ -70,6 +70,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
   public void setUp() throws Exception {
     logger.info("Checking if configuration is appropriate.");
     this.initialize(tempFolder.newFolder(), "password");
+    logger.info("Initialized.");
     this.sss = new SingleSectionSegmenter();
     this.sentSegmenter = new SillySentenceSegmenter();
     this.tokenizer = new TiftTokenizer(Tokenizer.WHITESPACE);

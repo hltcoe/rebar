@@ -54,11 +54,7 @@
       <groupId>edu.jhu.hlt</groupId>
       <artifactId>concrete-validation</artifactId>
 	  </dependency>
-    <dependency>
-      <groupId>edu.jhu.hlt</groupId>
-      <artifactId>rebar-thrift</artifactId>
-    </dependency>
-    <dependency>
+	<dependency>
       <groupId>edu.jhu.hlt</groupId>
       <artifactId>ballast-tools</artifactId>
     </dependency>
@@ -93,24 +89,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>javax.jms</groupId>
-          <artifactId>jms</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.sun.jmx</groupId>
-          <artifactId>jmxri</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.sun.jdmk</groupId>
-          <artifactId>jmxtools</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
 
     <!-- Managed test dependencies -->
     <dependency>
@@ -123,7 +101,6 @@
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
-
 
     <!-- Unique dependencies -->
     <dependency>
@@ -153,10 +130,10 @@
       <artifactId>commons-io</artifactId>
       <version>2.4</version>
     </dependency>
-        <dependency>
-        <groupId>com.esotericsoftware.kryo</groupId>
-        <artifactId>kryo</artifactId>
-        <version>2.24.0</version>
+      <dependency>
+      <groupId>com.esotericsoftware.kryo</groupId>
+      <artifactId>kryo</artifactId>
+      <version>2.24.0</version>
     </dependency>
   </dependencies>
 </project>
