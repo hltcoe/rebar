@@ -96,8 +96,11 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     CommunicationReader cr = new CommunicationReader(this.conn);
     try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("Tweet");) {
       assertEquals("Should get " + nDocs + "ingested docs.", nDocs, Util.countIteratorResults(commIter));
+    }
+    
+    try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("News");) {
       assertEquals("Shouldn't get any non-Tweets.", 0, 
-          Util.countIteratorResults(cr.getCommunications("News")));
+          Util.countIteratorResults(commIter));
     }
     
     try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("Tweet");) {
