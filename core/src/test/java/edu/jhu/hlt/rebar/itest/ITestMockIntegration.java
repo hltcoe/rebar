@@ -6,6 +6,9 @@ package edu.jhu.hlt.rebar.itest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +37,6 @@ import edu.jhu.hlt.concrete.Sentence;
 import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.TokenizationCollection;
-import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.accumulo.AbstractMiniClusterTest;
 import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
@@ -68,8 +70,10 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
 
   @Before
   public void setUp() throws Exception {
+    File tmpDir = Files.createTempDirectory(Paths.get("target"), "itest").toFile();
+    tmpDir.deleteOnExit();
     logger.info("Checking if configuration is appropriate.");
-    this.initialize(tempFolder.newFolder(), "password");
+    this.initialize(tmpDir, "password");
     logger.info("Initialized.");
     this.sss = new SingleSectionSegmenter();
     this.sentSegmenter = new SillySentenceSegmenter();
