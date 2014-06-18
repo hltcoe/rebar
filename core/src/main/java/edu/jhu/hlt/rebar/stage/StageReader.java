@@ -27,7 +27,6 @@ import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.accumulo.AbstractReader;
 import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
-import edu.jhu.hlt.rebar.client.iterators.AutoCloseableAccumuloIterator;
 import edu.jhu.hlt.rebar.stage.reader.SectionStageReader;
 import edu.jhu.hlt.rebar.stage.reader.SentenceStageReader;
 import edu.jhu.hlt.rebar.stage.reader.TokenizationStageReader;
@@ -120,11 +119,11 @@ public final class StageReader extends AbstractReader<Stage> {
     }
   }
 
-  public AutoCloseableAccumuloIterator<Stage> getStages() throws RebarException {
+  public AbstractThriftIterator<Stage> getStages() throws RebarException {
     return this.rangeToIter(new Range());
   }
   
-  public AutoCloseableAccumuloIterator<Stage> getStages(StageType t) throws RebarException {
+  public AbstractThriftIterator<Stage> getStages(StageType t) throws RebarException {
     Range r = new Range("type:"+t.toString());
     return this.rangeToIter(r);
   }
@@ -133,7 +132,7 @@ public final class StageReader extends AbstractReader<Stage> {
    * @see edu.jhu.hlt.rebar.accumulo.AbstractReader#get()
    */
   @Override
-  public AutoCloseableAccumuloIterator<Stage> getAll() throws RebarException {
+  public AbstractThriftIterator<Stage> getAll() throws RebarException {
     return this.rangeToIter(new Range());
   }
   
@@ -214,7 +213,7 @@ public final class StageReader extends AbstractReader<Stage> {
   }
   
   public void printStages() throws Exception {
-    try (AutoCloseableAccumuloIterator<Stage> iter = this.getStages();) {
+    try (AbstractThriftIterator<Stage> iter = this.getStages();) {
       while (iter.hasNext()) {
         Stage s = iter.next();
         System.out.println(String.format("Stage: %s\nDescription: %s\nType: %s\n", s.getName(), s.getDescription(), s.getStageType().toString()));

@@ -10,18 +10,13 @@ import java.util.NoSuchElementException;
  * 
  * @author max
  */
-public class EmptyAutoCloseableAccumuloIterator<T> extends AutoCloseableAccumuloIterator<T> {
+public class EmptyAutoCloseableAccumuloIterator<T> extends AbstractThriftIterator<T> {
 
   /**
    * 
    */
   public EmptyAutoCloseableAccumuloIterator() {
-    super(null);
-  }
-
-  @Override
-  public boolean hasNext() {
-    return false;
+    super();
   }
 
   @Override
@@ -33,7 +28,7 @@ public class EmptyAutoCloseableAccumuloIterator<T> extends AutoCloseableAccumulo
    * @see java.lang.AutoCloseable#close()
    */
   @Override
-  public void close() throws Exception {
+  public void close() {
     // nothing.
   }
 }

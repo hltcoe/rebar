@@ -15,7 +15,7 @@ import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.client.iterators.AutoCloseableAccumuloIterator;
+import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
 
 /**
  * @author max
@@ -58,7 +58,7 @@ public class CommunicationReader extends AbstractCommunicationReader {
   }
   
   public Communication byUuid (UUID uuid) throws Exception {
-    try (AutoCloseableAccumuloIterator<Communication> it = this.fromMainTable(uuid.toString());) {
+    try (AbstractThriftIterator<Communication> it = this.fromMainTable(uuid.toString());) {
       if (it.hasNext())
         return it.next();
       else
@@ -74,28 +74,28 @@ public class CommunicationReader extends AbstractCommunicationReader {
       throw new RebarException("Document: " + docId + " has not been ingested.");
   }
   
-  public AutoCloseableAccumuloIterator<Communication> getCommunications(long unixTimeStart, long unixTimeEnd) throws RebarException {
+  public AbstractThriftIterator<Communication> getCommunications(long unixTimeStart, long unixTimeEnd) throws RebarException {
     DateTime start = new DateTime(unixTimeStart * 1000);
     DateTime end = new DateTime(unixTimeStart * 1000);
     return this.getCommunications(start, end);
   }
   
-  public AutoCloseableAccumuloIterator<Communication> getCommunications(DateTime start, DateTime end) throws RebarException {
+  public AbstractThriftIterator<Communication> getCommunications(DateTime start, DateTime end) throws RebarException {
     if (start.isAfter(end))
       throw new RebarException("Start date cannot be after end date. Your parameters are probably reversed.");
     Range r = new Range("date:"+start.toString(), "date:"+end.toString());
     return this.rangeToIter(r);
   }
   
-  public AutoCloseableAccumuloIterator<Communication> getCommunications(DateTime past) throws RebarException {
+  public AbstractThriftIterator<Communication> getCommunications(DateTime past) throws RebarException {
     return this.getCommunications(past, new DateTime());
   }
   
-  public AutoCloseableAccumuloIterator<Communication> getCommunications(long unixTimePast) throws RebarException {
+  public AbstractThriftIterator<Communication> getCommunications(long unixTimePast) throws RebarException {
     return this.getCommunications(new DateTime(unixTimePast * 1000), new DateTime());
   }
   
-  public AutoCloseableAccumuloIterator<Communication> getCommunications(String t) throws RebarException {
+  public AbstractThriftIterator<Communication> getCommunications(String t) throws RebarException {
     Range r = new Range("type:"+t.toString());
     return this.rangeToIter(r);
   }
@@ -104,7 +104,7 @@ public class CommunicationReader extends AbstractCommunicationReader {
    * @see edu.jhu.hlt.rebar.accumulo.AbstractReader#get()
    */
   @Override
-  public AutoCloseableAccumuloIterator<Communication> getAll() throws RebarException {
+  public AbstractThriftIterator<Communication> getAll() throws RebarException {
     return this.rangeToIter(new Range());
   }
 }
