@@ -107,6 +107,7 @@ public final class StageReader extends AbstractReader<Stage> {
         Scanner sc = this.conn.createScanner(this.tableName, Configuration.getAuths());
         Range r = new Range(stageName);
         sc.setRange(r);
+
         try (AbstractThriftIterator<Stage> iter = this.accumuloIterToTIter(sc);) {
           Stage match = iter.next();
           return match;

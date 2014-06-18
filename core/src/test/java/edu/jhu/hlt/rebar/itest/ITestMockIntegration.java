@@ -12,7 +12,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +39,7 @@ import edu.jhu.hlt.concrete.TokenizationCollection;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.accumulo.AbstractMiniClusterTest;
 import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
+import edu.jhu.hlt.rebar.client.iterators.AutoCloseableAccumuloIterator;
 import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
 import edu.jhu.hlt.rebar.stage.Stage;
@@ -94,16 +94,18 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     Map<String, Communication> idToCommMap = this.ingestDocs(nDocs);
     
     CommunicationReader cr = new CommunicationReader(this.conn);
-    Iterator<Communication> commIter = cr.getCommunications("Tweet");
-    assertEquals("Should get " + nDocs + "ingested docs.", nDocs, Util.countIteratorResults(commIter));
-    assertEquals("Shouldn't get any non-Tweets.", 0, 
-        Util.countIteratorResults(cr.getCommunications("News")));
+    try (AutoCloseableAccumuloIterator<Communication> commIter = cr.getCommunications("Tweet");) {
+      assertEquals("Should get " + nDocs + "ingested docs.", nDocs, Util.countIteratorResults(commIter));
+      assertEquals("Shouldn't get any non-Tweets.", 0, 
+          Util.countIteratorResults(cr.getCommunications("News")));
+    }
     
-    commIter = cr.getCommunications("Tweet");
-    while(commIter.hasNext()) {
-      Communication c = commIter.next();
-      assertTrue(idToCommMap.containsKey(c.id));
-      assertTrue(idToCommMap.containsValue(c));
+    try (AutoCloseableAccumuloIterator<Communication> commIter = cr.getCommunications("Tweet");) {
+      while(commIter.hasNext()) {
+        Communication c = commIter.next();
+        assertTrue(idToCommMap.containsKey(c.id));
+        assertTrue(idToCommMap.containsValue(c));
+      }
     }
     
     Stage st = generateTestStage(StageType.SECTION);
@@ -112,32 +114,36 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     }
     
     StageReader sr = new StageReader(this.conn);
-    assertEquals("Should find the ingested stage.", st, sr.getStages().next());
+    AutoCloseableAccumuloIterator<Stage> sIter = sr.getStages();
+    assertEquals("Should find the ingested stage.", st, sIter.next());
     assertTrue("Should find the ingested stage via exists method.", sr.exists(st.getName()));
     assertEquals("Should find the ingested stage via get method.", st, sr.get(st.getName()));
+    sIter.close();
     
     Map<String, SectionSegmentation> idToSSMap = new HashMap<>(11);
     try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(st.getName());) {
-      commIter = cr.getCommunications("Tweet");
-      while(commIter.hasNext()) {
-        Communication c = commIter.next();
-        SectionSegmentation empty = sss.annotateDiff(c);
-        idToSSMap.put(empty.uuid, empty);
-        retStage.annotate(empty, c.id);
+      try (AutoCloseableAccumuloIterator<Communication> commIter = cr.getCommunications("Tweet");) {
+        while(commIter.hasNext()) {
+          Communication c = commIter.next();
+          SectionSegmentation empty = sss.annotateDiff(c);
+          idToSSMap.put(empty.uuid, empty);
+          retStage.annotate(empty, c.id);
+        }
       }
     }
     
     AbstractStageReader reader = sr.getSectionStageReader(st.getName());
-    Iterator<Communication> retComms = reader.getAll();
-    while(retComms.hasNext()) {
-      Communication c = retComms.next();
-      assertTrue(idToCommMap.containsKey(c.id));
-      assertEquals(1, c.getSectionSegmentationsSize());
-      SectionSegmentation retrieved = c.getSectionSegmentations().get(0);
-      assertTrue(idToSSMap.containsKey(retrieved.uuid));
+    try (AutoCloseableAccumuloIterator<Communication> retComms = reader.getAll();) {
+      while(retComms.hasNext()) {
+        Communication c = retComms.next();
+        assertTrue(idToCommMap.containsKey(c.id));
+        assertEquals(1, c.getSectionSegmentationsSize());
+        SectionSegmentation retrieved = c.getSectionSegmentations().get(0);
+        assertTrue(idToSSMap.containsKey(retrieved.uuid));
+      }
     }
-
-    Stage stTwo = generateTestStage("another_stage", StageType.SECTION);
+    
+    Stage stTwo = generateTestStage("stage_another", StageType.SECTION);
     try (StageCreator sc = new StageCreator(this.conn);) {
       sc.create(stTwo);
     }
@@ -147,28 +153,32 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     assertEquals("Should find the ingested stage via get method.", stTwo, sr.get(stTwo.getName()));
     
     try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(stTwo.getName());) {
-      commIter = cr.getCommunications("Tweet");
-      for (int i = 0; i < 2; i++)
-        if (commIter.hasNext())
-          commIter.next();
-      
-      while(commIter.hasNext()) {
-        Communication c = commIter.next();
-        SectionSegmentation empty = sss.annotateDiff(c);
-        retStage.annotate(empty, c.id);
+      try (AutoCloseableAccumuloIterator<Communication> commIter = cr.getCommunications("Tweet");) {
+        for (int i = 0; i < 2; i++)
+          if (commIter.hasNext())
+            commIter.next();
+        
+        while(commIter.hasNext()) {
+          Communication c = commIter.next();
+          SectionSegmentation empty = sss.annotateDiff(c);
+          retStage.annotate(empty, c.id);
+        }
       }
     }
     
     reader = sr.getSectionStageReader(stTwo.getName());
+    AutoCloseableAccumuloIterator<Communication> ptr = reader.getAll();
     assertEquals("Should only get " + (nDocs - 2) + " docs annotated in S2.", 
-        nDocs - 2, Util.countIteratorResults(reader.getAll()));
-    retComms = reader.getAll();
-    while(retComms.hasNext()) {
-      Communication c = retComms.next();
-      assertTrue(idToCommMap.containsKey(c.id));
-      assertEquals(1, c.getSectionSegmentationsSize());
-    }
+        nDocs - 2, Util.countIteratorResults(ptr));
+    ptr.close();
     
+    try (AutoCloseableAccumuloIterator<Communication> retComms = reader.getAll();) {
+      while(retComms.hasNext()) {
+        Communication c = retComms.next();
+        assertTrue(idToCommMap.containsKey(c.id));
+        assertEquals(1, c.getSectionSegmentationsSize());
+      }
+    } 
     
     Set<String> deps = new HashSet<>();
     deps.add(st.getName());
@@ -186,35 +196,40 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     List<String> depList = new ArrayList<>(sentStage.getDependencies());
     try(AbstractStageWriter<SentenceSegmentationCollection> writer = new SentenceStageWriter(this.conn, sentStage);) {
       reader = sr.getSectionStageReader(depList.get(0));
-      retComms = reader.getAll();
-      while (retComms.hasNext()) {
-        Communication c = retComms.next();
-        assertTrue(c.isSetSectionSegmentations() && !c.getSectionSegmentations().isEmpty());
-        SentenceSegmentationCollection coll = this.sentSegmenter.annotateDiff(c);
-        writer.annotate(coll, c.getId());
+      try (AutoCloseableAccumuloIterator<Communication> retComms = reader.getAll();) {
+        while (retComms.hasNext()) {
+          Communication c = retComms.next();
+          assertTrue(c.isSetSectionSegmentations() && !c.getSectionSegmentations().isEmpty());
+          SentenceSegmentationCollection coll = this.sentSegmenter.annotateDiff(c);
+          writer.annotate(coll, c.getId());
+        }
       }
     }
     
     reader = sr.getSentenceStageReader(sentStage.getName());
-    assertEquals("Should get " + nDocs + " docs annotated in sent stage.", 
-        nDocs, Util.countIteratorResults(reader.getAll()));
-    retComms = reader.getAll();
-    while(retComms.hasNext()) {
-      Communication c = retComms.next();
-      assertTrue(idToCommMap.containsKey(c.id));
-      assertEquals(1, c.getSectionSegmentationsSize());
-      SectionSegmentation ss = c.getSectionSegmentations().get(0);
-      assertTrue(ss.getSectionList() != null);
-      for (Section sect : ss.getSectionList()) {
-        assertTrue(sect.isSetSentenceSegmentation());
-        assertEquals(1, sect.getSentenceSegmentation().size());
+    try (AutoCloseableAccumuloIterator<Communication> retComms = reader.getAll();) {
+      assertEquals("Should get " + nDocs + " docs annotated in sent stage.", 
+          nDocs, Util.countIteratorResults(retComms));
+    }
+
+    try (AutoCloseableAccumuloIterator<Communication> retComms = reader.getAll();) {
+      while(retComms.hasNext()) {
+        Communication c = retComms.next();
+        assertTrue(idToCommMap.containsKey(c.id));
+        assertEquals(1, c.getSectionSegmentationsSize());
+        SectionSegmentation ss = c.getSectionSegmentations().get(0);
+        assertTrue(ss.getSectionList() != null);
+        for (Section sect : ss.getSectionList()) {
+          assertTrue(sect.isSetSentenceSegmentation());
+          assertEquals(1, sect.getSentenceSegmentation().size());
+        }
       }
     }
     
     Set<String> tokDeps = new HashSet<>();
     tokDeps.add(st.getName());
     tokDeps.add(sentStage.getName());
-    Stage tokStage = generateTestStage("stage_tok", StageType.TOKENIZATION, deps);
+    Stage tokStage = generateTestStage("stage_tok", StageType.TOKENIZATION, tokDeps);
 
     try (StageCreator sc = new StageCreator(this.conn);) {
       sc.create(tokStage);
@@ -228,47 +243,53 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     depList = new ArrayList<>(tokStage.getDependencies());
     try(AbstractStageWriter<TokenizationCollection> writer = new TokenizationStageWriter(this.conn, tokStage);) {
       reader = sr.getSentenceStageReader(depList.get(1));
-      retComms = reader.getAll();
-      while (retComms.hasNext()) {
-        Communication c = retComms.next();
-        assertTrue(c.isSetSectionSegmentations() && !c.getSectionSegmentations().isEmpty());
-        for (SectionSegmentation ss : c.getSectionSegmentations()) {
-          assertTrue(ss.isSetSectionList());
-          assertTrue(ss.getSectionListSize()> 0);
-          for (Section sect : ss.getSectionList()) {
-            assertTrue(sect.isSetSentenceSegmentation());
-            assertTrue(sect.getSentenceSegmentationSize() > 0);
-            for (SentenceSegmentation sentSeg : sect.getSentenceSegmentation()) {
-              assertTrue(sentSeg.isSetSentenceList());
-              assertTrue(sentSeg.getSentenceListSize() > 0);
+      
+      try (AutoCloseableAccumuloIterator<Communication> retComms = reader.getAll();) {
+        while (retComms.hasNext()) {
+          Communication c = retComms.next();
+          assertTrue(c.isSetSectionSegmentations() && !c.getSectionSegmentations().isEmpty());
+          for (SectionSegmentation ss : c.getSectionSegmentations()) {
+            assertTrue(ss.isSetSectionList());
+            assertTrue(ss.getSectionListSize()> 0);
+            for (Section sect : ss.getSectionList()) {
+              assertTrue(sect.isSetSentenceSegmentation());
+              assertTrue(sect.getSentenceSegmentationSize() > 0);
+              for (SentenceSegmentation sentSeg : sect.getSentenceSegmentation()) {
+                assertTrue(sentSeg.isSetSentenceList());
+                assertTrue(sentSeg.getSentenceListSize() > 0);
+              }
             }
           }
+          
+          TokenizationCollection coll = this.tokenizer.annotateDiff(c);
+          writer.annotate(coll, c.getId());
         }
-        
-        TokenizationCollection coll = this.tokenizer.annotateDiff(c);
-        writer.annotate(coll, c.getId());
       }
     }
     
     reader = sr.getTokenizationStageReader(tokStage.getName());
-    assertEquals("Should get " + nDocs + " docs annotated in tok stage.", 
-        nDocs, Util.countIteratorResults(reader.getAll()));
-    retComms = reader.getAll();
-    while(retComms.hasNext()) {
-      Communication c = retComms.next();
-      assertTrue(idToCommMap.containsKey(c.id));
-      assertEquals(1, c.getSectionSegmentationsSize());
-      SectionSegmentation ss = c.getSectionSegmentations().get(0);
-      assertTrue(ss.getSectionList() != null);
-      for (Section sect : ss.getSectionList()) {
-        assertTrue(sect.isSetSentenceSegmentation());
-        assertEquals(1, sect.getSentenceSegmentation().size());
-        for (SentenceSegmentation sentSeg : sect.getSentenceSegmentation()) {
-          assertTrue(sentSeg.isSetSentenceList());
-          assertTrue(sentSeg.getSentenceListSize() > 0);
-          for (Sentence sent : sentSeg.getSentenceList()) {
-            assertTrue(sent.isSetTokenizationList());
-            assertTrue(sent.getTokenizationListSize() > 0);
+    try(AutoCloseableAccumuloIterator<Communication> retrComms = reader.getAll();) {
+      assertEquals("Should get " + nDocs + " docs annotated in tok stage.", 
+          nDocs, Util.countIteratorResults(retrComms));
+    }
+    
+    try(AutoCloseableAccumuloIterator<Communication> retrComms = reader.getAll();) {
+      while(retrComms.hasNext()) {
+        Communication c = retrComms.next();
+        assertTrue(idToCommMap.containsKey(c.id));
+        assertEquals(1, c.getSectionSegmentationsSize());
+        SectionSegmentation ss = c.getSectionSegmentations().get(0);
+        assertTrue(ss.getSectionList() != null);
+        for (Section sect : ss.getSectionList()) {
+          assertTrue(sect.isSetSentenceSegmentation());
+          assertEquals(1, sect.getSentenceSegmentation().size());
+          for (SentenceSegmentation sentSeg : sect.getSentenceSegmentation()) {
+            assertTrue(sentSeg.isSetSentenceList());
+            assertTrue(sentSeg.getSentenceListSize() > 0);
+            for (Sentence sent : sentSeg.getSentenceList()) {
+              assertTrue(sent.isSetTokenizationList());
+              assertTrue(sent.getTokenizationListSize() > 0);
+            }
           }
         }
       }
