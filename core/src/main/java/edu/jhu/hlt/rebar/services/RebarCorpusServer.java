@@ -3,16 +3,12 @@
  */
 package edu.jhu.hlt.rebar.services;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author max
  *
  */
 public class RebarCorpusServer {
-  
-  private static final Logger logger = LoggerFactory.getLogger(RebarCorpusServer.class);
   
 //  /**
 //   * @param port
