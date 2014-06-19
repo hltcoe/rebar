@@ -5,12 +5,12 @@ package edu.jhu.hlt.rebar.stage.writer;
 
 import org.apache.accumulo.core.client.Connector;
 
-import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.TokenizationCollection;
+import edu.jhu.hlt.concrete.validation.AbstractAnnotation;
+import edu.jhu.hlt.concrete.validation.ValidatableTokenizationCollection;
 import edu.jhu.hlt.rebar.AnnotationException;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.annotations.AbstractRebarAnnotation;
 import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
 import edu.jhu.hlt.rebar.stage.Stage;
 
@@ -41,18 +41,7 @@ public class TokenizationStageWriter extends AbstractStageWriter<TokenizationCol
     /*
      * TODO: switch to screed, or some other legit validation strategy.
      */
-    AbstractRebarAnnotation<TokenizationCollection> rss = new AbstractRebarAnnotation<TokenizationCollection>(annotation) {
-
-      /*
-       * (non-Javadoc)
-       * @see edu.jhu.hlt.rebar.annotations.AbstractRebarAnnotation#validate(edu.jhu.hlt.concrete.Communication)
-       */
-      @Override
-      public boolean validate(Communication c) throws RebarException {
-        return true;
-      }
-    };
-    
+    AbstractAnnotation<TokenizationCollection> rss = new ValidatableTokenizationCollection(annotation);
     this.annotate(rss, docId);
   }
 }

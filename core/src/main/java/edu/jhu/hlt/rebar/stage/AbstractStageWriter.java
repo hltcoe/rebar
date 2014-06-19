@@ -12,13 +12,13 @@ import org.apache.thrift.TException;
 import org.apache.thrift.TFieldIdEnum;
 
 import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.validation.AbstractAnnotation;
 import edu.jhu.hlt.rebar.AnnotationException;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.accumulo.AbstractCommunicationWriter;
 import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
-import edu.jhu.hlt.rebar.annotations.AbstractRebarAnnotation;
 
 /**
  * @author max
@@ -47,7 +47,7 @@ public abstract class AbstractStageWriter<T extends TBase<T, ? extends TFieldIdE
     this.reader = new CommunicationReader(conn);
   }
 
-  protected final void annotate(AbstractRebarAnnotation<T> annotation, String docId) throws AnnotationException, RebarException {
+  protected final void annotate(AbstractAnnotation<T> annotation, String docId) throws AnnotationException, RebarException {
     try {
       Communication c = this.reader.get(docId);
       if (annotation.validate(c)) {
