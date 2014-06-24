@@ -1,4 +1,4 @@
-/**
+/*
  * 
  */
 package edu.jhu.hlt.rebar.services;
