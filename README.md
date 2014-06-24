@@ -1,4 +1,4 @@
-Rebar is currently undergoing major refactoring. You almost certainly do 
-not want to use this branch.
+Rebar
+======
 
-Instead, please see: https://github.com/hltcoe/rebar/tree/rebar-v2
+Quality documentation coming soon!
