@@ -29,6 +29,7 @@ import edu.jhu.hlt.concrete.Sentence;
 import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.TokenizationCollection;
+import edu.jhu.hlt.concrete.UUID;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.accumulo.AbstractAccumuloTest;
 import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
@@ -95,7 +96,7 @@ public class IMemoryIntegrationTest extends AbstractAccumuloTest {
     assertTrue("Should find the ingested stage via exists method.", sr.exists(st.getName()));
     assertEquals("Should find the ingested stage via get method.", st, sr.get(st.getName()));
     
-    Map<String, SectionSegmentation> idToSSMap = new HashMap<>(11);
+    Map<UUID, SectionSegmentation> idToSSMap = new HashMap<>(11);
     try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(st.getName());) {
       commIter = cr.getCommunications("Tweet");
       while(commIter.hasNext()) {

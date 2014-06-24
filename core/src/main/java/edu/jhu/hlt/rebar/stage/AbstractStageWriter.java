@@ -51,10 +51,10 @@ public abstract class AbstractStageWriter<T extends TBase<T, ? extends TFieldIdE
     try {
       Communication c = this.reader.get(docId);
       if (annotation.validate(c)) {
-        Mutation m = new Mutation(c.uuid);
+        Mutation m = new Mutation(c.uuid.getUuidString());
         m.put("annotations", this.stage.getName(), new Value(this.serializer.serialize(annotation.getAnnotation())));
 
-        this.idxBw.addMutation(Util.generateEmptyValueMutation("stage:"+this.stage.getName(), c.uuid, ""));
+        this.idxBw.addMutation(Util.generateEmptyValueMutation("stage:"+this.stage.getName(), c.getUuid().getUuidString(), ""));
         this.bw.addMutation(m);
       } else {
         throw new AnnotationException("Your " + annotation.getClass().getName() + " object was invalid.");

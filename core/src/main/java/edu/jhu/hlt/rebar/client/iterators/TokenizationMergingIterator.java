@@ -22,6 +22,7 @@ import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
 import edu.jhu.hlt.concrete.Tokenization;
 import edu.jhu.hlt.concrete.TokenizationCollection;
+import edu.jhu.hlt.concrete.UUID;
 import edu.jhu.hlt.rebar.RebarException;
 
 /**
@@ -83,7 +84,7 @@ public class TokenizationMergingIterator extends SentenceMergingIterator {
     
     // Generate a map of ID --> Sentences
     // so that we can map SentenceSegmentation appropriately
-    Map<String, Sentence> idToSentenceMap = new HashMap<>();
+    Map<UUID, Sentence> idToSentenceMap = new HashMap<>();
     for (Section s : ss.getSectionList())
       for (SentenceSegmentation sentSeg : s.getSentenceSegmentation())
         for (Sentence st : sentSeg.getSentenceList())
@@ -93,7 +94,7 @@ public class TokenizationMergingIterator extends SentenceMergingIterator {
     // Iterate over it and map the Tokenizations
     // to the appropriate sentences.
     for (Tokenization tok : tc.getTokenizationList()) {
-      String id = tok.getSentenceId();
+      UUID id = tok.getSentenceId();
       // Find the appropriate sentence.
       // If it is not in our map, we need to throw an error - something went wrong.
       // Ideally this would be covered by a validation library.

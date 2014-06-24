@@ -19,6 +19,7 @@ import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.SectionSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentation;
 import edu.jhu.hlt.concrete.SentenceSegmentationCollection;
+import edu.jhu.hlt.concrete.UUID;
 import edu.jhu.hlt.rebar.RebarException;
 
 /**
@@ -78,7 +79,7 @@ public class SentenceMergingIterator extends SectionMergingIterator {
     
     // Generate a map of ID --> Sections
     // so that we can map SentenceSegmentation appropriately
-    Map<String, Section> idToSectionMap = new HashMap<>();
+    Map<UUID, Section> idToSectionMap = new HashMap<>();
     for (Section s : ss.getSectionList())
       idToSectionMap.put(s.uuid, s);
 
@@ -86,7 +87,7 @@ public class SentenceMergingIterator extends SectionMergingIterator {
     // Iterate over it and map the SentenceSegmentations
     // to the appropriate sections.
     for (SentenceSegmentation sentSeg : ssc.getSentSegList()) {
-      String id = sentSeg.getSectionId();
+      UUID id = sentSeg.getSectionId();
       // Find the appropriate section.
       // If it is not in our map, we need to throw an error - something went wrong.
       // Ideally this would be covered by a validation library.

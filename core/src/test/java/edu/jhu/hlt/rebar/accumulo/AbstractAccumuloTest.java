@@ -32,6 +32,7 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.LanguageIdentification;
+import edu.jhu.hlt.concrete.util.ConcreteUUIDFactory;
 import edu.jhu.hlt.rebar.InvalidStageNameException;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
@@ -94,7 +95,7 @@ public class AbstractAccumuloTest {
     document.type = "Tweet";
     document.text = "The Roman army fled from the Alemanni. They returned to Capua after 3 weeks.";
     document.id = Integer.toString(Math.abs(rand.nextInt()));
-    document.uuid = UUID.randomUUID().toString();
+    document.uuid = new ConcreteUUIDFactory().getConcreteUUID();
 
     return document;
   }
@@ -125,7 +126,7 @@ public class AbstractAccumuloTest {
 
   protected static LanguageIdentification generateLanguageIdentification(Communication d) {
     LanguageIdentification lid = new LanguageIdentification();
-    lid.uuid = d.id + "_LID";
+    lid.uuid = new ConcreteUUIDFactory().getConcreteUUID();
     //lid.name = "max_lid_test";
     //lid.version = "v1";
     lid.languageToProbabilityMap = generateLidMap();

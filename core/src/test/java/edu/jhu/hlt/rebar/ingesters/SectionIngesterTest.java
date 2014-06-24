@@ -18,6 +18,7 @@ import edu.jhu.hlt.ballast.tools.SingleSectionSegmenter;
 import edu.jhu.hlt.concrete.AnnotationMetadata;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.SectionSegmentation;
+import edu.jhu.hlt.concrete.UUID;
 import edu.jhu.hlt.concrete.validation.ValidatableMetadata;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.Util;
@@ -52,7 +53,7 @@ public class SectionIngesterTest extends AbstractAccumuloTest {
     for (Communication c : commList)
       idToCommMap.put(c.id, c);
     
-    Map<String, SectionSegmentation> idToSSMap = new HashMap<>(11);
+    Map<UUID, SectionSegmentation> idToSSMap = new HashMap<>(11);
     // Add section segmentation to each comm.
     for (Communication c : commSet) {
       SectionSegmentation viaTool = this.sss.annotateDiff(c);

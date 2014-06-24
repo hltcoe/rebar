@@ -70,7 +70,7 @@ public class TestCommunicationReader extends AbstractAccumuloTest {
   @Test
   public void byUuid() throws Exception {
     Communication c = generateMockDocument();
-    UUID id = UUID.fromString(c.uuid);
+    UUID id = UUID.fromString(c.uuid.getUuidString());
     ci.ingest(c);
     for (int i = 0; i < 100; i++)
       ci.ingest(generateMockDocument());

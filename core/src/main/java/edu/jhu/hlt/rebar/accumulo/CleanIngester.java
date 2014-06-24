@@ -67,16 +67,17 @@ public class CleanIngester extends AbstractCommunicationWriter {
           + d.getUuid() + "; cannot ingest. If you want to strip them automatically, call ingestAndStrip().");
 
     try {
-      final Mutation m = new Mutation(d.uuid);
+      final String uuidStr = d.uuid.getUuidString();
+      final Mutation m = new Mutation(uuidStr);
       Value v = new Value(this.serializer.serialize(d));
       m.put(Constants.DOCUMENT_COLF, "", v);
       this.bw.addMutation(m);
       
-      this.idxBw.addMutation(Util.generateEmptyValueMutation("doc_id:"+d.id, d.uuid, ""));
-      this.idxBw.addMutation(Util.generateEmptyValueMutation("type:"+d.type.toString(), d.uuid, ""));
+      this.idxBw.addMutation(Util.generateEmptyValueMutation("doc_id:"+d.id, uuidStr, ""));
+      this.idxBw.addMutation(Util.generateEmptyValueMutation("type:"+d.type.toString(), uuidStr, ""));
       
       if (d.startTime != 0)
-        this.idxBw.addMutation(Util.generateEmptyValueMutation("date:"+new DateTime(d.startTime * 1000).toString(), d.uuid, ""));
+        this.idxBw.addMutation(Util.generateEmptyValueMutation("date:"+new DateTime(d.startTime * 1000).toString(), uuidStr, ""));
     } catch (MutationsRejectedException | TException e) {
       throw new RebarException(e);
     }
