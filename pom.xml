@@ -4,7 +4,7 @@
 
   <groupId>edu.jhu.hlt</groupId>
   <artifactId>rebar-project</artifactId>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>3.2.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>core</module>
@@ -27,8 +27,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <groovy.version>2.1.3</groovy.version>
     <jackson.version>2.2.3</jackson.version>
-    <concrete.version>3.0.1-SNAPSHOT</concrete.version>
-    <ballast.version>1.0.0-SNAPSHOT</ballast.version>
+    <concrete.version>3.2.1-SNAPSHOT</concrete.version>
+    <ballast.version>3.2.1-SNAPSHOT</ballast.version>
   </properties>
 
   <scm>
