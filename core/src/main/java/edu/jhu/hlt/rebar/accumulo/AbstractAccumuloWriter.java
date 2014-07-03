@@ -6,6 +6,7 @@ package edu.jhu.hlt.rebar.accumulo;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.MutationsRejectedException;
+import org.apache.accumulo.core.client.TableNotFoundException;
 
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
@@ -38,6 +39,15 @@ public class AbstractAccumuloWriter extends AbstractAccumuloClient implements Au
     this.idxTableName = idxTableName;
     this.bw = this.safeBatchWriter(this.tableName);
     this.idxBw = this.safeBatchWriter(this.idxTableName);
+  }
+  
+  protected BatchWriter safeBatchWriter(String tableName) throws RebarException {
+    try {
+      this.tableOps.createTableIfNotExists(tableName);
+      return this.conn.createBatchWriter(tableName, defaultBwOpts.getBatchWriterConfig());
+    } catch (TableNotFoundException e) {
+      throw new RebarException(e);
+    }
   }
 
   /* (non-Javadoc)

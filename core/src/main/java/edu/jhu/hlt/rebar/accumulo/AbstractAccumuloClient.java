@@ -4,9 +4,7 @@
 package edu.jhu.hlt.rebar.accumulo;
 
 import org.apache.accumulo.core.cli.BatchWriterOpts;
-import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -60,14 +58,5 @@ public abstract class AbstractAccumuloClient {
     this.deserializer = new TDeserializer(new TBinaryProtocol.Factory());
     
     this.kryo = new Kryo();
-  }
-  
-  protected BatchWriter safeBatchWriter(String tableName) throws RebarException {
-    try {
-      this.tableOps.createTableIfNotExists(tableName);
-      return this.conn.createBatchWriter(tableName, defaultBwOpts.getBatchWriterConfig());
-    } catch (TableNotFoundException e) {
-      throw new RebarException(e);
-    }
   }
 }
