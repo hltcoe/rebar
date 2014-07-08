@@ -26,7 +26,8 @@ import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.accumulo.AbstractReader;
-import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
+import edu.jhu.hlt.rebar.client.iterators.AbstractAccumuloIterator;
+import edu.jhu.hlt.rebar.client.iterators.AutoCloseableIterator;
 import edu.jhu.hlt.rebar.stage.reader.SectionStageReader;
 import edu.jhu.hlt.rebar.stage.reader.SentenceStageReader;
 import edu.jhu.hlt.rebar.stage.reader.TokenizationStageReader;
@@ -57,8 +58,8 @@ public final class StageReader extends AbstractReader<Stage> {
   }
 
   @Override
-  protected AbstractThriftIterator<Stage> accumuloIterToTIter(ScannerBase sc) throws RebarException {
-    return new AbstractThriftIterator<Stage>(sc) {
+  protected AutoCloseableIterator<Stage> accumuloIterToTIter(ScannerBase sc) throws RebarException {
+    return new AbstractAccumuloIterator<Stage>(sc) {
       
       final Kryo k = new Kryo();
       
@@ -107,9 +108,11 @@ public final class StageReader extends AbstractReader<Stage> {
         Range r = new Range(stageName);
         sc.setRange(r);
 
-        try (AbstractThriftIterator<Stage> iter = this.accumuloIterToTIter(sc);) {
+        try (AutoCloseableIterator<Stage> iter = this.accumuloIterToTIter(sc);) {
           Stage match = iter.next();
           return match;
+        } catch (Exception e) {
+          throw new RebarException(e);
         }
       } catch (TableNotFoundException e) {
         throw new RebarException(e);
@@ -119,11 +122,11 @@ public final class StageReader extends AbstractReader<Stage> {
     }
   }
 
-  public AbstractThriftIterator<Stage> getStages() throws RebarException {
+  public AutoCloseableIterator<Stage> getStages() throws RebarException {
     return this.rangeToIter(new Range());
   }
   
-  public AbstractThriftIterator<Stage> getStages(StageType t) throws RebarException {
+  public AutoCloseableIterator<Stage> getStages(StageType t) throws RebarException {
     Range r = new Range("type:"+t.toString());
     return this.rangeToIter(r);
   }
@@ -132,7 +135,7 @@ public final class StageReader extends AbstractReader<Stage> {
    * @see edu.jhu.hlt.rebar.accumulo.AbstractReader#get()
    */
   @Override
-  public AbstractThriftIterator<Stage> getAll() throws RebarException {
+  public AutoCloseableIterator<Stage> getAll() throws RebarException {
     return this.rangeToIter(new Range());
   }
   
@@ -213,7 +216,7 @@ public final class StageReader extends AbstractReader<Stage> {
   }
   
   public void printStages() throws Exception {
-    try (AbstractThriftIterator<Stage> iter = this.getStages();) {
+    try (AutoCloseableIterator<Stage> iter = this.getStages();) {
       while (iter.hasNext()) {
         Stage s = iter.next();
         System.out.println(String.format("Stage: %s\nDescription: %s\nType: %s\n", s.getName(), s.getDescription(), s.getStageType().toString()));

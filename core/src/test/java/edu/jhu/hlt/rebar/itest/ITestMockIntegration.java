@@ -1,4 +1,4 @@
-/**
+/*
  * 
  */
 package edu.jhu.hlt.rebar.itest;
@@ -40,7 +40,7 @@ import edu.jhu.hlt.concrete.UUID;
 import edu.jhu.hlt.rebar.Util;
 import edu.jhu.hlt.rebar.accumulo.AbstractMiniClusterTest;
 import edu.jhu.hlt.rebar.accumulo.CommunicationReader;
-import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
+import edu.jhu.hlt.rebar.client.iterators.AutoCloseableIterator;
 import edu.jhu.hlt.rebar.stage.AbstractStageReader;
 import edu.jhu.hlt.rebar.stage.AbstractStageWriter;
 import edu.jhu.hlt.rebar.stage.Stage;
@@ -96,18 +96,18 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     
     logger.info("Checking tweets appear.");
     CommunicationReader cr = new CommunicationReader(this.conn);
-    try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("Tweet");) {
+    try (AutoCloseableIterator<Communication> commIter = cr.getCommunications("Tweet");) {
       assertEquals("Should get " + nDocs + "ingested docs.", nDocs, Util.countIteratorResults(commIter));
     }
     
     logger.info("Checking that no tweets appear in news.");
-    try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("News");) {
+    try (AutoCloseableIterator<Communication> commIter = cr.getCommunications("News");) {
       assertEquals("Shouldn't get any non-Tweets.", 0, 
           Util.countIteratorResults(commIter));
     }
     
     logger.info("Checking that tweets are IDed correctly upon retrieval.");
-    try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("Tweet");) {
+    try (AutoCloseableIterator<Communication> commIter = cr.getCommunications("Tweet");) {
       while(commIter.hasNext()) {
         Communication c = commIter.next();
         assertTrue(idToCommMap.containsKey(c.id));
@@ -374,7 +374,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     assertEquals("Should find the ingested stage via get method.", stTwo, sr.get(stTwo.getName()));
     
     try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(stTwo.getName());) {
-      try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("Tweet");) {
+      try (AutoCloseableIterator<Communication> commIter = cr.getCommunications("Tweet");) {
         for (int i = 0; i < 2; i++)
           if (commIter.hasNext())
             commIter.next();
@@ -388,12 +388,12 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     }
     
     reader = sr.getSectionStageReader(stTwo.getName());
-    AbstractThriftIterator<Communication> ptr = reader.getAll();
+    AutoCloseableIterator<Communication> ptr = reader.getAll();
     assertEquals("Should only get " + (nDocs - 2) + " docs annotated in S2.", 
         nDocs - 2, Util.countIteratorResults(ptr));
     ptr.close();
     
-    try (AbstractThriftIterator<Communication> retComms = reader.getAll();) {
+    try (AutoCloseableIterator<Communication> retComms = reader.getAll();) {
       while(retComms.hasNext()) {
         Communication c = retComms.next();
         assertTrue(idToCommMap.containsKey(c.id));

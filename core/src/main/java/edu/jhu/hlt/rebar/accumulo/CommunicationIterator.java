@@ -8,16 +8,16 @@ import java.util.Map.Entry;
 import org.apache.accumulo.core.client.ScannerBase;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
-import org.apache.thrift.TException;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
+import edu.jhu.hlt.concrete.util.ConcreteException;
+import edu.jhu.hlt.rebar.client.iterators.AbstractAutoCloseableThriftIterator;
 
 /**
  * @author max
  *
  */
-public class CommunicationIterator extends AbstractThriftIterator<Communication> {
+public class CommunicationIterator extends AbstractAutoCloseableThriftIterator<Communication> {
 
   /**
    * 
@@ -35,9 +35,9 @@ public class CommunicationIterator extends AbstractThriftIterator<Communication>
     try {
       Communication c = new Communication();
       Entry<Key, Value> entry = this.iter.next();
-      deser.deserialize(c, entry.getValue().get());
+      this.ser.fromBytes(c, entry.getValue().get());
       return c;
-    } catch (TException e) {
+    } catch (ConcreteException e) {
       throw new RuntimeException(e);
     }
   }

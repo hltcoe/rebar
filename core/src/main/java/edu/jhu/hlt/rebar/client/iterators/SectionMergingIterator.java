@@ -23,7 +23,7 @@ import edu.jhu.hlt.rebar.RebarException;
  * 
  * @author max
  */
-public class SectionMergingIterator extends AbstractThriftIterator<Communication> {
+public class SectionMergingIterator extends AbstractAccumuloIterator<Communication> {
   
   protected final String stageName;
   

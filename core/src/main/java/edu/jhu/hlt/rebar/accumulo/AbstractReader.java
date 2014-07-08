@@ -23,7 +23,7 @@ import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
+import edu.jhu.hlt.rebar.client.iterators.AutoCloseableIterator;
 import edu.jhu.hlt.rebar.client.iterators.EmptyAutoCloseableAccumuloIterator;
 
 /**
@@ -78,9 +78,9 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
     }
   }
   
-  protected abstract AbstractThriftIterator<T> accumuloIterToTIter (ScannerBase sc) throws RebarException;
+  protected abstract AutoCloseableIterator<T> accumuloIterToTIter (ScannerBase sc) throws RebarException;
   
-  protected AbstractThriftIterator<T> fromMainTable(String rowId) throws RebarException {
+  protected AutoCloseableIterator<T> fromMainTable(String rowId) throws RebarException {
     try {
       Scanner sc = this.conn.createScanner(this.tableName, Configuration.getAuths());
       Range r = new Range(rowId, rowId);
@@ -91,7 +91,7 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
     }
   }
   
-  protected AbstractThriftIterator<T> rangeToIter(Range docIdxRange) throws RebarException {
+  protected AutoCloseableIterator<T> rangeToIter(Range docIdxRange) throws RebarException {
     Set<Range> uuidsToGet = this.scanIndexTableColF(docIdxRange);
     // if we didn't find any IDs, there aren't any docs of this type.
     // return empty iterator.
@@ -131,5 +131,5 @@ public abstract class AbstractReader<T> extends AbstractAccumuloClient {
     }
   }
   
-  public abstract AbstractThriftIterator<T> getAll() throws RebarException;
+  public abstract AutoCloseableIterator<T> getAll() throws RebarException;
 }
