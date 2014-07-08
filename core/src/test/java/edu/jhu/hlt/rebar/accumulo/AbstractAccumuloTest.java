@@ -94,6 +94,7 @@ public class AbstractAccumuloTest {
     Communication document = new Communication();
     document.type = "Tweet";
     document.text = "The Roman army fled from the Alemanni. They returned to Capua after 3 weeks.";
+    document.processedContent = "The Roman army fled from the Alemanni. They returned to Capua after 3 weeks.";
     document.id = Integer.toString(Math.abs(rand.nextInt()));
     document.uuid = new ConcreteUUIDFactory().getConcreteUUID();
 
