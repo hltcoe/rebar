@@ -122,7 +122,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     
     logger.info("Checking that stage retrieval works.");
     StageReader sr = new StageReader(this.conn);
-    AbstractThriftIterator<Stage> sIter = sr.getStages();
+    AutoCloseableIterator<Stage> sIter = sr.getStages();
     assertEquals("Should find the ingested stage.", st, sIter.next());
     assertTrue("Should find the ingested stage via exists method.", sr.exists(st.getName()));
     assertEquals("Should find the ingested stage via get method.", st, sr.get(st.getName()));
@@ -130,7 +130,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     
     Map<UUID, SectionSegmentation> idToSSMap = new HashMap<>(11);
     try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(st.getName());) {
-      try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("Tweet");) {
+      try (AutoCloseableIterator<Communication> commIter = cr.getCommunications("Tweet");) {
         while(commIter.hasNext()) {
           Communication c = commIter.next();
           SectionSegmentation empty = sss.annotateDiff(c);
@@ -142,7 +142,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
 
     logger.info("Checking that retrieved comms can be read with SectSeg annotations.");
     AbstractStageReader reader = sr.getSectionStageReader(st.getName());
-    try (AbstractThriftIterator<Communication> retComms = reader.getAll();) {
+    try (AutoCloseableIterator<Communication> retComms = reader.getAll();) {
       while(retComms.hasNext()) {
         Communication c = retComms.next();
         assertTrue(idToCommMap.containsKey(c.id));
@@ -162,7 +162,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     assertEquals("Should find the ingested stage via get method.", stTwo, sr.get(stTwo.getName()));
     
     try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(stTwo.getName());) {
-      try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("Tweet");) {
+      try (AutoCloseableIterator<Communication> commIter = cr.getCommunications("Tweet");) {
         for (int i = 0; i < 2; i++)
           if (commIter.hasNext())
             commIter.next();
@@ -176,12 +176,12 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     }
     
     reader = sr.getSectionStageReader(stTwo.getName());
-    AbstractThriftIterator<Communication> ptr = reader.getAll();
+    AutoCloseableIterator<Communication> ptr = reader.getAll();
     assertEquals("Should only get " + (nDocs - 2) + " docs annotated in S2.", 
         nDocs - 2, Util.countIteratorResults(ptr));
     ptr.close();
     
-    try (AbstractThriftIterator<Communication> retComms = reader.getAll();) {
+    try (AutoCloseableIterator<Communication> retComms = reader.getAll();) {
       while(retComms.hasNext()) {
         Communication c = retComms.next();
         assertTrue(idToCommMap.containsKey(c.id));
@@ -205,7 +205,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
 //    List<String> depList = new ArrayList<>(sentStage.getDependencies());
 //    try(AbstractStageWriter<SentenceSegmentationCollection> writer = new SentenceStageWriter(this.conn, sentStage);) {
 //      reader = sr.getSectionStageReader(depList.get(0));
-//      try (AbstractThriftIterator<Communication> retComms = reader.getAll();) {
+//      try (AutoCloseableIterator<Communication> retComms = reader.getAll();) {
 //        while (retComms.hasNext()) {
 //          Communication c = retComms.next();
 //          assertTrue(c.isSetSectionSegmentations() && !c.getSectionSegmentations().isEmpty());
@@ -216,12 +216,12 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
 //    }
     
 //    reader = sr.getSentenceStageReader(sentStage.getName());
-//    try (AbstractThriftIterator<Communication> retComms = reader.getAll();) {
+//    try (AutoCloseableIterator<Communication> retComms = reader.getAll();) {
 //      assertEquals("Should get " + nDocs + " docs annotated in sent stage.", 
 //          nDocs, Util.countIteratorResults(retComms));
 //    }
 //
-//    try (AbstractThriftIterator<Communication> retComms = reader.getAll();) {
+//    try (AutoCloseableIterator<Communication> retComms = reader.getAll();) {
 //      while(retComms.hasNext()) {
 //        Communication c = retComms.next();
 //        assertTrue(idToCommMap.containsKey(c.id));
@@ -253,7 +253,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
 //    try(AbstractStageWriter<TokenizationCollection> writer = new TokenizationStageWriter(this.conn, tokStage);) {
 //      reader = sr.getSentenceStageReader(depList.get(1));
 //      
-//      try (AbstractThriftIterator<Communication> retComms = reader.getAll();) {
+//      try (AutoCloseableIterator<Communication> retComms = reader.getAll();) {
 //        while (retComms.hasNext()) {
 //          Communication c = retComms.next();
 //          assertTrue(c.isSetSectionSegmentations() && !c.getSectionSegmentations().isEmpty());
@@ -277,12 +277,12 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
 //    }
     
 //    reader = sr.getTokenizationStageReader(tokStage.getName());
-//    try(AbstractThriftIterator<Communication> retrComms = reader.getAll();) {
+//    try(AutoCloseableIterator<Communication> retrComms = reader.getAll();) {
 //      assertEquals("Should get " + nDocs + " docs annotated in tok stage.", 
 //          nDocs, Util.countIteratorResults(retrComms));
 //    }
     
-//    try(AbstractThriftIterator<Communication> retrComms = reader.getAll();) {
+//    try(AutoCloseableIterator<Communication> retrComms = reader.getAll();) {
 //      while(retrComms.hasNext()) {
 //        Communication c = retrComms.next();
 //        assertTrue(idToCommMap.containsKey(c.id));
@@ -312,16 +312,16 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     Map<String, Communication> idToCommMap = this.ingestDocs(nDocs);
     
     CommunicationReader cr = new CommunicationReader(this.conn);
-    try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("Tweet");) {
+    try (AutoCloseableIterator<Communication> commIter = cr.getCommunications("Tweet");) {
       assertEquals("Should get " + nDocs + "ingested docs.", nDocs, Util.countIteratorResults(commIter));
     }
     
-    try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("News");) {
+    try (AutoCloseableIterator<Communication> commIter = cr.getCommunications("News");) {
       assertEquals("Shouldn't get any non-Tweets.", 0, 
           Util.countIteratorResults(commIter));
     }
     
-    try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("Tweet");) {
+    try (AutoCloseableIterator<Communication> commIter = cr.getCommunications("Tweet");) {
       while(commIter.hasNext()) {
         Communication c = commIter.next();
         assertTrue(idToCommMap.containsKey(c.id));
@@ -335,7 +335,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     }
     
     StageReader sr = new StageReader(this.conn);
-    AbstractThriftIterator<Stage> sIter = sr.getStages();
+    AutoCloseableIterator<Stage> sIter = sr.getStages();
     assertEquals("Should find the ingested stage.", st, sIter.next());
     assertTrue("Should find the ingested stage via exists method.", sr.exists(st.getName()));
     assertEquals("Should find the ingested stage via get method.", st, sr.get(st.getName()));
@@ -343,7 +343,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     
     Map<UUID, SectionSegmentation> idToSSMap = new HashMap<>(11);
     try (AbstractStageWriter<SectionSegmentation> retStage = sr.getSectionStageWriter(st.getName());) {
-      try (AbstractThriftIterator<Communication> commIter = cr.getCommunications("Tweet");) {
+      try (AutoCloseableIterator<Communication> commIter = cr.getCommunications("Tweet");) {
         while(commIter.hasNext()) {
           Communication c = commIter.next();
           SectionSegmentation empty = sss.annotateDiff(c);
@@ -354,7 +354,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     }
     
     AbstractStageReader reader = sr.getSectionStageReader(st.getName());
-    try (AbstractThriftIterator<Communication> retComms = reader.getAll();) {
+    try (AutoCloseableIterator<Communication> retComms = reader.getAll();) {
       while(retComms.hasNext()) {
         Communication c = retComms.next();
         assertTrue(idToCommMap.containsKey(c.id));
@@ -417,7 +417,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     List<String> depList = new ArrayList<>(sentStage.getDependencies());
     try(AbstractStageWriter<SentenceSegmentationCollection> writer = new SentenceStageWriter(this.conn, sentStage);) {
       reader = sr.getSectionStageReader(depList.get(0));
-      try (AbstractThriftIterator<Communication> retComms = reader.getAll();) {
+      try (AutoCloseableIterator<Communication> retComms = reader.getAll();) {
         while (retComms.hasNext()) {
           Communication c = retComms.next();
           assertTrue(c.isSetSectionSegmentations() && !c.getSectionSegmentations().isEmpty());
@@ -428,12 +428,12 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     }
     
     reader = sr.getSentenceStageReader(sentStage.getName());
-    try (AbstractThriftIterator<Communication> retComms = reader.getAll();) {
+    try (AutoCloseableIterator<Communication> retComms = reader.getAll();) {
       assertEquals("Should get " + nDocs + " docs annotated in sent stage.", 
           nDocs, Util.countIteratorResults(retComms));
     }
 
-    try (AbstractThriftIterator<Communication> retComms = reader.getAll();) {
+    try (AutoCloseableIterator<Communication> retComms = reader.getAll();) {
       while(retComms.hasNext()) {
         Communication c = retComms.next();
         assertTrue(idToCommMap.containsKey(c.id));
@@ -465,7 +465,7 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     try(AbstractStageWriter<TokenizationCollection> writer = new TokenizationStageWriter(this.conn, tokStage);) {
       reader = sr.getSentenceStageReader(depList.get(1));
       
-      try (AbstractThriftIterator<Communication> retComms = reader.getAll();) {
+      try (AutoCloseableIterator<Communication> retComms = reader.getAll();) {
         while (retComms.hasNext()) {
           Communication c = retComms.next();
           assertTrue(c.isSetSectionSegmentations() && !c.getSectionSegmentations().isEmpty());
@@ -489,12 +489,12 @@ public class ITestMockIntegration extends AbstractMiniClusterTest {
     }
     
     reader = sr.getTokenizationStageReader(tokStage.getName());
-    try(AbstractThriftIterator<Communication> retrComms = reader.getAll();) {
+    try(AutoCloseableIterator<Communication> retrComms = reader.getAll();) {
       assertEquals("Should get " + nDocs + " docs annotated in tok stage.", 
           nDocs, Util.countIteratorResults(retrComms));
     }
     
-    try(AbstractThriftIterator<Communication> retrComms = reader.getAll();) {
+    try(AutoCloseableIterator<Communication> retrComms = reader.getAll();) {
       while(retrComms.hasNext()) {
         Communication c = retrComms.next();
         assertTrue(idToCommMap.containsKey(c.id));

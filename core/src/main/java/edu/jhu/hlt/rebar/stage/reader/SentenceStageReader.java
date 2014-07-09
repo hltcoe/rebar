@@ -9,7 +9,7 @@ import org.apache.accumulo.core.client.ScannerBase;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
-import edu.jhu.hlt.rebar.client.iterators.AbstractThriftIterator;
+import edu.jhu.hlt.rebar.client.iterators.AutoCloseableIterator;
 import edu.jhu.hlt.rebar.client.iterators.SentenceMergingIterator;
 
 /**
@@ -46,7 +46,7 @@ public class SentenceStageReader extends SectionStageReader {
    * @see edu.jhu.hlt.rebar.accumulo.AbstractReader#accumuloIterToTIter(java.util.Iterator)
    */
   @Override
-  protected AbstractThriftIterator<Communication> accumuloIterToTIter(ScannerBase sc) throws RebarException {
+  protected AutoCloseableIterator<Communication> accumuloIterToTIter(ScannerBase sc) throws RebarException {
     return new SentenceMergingIterator(sc, stageName, this.sectStageDep);
   }
 }

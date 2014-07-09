@@ -17,6 +17,7 @@ import edu.jhu.hlt.rebar.Configuration;
 import edu.jhu.hlt.rebar.Constants;
 import edu.jhu.hlt.rebar.RebarException;
 import edu.jhu.hlt.rebar.client.iterators.AbstractAccumuloIterator;
+import edu.jhu.hlt.rebar.client.iterators.AutoCloseableIterator;
 
 /**
  * @author max
@@ -40,7 +41,7 @@ public abstract class AbstractCommunicationReader extends AbstractReader<Communi
   }
   
   @Override
-  protected AbstractAccumuloIterator<Communication> accumuloIterToTIter(ScannerBase sc) throws RebarException {
+  protected AutoCloseableIterator<Communication> accumuloIterToTIter(ScannerBase sc) throws RebarException {
     return new CommunicationIterator(sc);
   }
   
