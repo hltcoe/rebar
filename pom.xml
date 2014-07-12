@@ -28,7 +28,7 @@
     <jackson.version>2.4.1</jackson.version>
     <concrete.version>3.3.1-SNAPSHOT</concrete.version>
     <ballast.version>3.3.1-SNAPSHOT</ballast.version>
-    <accumulo.version>1.5.1</accumulo.version>
+    <accumulo.version>1.6.0</accumulo.version>
   </properties>
 
   <scm>
@@ -240,7 +240,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.accumulo</groupId>
-        <artifactId>accumulo-server</artifactId>
+        <artifactId>accumulo-server-base</artifactId>
         <version>${accumulo.version}</version>
       </dependency>
       <dependency>
